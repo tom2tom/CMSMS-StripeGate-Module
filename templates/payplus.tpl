@@ -1,3 +1,4 @@
+{if isset($cssscript)}{$cssscript}{/if}
 {if !empty($message)}<p class="chkout_message">{$message}</p>{/if}
 <div id="container">
 {if !empty($title)}<h2>{$title}</h2>{/if}
@@ -51,10 +52,10 @@
 </form>{/if}
 </div>
 
-{if !empty($jsincs)}
+{if isset($jsincs)}
 {foreach from=$jsincs item=file}{$file}
 {/foreach}{/if}
-{if !empty($jsfuncs)}
+{if isset($jsfuncs)}
 <script type="text/javascript">
 //<![CDATA[
 {foreach from=$jsfuncs item=func}{$func}{/foreach}

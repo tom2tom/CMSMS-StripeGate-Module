@@ -2,8 +2,6 @@
 $lang['friendlyname'] = 'Stripe Gateway';
 $lang['confirm_uninstall']='You\'re sure you want to uninstall the '.$lang['friendlyname'].' module?';
 $lang['module_description'] = 'A module to facilitate communications between Stripe and a CMS Made Simple-powered website';
-$lang['perm_mod'] = 'Modify Stripe Gateway Settings';
-$lang['perm_use'] = 'Manage Stripe Gateway Accounts';
 $lang['postinstall'] = $lang['friendlyname'].' module successfully installed, now please ensure that it is configured properly for use, and apply related permissions';
 $lang['postuninstall'] = $lang['friendlyname']. ' module successfully removed';
 
@@ -18,8 +16,8 @@ $lang['apurpose'] = 'a desciption of the payment';
 $lang['ayear'] = 'a year';
 
 $lang['additem'] = 'Add new account';
-$lang['admin_records'] = 'administer account records';
 $lang['any'] = 'Any';
+$lang['all'] = 'All';
 $lang['cancel'] = 'Cancel';
 $lang['cardcvc'] = 'Security code';
 $lang['cardexpiry'] = 'Expiry';
@@ -27,15 +25,15 @@ $lang['cardnumber'] = 'Card number';
 $lang['close'] = 'Close';
 $lang['currency_example'] = 'e.g. %s';
 $lang['delete'] = 'Delete';
-$lang['deleteitem'] = 'delete account';
 $lang['delitm_confirm'] = 'You\\\'re sure you want to delete \\\'%s\\\'?'; //double-escaped for js use
 $lang['delsel_confirm'] = 'You\\\'re sure you want to delete selected account(s)?'; //double-escaped for js use
-$lang['edititem'] = 'edit account';
+$lang['delsel_confirm2'] = 'You\\\'re sure you want to delete selected record(s)?'; //double-escaped for js use
 
-$lang['err__contact'] = '<br />Please notify the system administrator.';
+$lang['err__contact'] = 'Please notify the system administrator.';
 $lang['err_badmonth'] = 'Invalid month - enter number 1 to 12';
 $lang['err_badnum'] = 'That doesn\\\'t look like a card-number'; //double-escaped for use in js
 $lang['err_badyear'] = 'Invalid year - enter number %d or greater';
+$lang['err_export'] = 'Export failed';
 $lang['err_noamount'] = sprintf($lang['missing_type'],$lang['aamount']);
 $lang['err_nocvc'] = sprintf($lang['missing_type'],$lang['acvc']);
 $lang['err_nomonth'] = sprintf($lang['missing_type'],$lang['amonth']);
@@ -44,9 +42,12 @@ $lang['err_nonum'] = sprintf($lang['missing_type'],$lang['anum']);
 $lang['err_nopurpose'] = sprintf($lang['missing_type'],$lang['apurpose']);
 $lang['err_nowho'] = sprintf($lang['missing_type'],$lang['aname']);
 $lang['err_noyear'] = sprintf($lang['missing_type'],$lang['ayear']);
-$lang['err_parameter'] = 'Parameter error.'.$lang['err__contact'];
-$lang['err_system'] = 'System error.'.$lang['err__contact'];
+$lang['err_parameter'] = 'Parameter error.<br />'.$lang['err__contact'];
+$lang['err_system'] = 'System error.<br />'.$lang['err__contact'];
 $lang['err_toosmall'] = 'Minimum charge is %s';
+
+$lang['export'] = 'Export';
+$lang['first'] = 'first';
 
 $lang['help_alias'] = 'For identifying the account in page-tags. If none is supplied, one will be derived from the account name.';
 $lang['help_amountformat'] = 'Examples: S.00 S.0 S S,0 0S00<br />
@@ -62,14 +63,14 @@ $lang['help_surchargerate'] = 'If 0 or empty, no surcharge applies, duh. Otherwi
 $lang['help_title'] = 'If none is supplied, a title will be derived from the account name at runtime';
 $lang['help_updir'] = 'Filesystem path relative to website-host uploads directory. No leading or trailing path-separator, and any intermediate path-separator must be host-system-specific e.g. \'\\\' on Windows. If left blank, the default will be used. Directory could contain .css files for specific checkouts, among others.';
 
+$lang['last'] = 'last';
 $lang['month_template'] = 'MM';
 $lang['name'] = 'Name';
+$lang['next'] = 'next';
 $lang['no'] = 'No';
 $lang['nodata'] = 'No account is registered';
 $lang['none'] = 'None';
 $lang['noowner'] = 'No owner';
-$lang['note'] = 'Note';
-$lang['note_example'] = 'A short note';
 
 $lang['param_account'] = 'Override the default account, use this (id-number or alias) instead';
 $lang['param_action'] = 'Type of interaction with Stripe. At this time, \'pay\' and \'payplus\' are supported';
@@ -77,24 +78,36 @@ $lang['param_formed'] = 'Whether the output is to be displayed inside another fo
 $lang['param_nosur'] = 'Override the default payplus surcharge rate, use 0 instead';
 $lang['param_title'] = 'Override the default payplus \'form\' title, use this instead';
 
+$lang['pageof'] = 'showing page %s of %s';
+$lang['pagerows'] = 'rows-per-page';
 $lang['payamount'] = 'Amount to pay';
 $lang['payfor'] = 'Payment on behalf of';
 $lang['payment_submitted'] = 'The payment has been submitted for processing';
 $lang['paywhat'] = 'Reason for payment';
 $lang['percent'] = 'percent';
-$lang['submit'] = 'Submit';
+$lang['perm_adm'] = 'Modify Stripe Gateway Settings';
+$lang['perm_mod'] = 'Modify Stripe Accounts';
+$lang['perm_use'] = 'Use Stripe Accounts';
+$lang['previous'] = 'previous';
 $lang['submit'] = 'Submit';
 $lang['surcharge'] = 'A small surcharge (%s) will be applied, to help cover the transaction costs.';
 
+$lang['tip_admin'] = 'administer account records';
 $lang['tip_delete'] = 'delete account';
 $lang['tip_deletesel'] = 'delete selected accounts';
+$lang['tip_deletesel2'] = 'delete selected records';
 $lang['tip_edit'] = 'edit account data';
+$lang['tip_export'] = 'export account records';
+$lang['tip_exportsel'] = 'export selected records';
+$lang['tip_exportsel2'] = 'export records for selected accounts';
 $lang['tip_toggle'] = 'toggle value';
-$lang['tip_view'] = 'view account data';
+$lang['tip_view'] = 'inspect account details';
 
+$lang['title_account'] = 'Account records: %s';
 $lang['title_active'] = 'Active';
-$lang['title_alias'] = 'Account alias';
 $lang['title_alias'] = 'Alias';
+$lang['title_alias2'] = 'Account alias';
+$lang['title_amount'] = 'Amount';
 $lang['title_amountformat'] = 'Format for displaying monetary values';
 $lang['title_checkout'] = 'Payment to %s';
 $lang['title_currency'] = 'Currency to be used';
@@ -116,17 +129,18 @@ $lang['title_tag'] = 'Page tag';
 $lang['title_testprivtoken'] = 'Test-mode secret key';
 $lang['title_testpubtoken'] = 'Test-mode public key';
 $lang['title_title'] = 'Checkout-form title';
+$lang['title_token'] = 'Identifier';
 $lang['title_updir'] = 'Sub-directory for module-specific file uploads';
+$lang['title_what'] = 'Description';
+$lang['title_when'] = 'Submitted';
+$lang['title_who'] = 'For';
 $lang['title_usetest'] = 'Use test keys';
 
 $lang['updated'] = 'Settings updated';
-$lang['viewitem'] = 'inspect account details';
 $lang['year_template'] = 'YYYY';
 $lang['yes'] = 'Yes';
-//$lang['export'] = 'Export';
 //$lang['help_import'] = <<<EOS EOS;
 //$lang['import'] = 'Import';
-//$lang['tip_exportsel'] = 'export data for selected accounts';
 //$lang['upload']='Upload';
 //$lang['tip_upload']='upload selected file to website host';
 //$lang['reporting_url'] = 'URL to which Stripe can send webhook reports';
@@ -139,14 +153,19 @@ making an online payment to somebody, using <a href="https://stripe.com">Stripe<
 Change the default pass-phrase.<br /><br />
 Apply module permissions, which are
 <ul>
-<li>Manage Stripe Gateway Accounts</li>
+<li>Use Stripe Accounts</li>
+<li>Modify Stripe Accounts</li>
 <li>Modify Stripe Gateway Settings</li>
 </ul>
-At least, create a user-group with the first of these permissions,
+At least, create a user-group with the second of these permissions,
 add to that group all users permitted to manage the Stripe account(s) recorded in the module.<br /><br />
 Put into relevant page's content block, or into 'form-builder' field:
 <pre>
-{StripeGate action='payplus' account='some_alias'}
+{StripeGate}
+</pre>
+or
+<pre>
+{StripeGate account='account-alias'}
 </pre>
 Adjust the page theme to include the relevant css file, or if instance-specific styling is to be supported,
 put into the page's 'Page Specific Metadata' field (so it can be modified at runtime):
@@ -154,7 +173,10 @@ put into the page's 'Page Specific Metadata' field (so it can be modified at run
 &lt;link rel="stylesheet" type="text/css" id="stripestyles" href="{the-correct-site-root-url}/modules/StripeGate/css/checkout.css" media="all" /&gt;
 </pre>
 <br /><br />
-
+TODO document other action
+<pre>
+{StripeGate action='pay' amount=19.99}
+</pre>
 TODO iconfile: square icon representing the account-holder's brand or product, recommended minimum size 128x128px, recommended types .gif, .jpeg, or .png.
 
 Low-level usage - an example:<br /><br />

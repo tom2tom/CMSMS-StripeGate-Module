@@ -1,4 +1,13 @@
-/* empty = just kill .pagetable settings */
+p.pagetext { margin-left:0; }
+
+table.pagetable {
+ border-spacing: 0;
+ margin-left: 0;
+ padding: 3px;
+ width: auto;
+}
+
+/* empty = kill .pagetable settings */
 table.pagetable th {}
 
 table.table_sort th

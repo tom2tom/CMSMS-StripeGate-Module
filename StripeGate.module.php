@@ -25,7 +25,7 @@ class StripeGate extends CMSModule
 	public function __construct()
 	{
 		parent::__construct();
-		$this->havemcrypt = (function_exists('mcrypt_encrypt'));
+		$this->havemcrypt = function_exists('mcrypt_encrypt');
 		global $CMS_VERSION;
 		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
 	}
@@ -120,19 +120,36 @@ class StripeGate extends CMSModule
 	{
 		return
 		 $this->CheckPermission('ModifyStripeGateProperties') ||
-		 $this->CheckPermission('UseStripeGateAccount');
+		 $this->CheckPermission('ModifyStripeAccount') ||
+		 $this->CheckPermission('UseStripeAccount');
 	}
 
-	public function AdminStyle()
-	{
-		$fn = cms_join_path(dirname(__FILE__),'css','admin.css');
-		return ''.@file_get_contents($fn);
-	}
-
-/*	public function GetHeaderHTML()
+/*	public function AdminStyle()
 	{
 	}
 */
+	public function GetHeaderHTML()
+	{
+		$url = $this->GetModuleURLPath();
+		//the 2nd link is for dynamic style-changes, via js at runtime
+		return <<<EOS
+<link rel="stylesheet" type="text/css" href="{$url}/css/admin.css" />
+<link rel="stylesheet" type="text/css" id="adminstyler" href="#" />
+EOS;
+	}
+
+	function SuppressAdminOutput(&$request)
+	{
+		if(isset($_SERVER['QUERY_STRING']))
+		{
+//$adbg = $_SERVER;
+//$this->Crash();
+			if(strpos($_SERVER['QUERY_STRING'],'export') !== FALSE)
+				return TRUE;
+		}
+		return FALSE;
+	}
+
 	public function GetDependencies()
 	{
 		return array();
@@ -202,7 +219,7 @@ class StripeGate extends CMSModule
 	public function InitializeAdmin()
 	{
 		//document only the parameters relevant for external (page-tag) usage
-		$this->CreateParameter('action','payplus',$this->Lang('param_action'),FALSE);
+		$this->CreateParameter('action','payplus',$this->Lang('param_action'));
 		$this->CreateParameter('account','',$this->Lang('param_account'));
 		$this->CreateParameter('title','',$this->Lang('param_title'));
 		$this->CreateParameter('nosur',0,$this->Lang('param_nosur'));
@@ -236,18 +253,18 @@ class StripeGate extends CMSModule
 		return new stripe_clearlog_task();
 	}
 */
-/*	function DoAction($name,$id,$params,$returnid='')
+	function DoAction($name,$id,$params,$returnid='')
 	{
 		//diversions
 		switch ($name)
 		{
-		 case '':
-			$name = '';
+		 case 'default':
+			$name = 'payplus';
 			break;
 		}
 		parent::DoAction($name,$id,$params,$returnid);
 	}
-*/
+
 	//construct delivery-reports URL (pretty or not)
 	public function get_reporturl()
 	{

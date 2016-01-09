@@ -6,23 +6,9 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(!function_exists('get_account_alias'))
-{
- //this assumes one-byte-encoded text TODO
- function get_account_alias($alias,$fullname)
- {
-	$alias = strtolower(trim($alias));
-	if(!$alias)
-		$alias = strtolower(trim($fullname,"\t\n\r\0 _"));
-	$alias = preg_replace('/\W+/','_',$alias);
-	$parts = array_slice(explode('_',$alias),0,5);
-	$alias = substr(implode('_',$parts),0,15);
-	return trim($alias,'_');
- }
-}
-
-$pmod = $this->CheckPermission('ModifyStripeGateProperties');
-$puse = $this->CheckPermission('UseStripeGateAccount');
+$pmod = $this->CheckPermission('ModifyStripeGateProperties')
+	|| $this->CheckPermission('ModifyStripeAccount');
+$puse = $this->CheckPermission('UseStripeAccount');
 if(!($pmod || $puse)) exit;
 
 if(isset($params['cancel']))
@@ -31,9 +17,9 @@ if(isset($params['cancel']))
 $pref = cms_db_prefix();
 if(isset($params['submit']) && $pmod)
 {
-	$alias = get_account_alias($params['alias'],$params['name']);
-	$privatetoken = ($params['privtoken']) ? stripe_utils::encrypt_value($this,$params['privtoken']) : '';
-	$privatetesttoken = ($params['testprivtoken']) ? stripe_utils::encrypt_value($this,$params['testprivtoken']) : '';
+	$alias = sgtUtils::ConstructAlias($params['alias'],$params['name']);
+	$privatetoken = ($params['privtoken']) ? sgtUtils::encrypt_value($this,$params['privtoken']) : '';
+	$privatetesttoken = ($params['testprivtoken']) ? sgtUtils::encrypt_value($this,$params['testprivtoken']) : '';
 	if(strpos($params['surchargerate'],'%') !== FALSE)
 	{
 		$sur = str_replace('%','',$params['surchargerate']);
@@ -203,7 +189,7 @@ else
 $settings[] = $oneset;
 
 $oneset = new stdClass();
-$oneset->title = $this->Lang('title_alias');
+$oneset->title = $this->Lang('title_alias2');
 if($pmod)
 	$oneset->input = $this->CreateInputText($id,'alias', $row['alias'],16,16);
 elseif($row['alias'])
@@ -242,7 +228,7 @@ else
 //$oneset->help = $this->Lang('');
 $settings[] = $oneset;
 
-$choices = stripe_utils::GetSupportedCurrencies();
+$choices = sgtUtils::GetSupportedCurrencies();
 $oneset = new stdClass();
 $oneset->title = $this->Lang('title_currency');
 if($pmod)
@@ -317,7 +303,7 @@ if($pmod)
 
 	$oneset = new stdClass();
 	$oneset->title = $this->Lang('title_privtoken');
-	$oneset->input = $this->CreateInputText($id,'privtoken',stripe_utils::decrypt_value($this,$row['privtoken']),32,48);
+	$oneset->input = $this->CreateInputText($id,'privtoken',sgtUtils::decrypt_value($this,$row['privtoken']),32,48);
 //	$oneset->help = $this->Lang('');
 	$settings[] = $oneset;
 
@@ -329,7 +315,7 @@ if($pmod)
 
 	$oneset = new stdClass();
 	$oneset->title = $this->Lang('title_testprivtoken');
-	$oneset->input = $this->CreateInputText($id,'testprivtoken',stripe_utils::decrypt_value($this,$row['testprivtoken']),32,48);
+	$oneset->input = $this->CreateInputText($id,'testprivtoken',sgtUtils::decrypt_value($this,$row['testprivtoken']),32,48);
 	//$oneset->help = $this->Lang('');
 	$settings[] = $oneset;
 
@@ -341,7 +327,7 @@ if($pmod)
 
 	$none = '&lt;'.$this->Lang('none').'&gt;';
 	$choices = array($none=>0);
-	//cmsms function check_permission() is buggy, always returns false for
+	//CMSMS function check_permission() is buggy, always returns false for
 	//everyone other than the current user, so we replicate its backend operation here
 	$pref = cms_db_prefix();
 	$sql = <<<EOS
@@ -350,7 +336,7 @@ JOIN {$pref}user_groups UG ON U.user_id = UG.user_id
 JOIN {$pref}group_perms GP ON GP.group_id = UG.group_id
 JOIN {$pref}permissions P ON P.permission_id = GP.permission_id
 JOIN {$pref}groups GR ON GR.group_id = UG.group_id
-WHERE U.admin_access=1 AND U.active=1 AND GR.active=1 AND P.permission_name='UseStripeGateAccount' 
+WHERE U.admin_access=1 AND U.active=1 AND GR.active=1 AND P.permission_name='ModifyStripeAccount'
 ORDER BY U.last_name,U.first_name
 EOS;
 	$users = $db->GetAll($sql);
@@ -422,6 +408,6 @@ if($jsloads)
 $smarty->assign('jsfuncs',$jsfuncs);
 $smarty->assign('jsincs',$jsincs);
 
-echo $this->ProcessTemplate('updateaccount.tpl');
+echo $this->ProcessTemplate('update.tpl');
 
 ?>

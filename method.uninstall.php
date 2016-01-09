@@ -77,7 +77,8 @@ $dict->ExecuteSQLArray($sqlarray);
 
 $this->RemovePreference();
 
-$this->RemovePermission('UseStripeGateAccount');
+$this->RemovePermission('UseStripeAccount');
+$this->RemovePermission('ModifyStripeAccount');
 $this->RemovePermission('ModifyStripeGateProperties');
 
 //$this->RemoveEvent($this->GetName(),'');

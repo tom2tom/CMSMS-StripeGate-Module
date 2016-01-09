@@ -5,89 +5,22 @@
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
-/*
-$result = json_decode('
-{
-	"id": "ch_17Olb7GajAPEsyVFKbv1Xj0H",
-	"object": "charge",
-	"amount": 2000,
-	"amount_refunded": 0,
-	"application_fee": null,
-	"balance_transaction": "txn_17Olb7GajAPEsyVFymoUOx75",
-	"captured": true,
-	"created": 1451726573,
-	"currency": "usd",
-	"customer": null,
-	"description": null,
-	"destination": null,
-	"dispute": null,
-	"failure_code": null,
-	"failure_message": null,
-	"fraud_details": [],
-	"invoice": null,
-	"livemode": false,
-	"metadata": [],
-	"paid": true,
-	"receipt_email": null,
-	"receipt_number": null,
-	"refunded": false,
-	"refunds": {
-		"object": "list",
-		"data": [],
-		"has_more": false,
-		"total_count": 0,
-		"url": "\/v1\/charges\/ch_17Olb7GajAPEsyVFKbv1Xj0H\/refunds"
-	},
-	"shipping": null,
-	"source": {
-		"id": "card_17Olb7GajAPEsyVFeIZ6PDc1",
-		"object": "card",
-		"address_city": null,
-		"address_country": null,
-		"address_line1": null,
-		"address_line1_check": null,
-		"address_line2": null,
-		"address_state": null,
-		"address_zip": null,
-		"address_zip_check": null,
-		"brand": "Visa",
-		"country": "US",
-		"customer": null,
-		"cvc_check": null,
-		"dynamic_last4": null,
-		"exp_month": 8,
-		"exp_year": 2018,
-		"fingerprint": "fkrclzqDN7Vm2zs9",
-		"funding": "credit",
-		"last4": "4242",
-		"metadata": [],
-		"name": null,
-		"tokenization_method": null
-	},
-	"statement_descriptor": null,
-	"status": "succeeded"
-}'
-);
-
-$id = $result->id;
-unset($result->source);
-$this->Crash();
-*/
 
 $padm = $this->CheckPermission('ModifyStripeGateProperties');
 if($padm)
 {
+	$pmod = true;
 	$padd = true;
 	$pdel = true;
-	$pmod = true;
 }
 else
 {
-	$padd = $this->CheckPermission('UseStripeGateAccount');
-	$pdel = $padd;
-	$pmod = $padd;
+	$pmod = $this->CheckPermission('ModifyStripeAccount');
+	$padd = $pmod;
+	$pdel = $pmod;
 }
-if(!($padm || $pmod)) exit;
+$psee = $this->CheckPermission('UseStripeAccount');
+if(!($padm || $pmod || $psee)) exit;
 
 $pdev = $this->CheckPermission('Modify Any Page');
 $mod = $padm || $pmod;
@@ -98,7 +31,7 @@ if(isset($params['submit']))
 	{
 		$oldpw = $this->GetPreference('masterpass');
 		if($oldpw)
-			$oldpw = stripe_utils::unfusc($oldpw);
+			$oldpw = sgtUtils::unfusc($oldpw);
 
 		$newpw = trim($params['masterpass']);
 		if($oldpw != $newpw)
@@ -112,10 +45,10 @@ if(isset($params['submit']))
 				$sql = 'UPDATE '.$pre.'module_sgt_account SET privtoken=?,testprivtoken=? WHERE account_id=?';
 				while(!$rst->EOF)
 				{
-					$t = stripe_utils::decrypt_value($mod,$rst->fields[1],$oldpw);
-					$t = ($newpw) ? stripe_utils::encrypt_value($mod,$t,$newpw):stripe_utils::fusc($t);
-					$t2 = stripe_utils::decrypt_value($mod,$rst->fields[2],$oldpw);
-					$t2 = ($newpw) ? stripe_utils::encrypt_value($mod,$t2,$newpw):stripe_utils::fusc($t2);
+					$t = sgtUtils::decrypt_value($mod,$rst->fields[1],$oldpw);
+					$t = ($newpw) ? sgtUtils::encrypt_value($mod,$t,$newpw):sgtUtils::fusc($t);
+					$t2 = sgtUtils::decrypt_value($mod,$rst->fields[2],$oldpw);
+					$t2 = ($newpw) ? sgtUtils::encrypt_value($mod,$t2,$newpw):sgtUtils::fusc($t2);
 					$db->Execute($sql,array($t,$t2,$rst->fields[0]));
 					if(!$rst->MoveNext())
 						break;
@@ -124,18 +57,20 @@ if(isset($params['submit']))
 			}
 			//TODO if record-table data is encrypted
 			if($newpw)
-				$newpw = stripe_utils::fusc($newpw);
+				$newpw = sgtUtils::fusc($newpw);
 			$this->SetPreference('masterpass',$newpw);
 		}
 	}
 	$params['activetab'] = 'settings';
 }
 
-$smarty->assign('padm',$padm);
-$smarty->assign('padd',$padd);
-$smarty->assign('pdel',$pdel);
-$smarty->assign('pmod',$mod); //not $pmod
-$smarty->assign('pdev',$pdev);
+$smarty->assign(array(
+ 'padm'=>$padm,
+ 'padd'=>$padd,
+ 'pdel'=>$pdel,
+ 'pmod'=>$mod, //not $pmod
+ 'pdev'=>$pdev
+));
 
 $indx = 0;
 if(isset($params['activetab']))
@@ -154,9 +89,11 @@ $smarty->assign('tabsheader',$this->StartTabHeaders().
  $this->EndTabHeaders().$this->StartTabContent());
 
 //NOTE CMSMS 2+ barfs if EndTab() is called before EndTabContent() - some craziness there !!!
-$smarty->assign('tabsfooter',$this->EndTabContent());
-$smarty->assign('tab_end',$this->EndTab());
-$smarty->assign('form_end',$this->CreateFormEnd());
+$smarty->assign(array(
+ 'tabsfooter' => $this->EndTabContent(),
+ 'tab_end' => $this->EndTab(),
+ 'form_end' => $this->CreateFormEnd()
+));
 
 $jsincs = array();
 $jsfuncs = array();
@@ -169,37 +106,40 @@ if(!empty($params['message']))
 //~~~~~~~~~~~~~~~ ACCOUNTS TAB ~~~~~~~~~~~~~~~~
 
 $smarty->assign('tabstart_main',$this->StartTab('main'));
-$smarty->assign('formstart_main',$this->CreateFormStart($id,'processitems'));
+$smarty->assign('formstart_main',$this->CreateFormStart($id,'process'));
 
 $theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
 	cms_utils::get_theme_object();
 
 if($mod)
 {
-	$iconopen = $theme->DisplayImage('icons/system/edit.gif',$this->Lang('edititem'),'','','systemicon');
+	$icon_open = $theme->DisplayImage('icons/system/edit.gif',$this->Lang('tip_edit'),'','','systemicon');
 	$t = $this->Lang('tip_toggle');
-	$iconyes = $theme->DisplayImage('icons/system/true.gif',$t,'','','systemicon');
-	$iconno = $theme->DisplayImage('icons/system/false.gif',$t,'','','systemicon');
-	$t = $this->Lang('admin_records');
-	$iconadmin = '<img src="'.$baseurl.'/images/administer.png" alt="'.$t.'" title="'.$t.'" class="systemicon" />';
+	$icon_yes = $theme->DisplayImage('icons/system/true.gif',$t,'','','systemicon');
+	$icon_no = $theme->DisplayImage('icons/system/false.gif',$t,'','','systemicon');
+	$icon_export = $theme->DisplayImage('icons/system/export.gif',$this->Lang('tip_export'),'','','systemicon');
+	$t = $this->Lang('tip_admin');
+	$icon_admin = '<img src="'.$baseurl.'/images/administer.png" alt="'.$t.'" title="'.$t.'" class="systemicon" />';
 }
 else
 {
-	$iconopen = $theme->DisplayImage('icons/system/view.gif',$this->Lang('viewitem'),'','','systemicon');
+	$icon_open = $theme->DisplayImage('icons/system/view.gif',$this->Lang('tip_view'),'','','systemicon');
 	$yes = $this->Lang('yes');
 	$no = $this->Lang('no');
 }
 if($pdel)
-	$icondel = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('deleteitem'),'','','systemicon');
+	$icon_del = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('tip_delete'),'','','systemicon');
 
 $items = array();
 
 $pre = cms_db_prefix();
+$test = ($padm) ? '1':'A.owner=-1 OR A.owner='.get_userid(FALSE);
 $sql = <<<EOS
 SELECT A.account_id,A.name,A.alias,A.isdefault,A.isactive,U.first_name,U.last_name,COALESCE (R.count,0) AS record_count
 FROM {$pre}module_sgt_account A
 LEFT JOIN {$pre}users U ON A.owner = U.user_id
 LEFT JOIN (SELECT account_id,COUNT(*) as count FROM {$pre}module_sgt_record GROUP BY account_id) R ON A.account_id = R.account_id
+WHERE {$test}
 ORDER BY A.name
 EOS;
 
@@ -233,22 +173,24 @@ if($rows)
 		if($mod)
 		{
 			if($row['isdefault']) //it's active so create a deactivate-link
-				$oneset->default = $this->CreateLink($id,'toggledeflt',$returnid,$iconyes,
+				$oneset->default = $this->CreateLink($id,'toggledeflt',$returnid,$icon_yes,
 					array('account_id'=>$thisid,'current'=>true));
 			else //it's inactive so create an activate-link
-				$oneset->default = $this->CreateLink($id,'toggledeflt',$returnid,$iconno,
+				$oneset->default = $this->CreateLink($id,'toggledeflt',$returnid,$icon_no,
 					array('account_id'=>$thisid,'current'=>false));
 			if($row['isactive'])
-				$oneset->active = $this->CreateLink($id,'toggleactive',$returnid,$iconyes,
+				$oneset->active = $this->CreateLink($id,'toggleactive',$returnid,$icon_yes,
 					array('account_id'=>$thisid,'current'=>true));
 			else
-				$oneset->active = $this->CreateLink($id,'toggleactive',$returnid,$iconno,
+				$oneset->active = $this->CreateLink($id,'toggleactive',$returnid,$icon_no,
 					array('account_id'=>$thisid,'current'=>false));
 			if($row['record_count'] > 0)
-				$oneset->adminlink = $this->CreateLink($id,'administer',$returnid,$iconadmin,
+				$oneset->adminlink = $this->CreateLink($id,'administer',$returnid,$icon_admin,
 					array('account_id'=>$thisid));
 			else
 				$oneset->adminlink = NULL;
+			$oneset->exportlink = $this->CreateLink($id,'export',$returnid,$icon_export,
+				array('account_id'=>$thisid));
 		}
 		else
 		{
@@ -257,11 +199,11 @@ if($rows)
 		}
 		
 		//view or edit
-		$oneset->editlink = $this->CreateLink($id,'update',$returnid,$iconopen,
+		$oneset->editlink = $this->CreateLink($id,'update',$returnid,$icon_open,
 			array('account_id'=>$thisid));
 
 		if($pdel)
-			$oneset->deletelink = $this->CreateLink($id,'delete',$returnid,$icondel,
+			$oneset->deletelink = $this->CreateLink($id,'delete',$returnid,$icon_del,
 				array('account_id'=>$thisid),
 				$this->Lang('delitm_confirm',$row['name']));
 		else
@@ -280,15 +222,14 @@ $smarty->assign('items',$items);
 if($items)
 {
 	//table titles
-	$smarty->assign('title_id',$this->Lang('title_id'));
-	$smarty->assign('title_name',$this->Lang('name'));
-	if($pdev)
-		$smarty->assign('title_alias',$this->Lang('title_tag'));
-	else
-		$smarty->assign('title_alias',$this->Lang('title_alias'));
-	$smarty->assign('title_owner',$this->Lang('title_owner'));
-	$smarty->assign('title_default',$this->Lang('title_default'));
-	$smarty->assign('title_active',$this->Lang('title_active'));
+	$smarty->assign(array(
+	 'title_id' => $this->Lang('title_id'),
+	 'title_name' => $this->Lang('name'),
+	 'title_alias' => (($pdev)?$this->Lang('title_tag'):$this->Lang('title_alias')),
+	 'title_owner' => $this->Lang('title_owner'),
+	 'title_default' => $this->Lang('title_default'),
+	 'title_active' => $this->Lang('title_active')
+	));
 
 	if($padm || $pdel)
 	{
@@ -316,10 +257,10 @@ function sel_count()
 
 EOS;
 	}
-	if($padm)
+	if($mod)
 	{
 		$smarty->assign('export',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
-			'title="'.$this->Lang('tip_exportsel').'" onclick="return confirm_sel_count();"'));
+			'title="'.$this->Lang('tip_exportsel2').'" onclick="return confirm_sel_count();"'));
 		$jsfuncs[] = <<<EOS
 function confirm_sel_count()
 {
@@ -393,7 +334,7 @@ $smarty->assign('input_updir',$this->CreateInputText($id,'uploads_dir',$this->Ge
 $smarty->assign('title_password',$this->Lang('title_password'));
 $pw = $this->GetPreference('masterpass');
 if($pw)
-	$pw = stripe_utils::unfusc($pw);
+	$pw = sgtUtils::unfusc($pw);
 
 $smarty->assign('input_password',
 	$this->CreateTextArea(false,$id,$pw,'masterpass','cloaked',
@@ -426,5 +367,4 @@ $smarty->assign('jsfuncs',$jsfuncs);
 $smarty->assign('jsincs',$jsincs);
 
 echo $this->ProcessTemplate('adminpanel.tpl');
-
 ?>

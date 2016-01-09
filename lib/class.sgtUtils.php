@@ -6,9 +6,142 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-class stripe_utils
+class sgtUtils
 {
 	const ENC_ROUNDS = 10000;
+
+	/* *
+	SafeGet:
+	Execute SQL command(s) with minimal chance of data-race
+	@sql: SQL command
+	@args: array of arguments for @sql
+	@mode: optional type of get - 'one','row','col','assoc' or 'all', default 'all'
+	Returns: boolean indicating successful completion
+	*/
+/*	public static function SafeGet($sql,$args,$mode='all')
+	{
+		$db = cmsms()->GetDb();
+		$nt = 10;
+		while($nt > 0)
+		{
+			$db->Execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
+			$db->StartTrans();
+			switch($mode)
+			{
+			 case 'one':
+				$ret = $db->GetOne($sql,$args);
+				break;
+			 case 'row':
+				$ret = $db->GetRow($sql,$args);
+				break;
+			 case 'col':
+				$ret = $db->GetCol($sql,$args);
+				break;
+			 case 'assoc':
+				$ret = $db->GetAssoc($sql,$args);
+				break;
+			 default:
+				$ret = $db->GetAll($sql,$args);
+				break;
+			}
+			if($db->CompleteTrans())
+				return $ret;
+			else
+				$nt--;
+		}
+		return FALSE;
+	}
+*/
+	/* *
+	SafeExec:
+	Execute SQL command(s) with minimal chance of data-race
+	@sql: SQL command, or array of them
+	@args: array of arguments for @sql, or array of them
+	Returns: boolean indicating successful completion
+	*/
+/*	public static function SafeExec($sql,$args)
+	{
+		$db = cmsms()->GetDb();
+		$nt = 10;
+		while($nt > 0)
+		{
+			$db->Execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE'); //this isn't perfect!
+			$db->StartTrans();
+			if(is_array($sql))
+			{
+				foreach($sql as $i=>$cmd)
+					$db->Execute($cmd,$args[$i]);
+			}
+			else
+				$db->Execute($sql,$args);
+			if($db->CompleteTrans())
+				return TRUE;
+			else
+				$nt--;
+		}
+		return FALSE;
+	}
+*/
+	/**
+	GetAccount:
+	Returns: id of the default account, or else the first-and-only account, or FALSE
+	*/
+	public static function GetAccount()
+	{
+		$db = cmsms()->GetDb();
+		$ids = $db->GetAll(
+'SELECT account_id,isdefault FROM '.cms_db_prefix().'module_sgt_account ORDER BY isdefault DESC,account_id');
+		if($ids)
+		{
+			if($ids[0]['isdefault'] == TRUE || count($ids) == 1)
+				return (int)$ids[0]['account_id'];
+		}
+		return FALSE;
+	}
+
+	/**
+	GetUploadsPath:
+	@mod: reference to current StripeGate module object
+	Returns: absolute path string or false
+	*/
+	public static function GetUploadsPath(&$mod)
+	{
+		$config = cmsms()->GetConfig();
+		$up = $config['uploads_path'];
+		if($up)
+		{
+			$rp = $mod->GetPreference('uploads_dir');
+			if($rp)
+				$up .= DIRECTORY_SEPARATOR.$rp;
+			if(is_dir($up))
+				return $up;
+		}
+		return FALSE;
+	}
+
+	/**
+	GetUploadsUrl:
+	@mod: reference to current StripeGate module object
+	Returns: absolute url string or false
+	*/
+	public static function GetUploadsUrl(&$mod)
+	{
+		$config = cmsms()->GetConfig();
+		$key = (empty($_SERVER['HTTPS'])) ? 'uploads_url':'ssl_uploads_url';
+		$up = $config[$key];
+		if($up)
+		{
+			$rp = $mod->GetPreference('uploads_dir');
+			if($rp)
+			{
+				$rp = str_replace('\\','/',$rp);
+				$up .= '/'.$rp;
+			}
+			return $up;
+		}
+		return FALSE;
+	}
+
 	/**
 	encrypt_value:
 	@mod: reference to current module object
@@ -97,20 +230,27 @@ class stripe_utils
 		return '';
 	}
 
-	//Returns id of the default account, or the first-and-only account, or FALSE
-	public static function GetAccount()
+	/**
+	ConstructAlias:
+	@alias: current alias
+	@fullname: account name
+	Returns: alias-suitable string, max 15 chars
+	*/
+	public static function ConstructAlias($alias,$fullname)
 	{
-		$db = cmsms()->GetDb();
-		$ids = $db->GetAll(
-'SELECT account_id,isdefault FROM '.cms_db_prefix().'module_sgt_account ORDER BY isdefault DESC,account_id');
-		if($ids)
-		{
-			if($ids[0]['isdefault'] == TRUE || count($ids) == 1)
-				return (int)$ids[0]['account_id'];
-		}
-		return FALSE;
+		$alias = mb_convert_case(trim($alias),MB_CASE_LOWER); //TODO encoding
+		if(!$alias)
+			$alias = mb_convert_case(trim($fullname,"\t\n\r\0 _"),MB_CASE_LOWER);
+		$alias = preg_replace('/\W+/','_',$alias); //TODO mb_
+		$parts = array_slice(explode('_',$alias),0,5);
+		$alias = substr(implode('_',$parts),0,15);
+		return trim($alias,'_');
 	}
 
+	/**
+	GetSupportedCurrencies:
+	Returns: array
+	*/
 	public static function GetSupportedCurrencies()
 	{
 		return array(
@@ -252,7 +392,12 @@ class stripe_utils
 		);
 	}
 
-	public static function GetCurrency($code)
+	/**
+	GetSymbol:
+	@$code: one of the values returned by GetSupportedCurrencies()
+	Returns: matching currency symbol, or '<?>'
+	*/
+	public static function GetSymbol($code)
 	{
 		$symbols = array(
 		'afn'=>'؋',
@@ -397,145 +542,60 @@ class stripe_utils
 		return '<?>';
 	}
 
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/**
+	GetPublicAmount:
+	@units: the amount to process, in 'indivisible' units as used internally by Stripe e.g. cents
+	@format:
+	@symbol: currency symbol string
+	Returns: formatted string representing amount e.g. $19.99
+	*/
+	public static function GetPublicAmount($units,$format,$symbol)
+	{
+		if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches))
+		{
+			$places = strlen($matches[4]);
+			$times = pow(10,$places);
+			$num = number_format($units/$times,$places);
+			if($matches[1])
+			{
+				if(strpos('.',$num) !== FALSE)
+					$num = str_replace('.',$symbol,$num); //workaround PHP<5.4
+				else
+					$num .= $symbol;
+			}
+			else
+			{
+				if($matches[3] != '.')
+					$num = str_replace('.',$matches[3],$num);
+				$num = $symbol.$num;
+			}
+			return $num;
+		}
+		else
+			return $symbol.number_format($units/100,2);
+	}
 
 	/**
-	Construct js for custom integration with Stripe Checkout js API.
-	Returns: 3-member array - jsincs[],$jsfuncs[],$jsloads[]
+	GetPrivateAmount:
+	@amount: publicly presentable monetary amount e.g. $19.99
+	@$format:
+	@symbol: currency symbol string
+	Returns: number, in 'indivisible' units as used internally by Stripe
 	*/
-	public static function setup($pubkey,$imgurl,$name,$desc,$amount)
+	public static function GetPrivateAmount($amount,$format,$symbol)
 	{
-		$jsincs[] = <<<EOS
-<script src="https://checkout.stripe.com/checkout.js"></script>
-
-EOS;
-		$jsfuncs[] = <<<EOS
- var handler = StripeCheckout.configure({key:'{$pubkey}'});
-
-EOS;
-		$code = $row['currency']; //TODO
-		$units = (int)$amount*100;
-/*
-See https://stripe.com/docs/checkout#integration-custom
-image	A relative or absolute URL pointing to a square image of your brand or product.
-  The recommended minimum size is 128x128px. The recommended image types are .gif, .jpeg, and .png.
-name	The name of your company or website.
-description	A description of the product or service being purchased.
-amount	The amount (in cents) that's shown to the user.
- Note that you will still have to explicitly include it when you create a charge using the API.
- (You will also need to set a data-currency value to change the default of USD.)
-
-see demo file charge.php
-
-token - callback invoked when the Checkout process is complete
-  token.id can be used to create a charge or customer. 
-  token.email contains the email address entered by the user. 
-  >> cache token.client_ip
-  >> cache token.created
-  args is an object containing billing and shipping addresses if enabled.
-See https://stripe.com/docs/api#tokens
-
-*/
-		// open Checkout
-		$jsloads[] = <<<EOS
- $('#PayButton').click(function(ev) {
-  handler.open({
-   name: '{$name}',
-   description: '{$desc}',
-   currency: '{$code}',
-   amount: {$units},
-   image: '{$imgurl}',
-   locale: 'auto',
-   token: function(token) {
-    var dbg = 1;
-   },
-  });
-  ev.preventDefault();
-  ev.stopPropogation(); //CHECKME
- });
-EOS;
-		// close Checkout on page navigation
-		$jsloads[] = <<<EOS
- window.onpopstate = function(ev) {
-  handler.close();
- };
-
-EOS;
-		$jsfuncs = array();
-		return array($jsincs,$jsfuncs,$jsloads);
-	}
-
-	//this is a varargs function, 2nd argument (if it exists) is either a
-	//Lang key or one of the sms_gateway_base::STAT_* constants
-	public static function get_msg(&$module)
-	{
-		$ip = getenv('REMOTE_ADDR');
-		if(func_num_args() > 1)
+		if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches))
 		{
-			$tmp = $module->Lang('_'); //ensure relevant lang is loaded
-			$parms = array_slice(func_get_args(),1);
-			$key = $parms[0];
-			$langdata = ( $module->curlang) ?
-				$module->langhash[$module->curlang]:
-				reset($module->langhash);
-			if(isset($langdata[$key]) || array_key_exists($key,$langdata))
-			{
-				$txt = $module->Lang($key,array_slice($parms,1));
-				if($ip)
-					$txt .= ','.$ip;
-			}
+			if($matches[1])
+				$num = str_replace($symbol,'.',$amount);
 			else
-			{
-				$txt = implode(',',$parms);
-				if($ip && $parms[0] != sms_gateway_base::STAT_NOTSENT)
-					$txt .= ','.$ip;
-			}
-			return $txt;
+				$num = str_replace(array($symbol,$matches[3]),array('','.'),$amount);
+			$places = strlen($matches[4]);
+			$times = pow(10,$places);
+			return (int)($num * $times);
 		}
-		return $ip;
-	}
-
-	//this is a varargs function, 2nd argument (if it exists) may be a Lang key
-	public static function get_delivery_msg(&$module)
-	{
-		$ip = getenv('REMOTE_ADDR');
-		if(func_num_args() > 1)
-		{
-			$tmp = $module->Lang('_'); //ensure relevant lang is loaded
-			$parms = array_slice(func_get_args(),1);
-			$key = $parms[0];
-			$langdata = ($module->curlang) ?
-				$module->langhash[$module->curlang]:
-				reset($module->langhash);
-			if(isset($langdata[$key]) || array_key_exists($key,$langdata))
-				$txt = $module->Lang($key,array_slice($parms,1));
-			else
-				$txt = implode(',',$parms);
-			if($ip)
-				$txt .= ','.$ip;
-			return $txt;
-		}
-		return $ip;
-	}
-
-	public static function clean_log(&$module=NULL,$time=0)
-	{
-		if($module->GetPreference('logsends'))
-		{
-			if(!$time)
-				$time = time();
-			if($module === NULL)
-				$module = cms_utils::get_module(StripeGate::MODNAME);
-			$days = $module->GetPreference('logdays',1);
-			if($days < 1)
-				$days = 1;
-			$time -= $days*86400;
-			$db = cmsms()->GetDb();
-			$pref = cms_db_prefix();
-			$limit = $db->DbTimeStamp($time);
-			$db->Execute('DELETE FROM '.$pref.'module_stpg_sent WHERE sdate<'.$limit);
-		}
+		else
+			return preg_replace('/\D/','',$amount) + 0; //assume 'raw' is good enough, in this context
 	}
 
 }

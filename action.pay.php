@@ -20,7 +20,7 @@ if(empty($params['amount']))
 
 if(empty($params['account']))
 {
-	$default = stripe_utils::GetAccount();
+	$default = sgtUtils::GetAccount();
 	if($default)
 		$params['account'] = $default;
 	else

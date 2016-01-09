@@ -6,28 +6,37 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(!$this->CheckPermission('ModifyStripeGateProperties')) exit;
-
 if(!$params['selitems'])
 	$this->Redirect($id,'defaultadmin');
 
 if(isset($params['delete']))
 {
+	if(!($this->CheckPermission('ModifyStripeGateProperties')
+	  || $this->CheckPermission('ModifyStripeAccount'))) exit;
+	$pref = cms_db_prefix();
+	$sql = 'DELETE FROM '.$pref.'module_sgt_account WHERE account_id=?';
+	$sql2 = 'DELETE FROM '.$pref.'module_sgt_record WHERE account_id=?';
 	foreach($params['selitems'] as $aid)
 	{
 		//TODO delete 'no-longer-needed' uploaded css|icon files
-		$pref = cms_db_prefix();
-		$sql = 'DELETE FROM '.$pref.'module_sgt_account WHERE account_id=?';
 		$db->Execute($sql,array($aid));
-		$sql = 'DELETE FROM '.$pref.'module_sgt_record WHERE account_id=?';
-		$db->Execute($sql,array($aid));
+		$db->Execute($sql2,array($aid));
 	}
 }
 if(isset($params['export']))
 {
-$this->Crash();
+	if(!$this->CheckPermission('ModifyStripeAccount')) exit;
+
+	$funcs = new sgtExport();
+	//TODO merge all data into a single file
 	foreach($params['selitems'] as $aid)
 	{
+		$res = $funcs->Export($this,$aid);
+		if($res !== TRUE)
+		{
+			unset($funcs);
+			$this->Redirect($id,'defaultadmin','',array('message' => $this->Lang($res)));
+		}
 	}
 	exit;
 }

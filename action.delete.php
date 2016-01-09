@@ -6,7 +6,8 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(!$this->CheckPermission('ModifyStripeGateProperties')) exit;
+if(!($this->CheckPermission('ModifyStripeGateProperties')
+  || $this->CheckPermission('ModifyStripeAccount'))) exit;
 
 //TODO delete 'no-longer-needed' uploaded css|icon files
 $aid = (int)$params['account_id'];

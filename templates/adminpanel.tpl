@@ -2,38 +2,48 @@
 {$tabsheader}
 {$tabstart_main}
 {$formstart_main}
-<div class="pageinput pageoverflow">
+<div class="pageinput pageoverflow" style="display:inline-block;">
 {if $items}
-	<table id="itemdata" class="pagetable">
-		<thead><tr>
+ <table id="itemdata" class="pagetable">
+  <thead><tr>
+{strip}
 			<th>{$title_name}</th>
 			<th>{$title_alias}</th>
 			<th>{$title_owner}</th>
 			<th class="nosort">{$title_default}</th>
 			<th class="nosort">{$title_active}</th>
-{if $pmod}	<th class="pageicon nosort">&nbsp;</th>{/if}
+{if $pmod}	<th class="pageicon nosort">&nbsp;</th>
+			<th class="pageicon nosort">&nbsp;</th>{/if}
 			<th class="pageicon nosort">&nbsp;</th>
 {if $pdel}	<th class="pageicon nosort">&nbsp;</th>{/if}
 			<th class="checkbox nosort" style="width:20px;">{if isset($selectall)}{$selectall}{/if}</th>
-		</tr></thead>
-		<tbody>
+{/strip}
+  </tr></thead>
+  <tbody>
 {foreach from=$items item=entry} {cycle values='row1,row2' assign='rowclass'}
-		<tr class="{$rowclass}" onmouseover="this.className='{$rowclass}hover';" onmouseout="this.className='{$rowclass}';">
+   <tr class="{$rowclass}" onmouseover="this.className='{$rowclass}hover';" onmouseout="this.className='{$rowclass}';">
+{strip}
 		<td>{$entry->name}</td>
 		<td>{$entry->alias}</td>
 		<td>{$entry->ownername}</td>
 		<td>{$entry->default}</td>
 		<td>{$entry->active}</td>
-{if $pmod} <td>{$entry->adminlink}</td>{/if}
+{if $pmod} <td>{$entry->adminlink}</td>
+		<td>{$entry->exportlink}</td>{/if}
 		<td>{$entry->editlink}</td>
 {if $pdel}	<td>{$entry->deletelink}</td>{/if}
 		<td class="checkbox">{if isset($entry->selected)}{$entry->selected}{/if}</td>
-		</tr>
+{/strip}
+   </tr>
 {/foreach}
-		</tbody>
-	</table>
+  </tbody>
+ </table>
 <br />
-{if $padd}{$add}{/if}{*if $padm} {$export}{/if*}{if $pdel} {$delete}{/if}
+{if $padd}{$add}{/if}
+<div style="float:right;">
+{if $pmod}{$export} {/if}{if $pdel}{$delete}{/if}
+</div>
+<div style="clear:both;"></div>
 {else}
 <p class="pagetext">{$nodata}</p>
 {if $padd}

@@ -6,53 +6,9 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(!function_exists('get_public_amount'))
-{
-	function get_public_amount($units,$format,$char)
-	{
-		if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches))
-		{
-			$places = strlen($matches[4]);
-			$times = pow(10,$places);
-			$num = number_format($units/$times,$places);
-			if($matches[1])
-			{
-				if(strpos('.',$num) !== FALSE)
-					$num = str_replace('.',$char,$num); //workaround PHP<5.4
-				else
-					$num .= $char;
-			}
-			else
-			{
-				if($matches[3] != '.')
-					$num = str_replace('.',$matches[3],$num);
-				$num = $char.$num;
-			}
-			return $num;
-		}
-		else
-			return '$'+number_format($units/100,2);
-	}
-	function get_private_amount($amount,$format,$char)
-	{
-		if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches))
-		{
-			if($matches[1])
-				$num = str_replace($char,'.',$amount);
-			else
-				$num = str_replace(array($char,$matches[3]),array('','.'),$amount);
-			$places = strlen($matches[4]);
-			$times = pow(10,$places);
-			return (int)($num * $times);
-		}
-		else
-			return preg_replace('/\D/','',$amount) + 0; //assume 'raw' is good enough, in this context
-	}
-}
-
 if(empty($params['account']) && empty($params['stg_account']))
 {
-	$default = stripe_utils::GetAccount();
+	$default = sgtUtils::GetAccount();
 	if($default)
 	{
 		if(isset($params['submit']))
@@ -83,14 +39,14 @@ if(isset($params['stg_account'])) //we're back, after submission (no 'submit' pa
 	if($row['usetest'])
 	{
 		if($row['testprivtoken'])
-			$privkey = stripe_utils::decrypt_value($this,$row['testprivtoken']);
+			$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
 		else
 			$privkey = FALSE;
 	}
 	else
 	{
 		if($row['privtoken'])
-			$privkey = stripe_utils::decrypt_value($this,$row['privtoken']);
+			$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
 		else
 			$privkey = FALSE;
 	}
@@ -101,38 +57,37 @@ if(isset($params['stg_account'])) //we're back, after submission (no 'submit' pa
 	}
 
 	$card = array(
-	 'number' => $params['stg_number'],
-	 'exp_month' => $params['stg_month'],
-	 'exp_year' => $params['stg_year'],
-	 'cvc' => $params['stg_cvc']
+		'number' => $params['stg_number'],
+		'exp_month' => $params['stg_month'],
+		'exp_year' => $params['stg_year'],
+		'cvc' => $params['stg_cvc']
 	);
-	$symbol = stripe_utils::GetCurrency($row['currency']);
-	$amount = get_private_amount($params['stg_amount'],$row['amountformat'],$symbol);
+	$symbol = sgtUtils::GetSymbol($row['currency']);
+	$amount = sgtUtils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
 	if($row['surchargerate'] && empty($params['nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
 /*DEBUG
 	$card = array('number' => '4242424242424242', 'exp_month' => 8, 'exp_year' => 2018);
 	$amount = 50; min. charge
 */
-	$exdata = array('paywhat'=>$params['stg_paywhat'], 'payfor'=>$params['stg_payfor']);
+	$exdata = array(
+		'paywhat' => $params['stg_paywhat'],
+		'payfor' => $params['stg_payfor']
+	);
 
 	$data = array(
-	 'card' => $card,
-	 'amount' => $amount,
-	 'currency' => $row['currency'],
-	 'metadata' => $exdata
+		'card' => $card,
+		'amount' => $amount,
+		'currency' => $row['currency'],
+		'metadata' => $exdata
 	);
 
 	try
 	{
-if(1)
-{
 		Stripe::setApiKey($privkey);
 		$charge = Stripe_Charge::create($data);
 		$response = $charge->__toArray(TRUE);
-}
-else
-{
+/*DEBUG
 $response = array (
   'id' => 'ch_17Qy5lGajAPEsyVFhftWVEyr',
   'object' => 'charge',
@@ -199,7 +154,7 @@ $response = array (
   	  'status' => 'succeeded'
   	)
 	);
-}
+*/
 		$sql = 'INSERT INTO '.$pref.'module_sgt_record (
 account_id,
 amount,
@@ -282,6 +237,23 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 	$year = NULL;
 }
 
+$baseurl = $this->GetModuleURLPath();
+
+if($row['stylesfile']) //using custom css for checkout display
+{
+	//replace href attribute in existing stylesheet link
+	$u = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
+	$t = <<<EOS
+<script type="text/javascript">
+//<![CDATA[
+ document.getElementById('stripestyles').setAttribute('href',"{$u}");
+//]]>
+</script>
+
+EOS;
+	$smarty->assign('cssscript',$t);
+}
+
 if(!isset($params['formed']))
 	$smarty->assign('form_start',$this->CreateFormStart($id,'payplus',$returnid));
 
@@ -292,35 +264,33 @@ if(isset($params['nosur']))
 	$hidden .= '<input type="hidden" name="'.$id.'stg_nosur" value="'.$params['nosur'].'" />';
 $smarty->assign('hidden',$hidden);
 
-$symbol = stripe_utils::GetCurrency($row['currency']);
-
-$jsfuncs = array();
-$jsloads = array();
-
 if($message)
 	$smarty->assign('message',$message);
-$smarty->assign('MM',$this->Lang('month_template'));
-$smarty->assign('YYYY',$this->Lang('year_template'));
-$t = get_public_amount(1999,$row['amountformat'],$symbol);
-$smarty->assign('currency_example',$this->Lang('currency_example',$t));
-//TODO per country U.S. businesses can accept more card-types >> other image
-$smarty->assign('logos',$this->GetModuleURLPath().'/images/3card-logos-small.gif');
-$smarty->assign('shortnote',$this->Lang('note_example'));
-$smarty->assign('submit',$this->Lang('submit'));
-$smarty->assign('title_amount',$this->Lang('payamount'));
-$smarty->assign('amount',$amount);
-$smarty->assign('title_cvc',$this->Lang('cardcvc'));
-$smarty->assign('cvc',$cvc);
-$smarty->assign('title_expiry',$this->Lang('cardexpiry'));
-$smarty->assign('month',$month);
-$smarty->assign('year',$year);
-$smarty->assign('title_number',$this->Lang('cardnumber'));
-$smarty->assign('number',$number);
-$smarty->assign('title_payfor',$this->Lang('payfor'));
-$smarty->assign('payfor',$payfor);
-$smarty->assign('title_paywhat',$this->Lang('paywhat'));
-$smarty->assign('paywhat',$paywhat);
-//$smarty->assign('note',$this->Lang('note'));
+
+$symbol = sgtUtils::GetSymbol($row['currency']);
+$t = sgtUtils::GetPublicAmount(1999,$row['amountformat'],$symbol);
+
+//TODO per country U.S. businesses can accept more card-types >> other image for 'logos'
+$smarty->assign(array(
+ 'MM' => $this->Lang('month_template'),
+ 'YYYY' => $this->Lang('year_template'),
+ 'currency_example' => $this->Lang('currency_example',$t),
+ 'logos' => $baseurl.'/images/3card-logos-small.gif',
+ 'submit' => $this->Lang('submit'),
+ 'title_amount' => $this->Lang('payamount'),
+ 'amount' => $amount,
+ 'title_cvc' => $this->Lang('cardcvc'),
+ 'cvc' => $cvc,
+ 'title_expiry' => $this->Lang('cardexpiry'),
+ 'month' => $month,
+ 'year' => $year,
+ 'title_number' => $this->Lang('cardnumber'),
+ 'number' => $number,
+ 'title_payfor' => $this->Lang('payfor'),
+ 'payfor' => $payfor,
+ 'title_paywhat' => $this->Lang('paywhat'),
+ 'paywhat' => $paywhat
+));
 
 if($row['title'])
 	$smarty->assign('title',$row['title']);
@@ -352,7 +322,7 @@ $yr = date('Y');
 $cent = substr($yr,0,2);
 $err11 = $this->Lang('err_badyear',$yr);
 $rawmin = preg_replace('/\D/','',$row['minpay']);
-$min = get_public_amount($rawmin,$row['amountformat'],$symbol);
+$min = sgtUtils::GetPublicAmount($rawmin,$row['amountformat'],$symbol);
 $err12 = $this->Lang('err_toosmall',$min);
 if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches))
 {
@@ -365,14 +335,8 @@ else //defaults like US$
 	$places = 2;
 }
 
-/*
-TODO handle account-specific .css file via jQuery?
-$('head #stripestyles').replaceWith('<link href="something.css" ... />');
-or
-$('head #stripestyles').attr('href', 'something.css');
-or
-document.getElementById("stripestyles").href="something.css";
-*/
+$jsfuncs = array();
+$jsloads = array();
 
 if(!isset($params['formed']))
 {
