@@ -185,12 +185,17 @@ if($rows)
 				$oneset->active = $this->CreateLink($id,'toggleactive',$returnid,$icon_no,
 					array('account_id'=>$thisid,'current'=>false));
 			if($row['record_count'] > 0)
+			{
 				$oneset->adminlink = $this->CreateLink($id,'administer',$returnid,$icon_admin,
 					array('account_id'=>$thisid));
+				$oneset->exportlink = $this->CreateLink($id,'export',$returnid,$icon_export,
+					array('account_id'=>$thisid));
+			}
 			else
+			{
 				$oneset->adminlink = NULL;
-			$oneset->exportlink = $this->CreateLink($id,'export',$returnid,$icon_export,
-				array('account_id'=>$thisid));
+				$oneset->exportlink = NULL;
+			}
 		}
 		else
 		{

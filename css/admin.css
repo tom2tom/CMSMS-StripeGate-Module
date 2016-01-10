@@ -1,4 +1,4 @@
-p.pagetext { margin-left:0; }
+div.pagecontainer p.pagetext, p.pagetext { margin-left:0; }
 
 table.pagetable {
  border-spacing: 0;
