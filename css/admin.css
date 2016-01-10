@@ -1,4 +1,4 @@
-div.pagecontainer p.pagetext, p.pagetext { margin-left:0; }
+p.pagetext { margin-left:0 !important; }
 
 table.pagetable {
  border-spacing: 0;
@@ -54,4 +54,13 @@ table.table_sort td.row1s {
 
 table.table_sort td.row2s {
  background: #D9D9D9;
+}
+
+textarea.cloaked {
+ font-family:auto;
+ font-family:inherit;
+ font-size:1.2em;
+ line-height:1.1;
+ width:40em;
+ height:2.4em;
 }
