@@ -184,7 +184,8 @@ Apply module permissions, which are
 </ul>
 At least, create a user-group with the second of these permissions,
 add to that group all users permitted to manage the Stripe account(s) recorded in the module.<br /><br />
-Put into relevant page's content block, or into 'form-builder' field:
+Set up one or more accounts, by activating the Stripe item in the admin 'extensions' menu. If more than one, make one of them the default.<br /><br />
+Put into a relevant page's content block, or into a 'form-builder' field:
 <pre>
 {StripeGate}
 </pre>
@@ -192,19 +193,16 @@ or
 <pre>
 {StripeGate account='account-alias'}
 </pre>
-Adjust the page theme to include the relevant css file, or if instance-specific styling is to be supported,
+Adjust the page theme to include the default, or some other relevant, css file, or if instance-specific styling is to be supported,
 put into the page's 'Page Specific Metadata' field (so it can be modified at runtime):
 <pre>
 &lt;link rel="stylesheet" type="text/css" id="stripestyles" href="{the-correct-site-root-url}/modules/StripeGate/css/checkout.css" media="all" /&gt;
 </pre>
-<br /><br />
-TODO document other action
+TODO finish and document the 'pay' action - displays just a button, pre-determined payment amount, no metadata
 <pre>
 {StripeGate action='pay' amount=19.99}
 </pre>
-TODO iconfile: square icon representing the account-holder's brand or product, recommended minimum size 128x128px, recommended types .gif, .jpeg, or .png.
-
-Low-level usage - an example:<br /><br />
+A low-level API is available, enabling things like:<br /><br />
 <code>Stripe::setApiKey('d8e8fca2dc0f896fd7cb4cb0031ba249');<br />
 \$myCard = array('number' => '4242424242424242', 'exp_month' => 8, 'exp_year' => 2018);<br />
 \$result = Stripe_Charge::create(array('card' => \$myCard, 'amount' => 2000, 'currency' => 'usd'));<br />
