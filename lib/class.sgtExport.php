@@ -10,14 +10,14 @@ class sgtExport
 {
 	private function GetAccountIDForRecord($record_id)
 	{
-		global $db; //$db = cmsms()->GetDb();
+		global $db;
 		$sql = 'SELECT account_id FROM '.cms_db_prefix().'module_sgt_record WHERE record_id=?';
 		return $db->GetOne($sql,array($record_id));
 	}
 
 	private function GetAccountNameFromID($account_id)
 	{
-		global $db; //$db = cmsms()->GetDb();
+		global $db;
 		$sql = 'SELECT name FROM '.cms_db_prefix().'module_sgt_account WHERE account_id=?';
 		return $db->GetOne($sql,array($account_id));
 	}
@@ -25,20 +25,34 @@ class sgtExport
 	/**
 	ExportName:
 	@mod: reference to current StripeGate module object
-	@account_id: identifier of the account to process, or FALSE if @record_id is provided
-	@record_id: index of the record to process, or array of such, or FALSE if @record_id is provided
+	@account_id: index of the account to process, or array of such, or FALSE if @record_id is provided
+	@record_id: index of the record to process, or array of such, or FALSE if @account_id is provided
 	*/
 	private function ExportName(&$mod,$account_id=FALSE,$record_id=FALSE)
 	{
-		if(!$account_id)
+		if($account_id)
+		{
+			if(is_array($account_id))
+			{
+				$c = count($account_id);
+				if($c == 1)
+					$aname = self::GetAccountNameFromID($account_id[0]);
+				else
+					$aname = 'Multi('.$c.')Accounts';
+			}
+			else
+				$aname = self::GetAccountNameFromID($account_id);
+		}
+		else
 		{
 			if(is_array($record_id))
 				$rid = reset($record_id);
 			else
 				$rid = $record_id;
 			$account_id = self::GetAccountIDForRecord($rid);
+			$aname = self::GetAccountNameFromID($account_id);
 		}
-		$aname = self::GetAccountNameFromID($account_id);
+
 		$sname = preg_replace('/\W/','_',$aname);
 		$datestr = date('Y-m-d-H-i');
 		return $mod->GetName().$mod->Lang('export').'-'.$sname.'-'.$datestr.'.csv';
@@ -47,9 +61,10 @@ class sgtExport
 	/**
 	CSV:
 	@mod: reference to current StripeGate module object
-	@account_id: identifier of the account to process, or FALSE if @record_id is provided
-	@record_id: index of a single record to process, or array of such indices,
-		or FALSE to process the whole @account_id, default=FALSE
+	@account_id: index of account to process, or array of such indices,
+		or FALSE if @record_id is provided
+	@record_id: index of record to process, or array of such indices,
+		or FALSE to process @account_id, default=FALSE
 	@fp: handle of open file, if writing data to disk, or FALSE if constructing in memory, default = FALSE
 	@$sep: field-separator in output data, assumed single-byte ASCII, default = ','
 
@@ -63,7 +78,7 @@ class sgtExport
 	*/
 	private function CSV(&$mod,$account_id=FALSE,$record_id=FALSE,$fp = FALSE,$sep = ',')
 	{
-		global $db; //$db = cmsms()->GetDb();
+		global $db;
 		$pref = cms_db_prefix();
 		$adata = $db->GetAssoc('SELECT account_id,name,currency,amountformat FROM '.$pref.'module_sgt_account');
 		if(!$adata)
@@ -71,9 +86,19 @@ class sgtExport
 
 		if($account_id)
 		{
-			$sql = 'SELECT record_id FROM '.$pref.
-			'module_sgt_record WHERE account_id=? ORDER BY recorded';
-			$all = $db->GetCol($sql,array($account_id));
+			if(is_array($account_id))
+			{
+				$sql = 'SELECT record_id FROM '.$pref.
+				'module_sgt_record WHERE account_id IN('.
+				implode('?,',count($account_id)-1).'?) ORDER BY account_id,recorded';
+				$all = $db->GetCol($sql,$account_id);
+			}
+			else
+			{
+				$sql = 'SELECT record_id FROM '.$pref.
+				'module_sgt_record WHERE account_id=? ORDER BY recorded';
+				$all = $db->GetCol($sql,array($account_id));
+			}
 		}
 		elseif($record_id)
 		{
@@ -212,10 +237,10 @@ class sgtExport
 	/**
 	Export:
 	@mod: reference to current StripeGate module object
-	@account_id: optional account identifier, default FALSE
+	@account_id: optional account id, or array of such id's, default FALSE
 	@record_id: optional record_id, or array of such id's, default FALSE
-	@sep: optional field-separator for exported content default ','
-	At least one of @account_id, @record_id must be provided
+	@sep: optional field-separator for exported content, default ','
+	At least one of @account_id or @record_id must be provided.
 	Returns: TRUE on success, or lang key for error message upon failure
 	*/
 	public function Export(&$mod,$account_id=FALSE,$record_id=FALSE,$sep = ',')

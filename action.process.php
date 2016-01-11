@@ -26,19 +26,12 @@ if(isset($params['delete']))
 if(isset($params['export']))
 {
 	if(!$this->CheckPermission('ModifyStripeAccount')) exit;
-
 	$funcs = new sgtExport();
-	//TODO merge all data into a single file
-	foreach($params['selitems'] as $aid)
-	{
-		$res = $funcs->Export($this,$aid);
-		if($res !== TRUE)
-		{
-			unset($funcs);
-			$this->Redirect($id,'defaultadmin','',array('message' => $this->Lang($res)));
-		}
-	}
-	exit;
+	$res = $funcs->Export($this,$params['selitems']);
+	if($res === TRUE)
+		exit;
+	unset($funcs);
+	$this->Redirect($id,'defaultadmin','',array('message' => $this->Lang($res)));
 }
 
 $this->Redirect($id,'defaultadmin');
