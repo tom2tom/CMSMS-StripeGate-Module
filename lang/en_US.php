@@ -69,8 +69,8 @@ $lang['help_cssupload'] = '<h3>File Format Information</h3>
 </ul></p>';
 $lang['help_iconfile'] = 'Icon representing account-holder brand, or purchased product. Module help includes details of file content and location';
 $lang['help_iconupload'] = '<h3>File Format Information</h3>
-<p>Recommended image types are .gif, .jpeg, or .png. Recommended format is square, at least 128X128px.
-It will be cropped to a circle for presentation.
+<p>Recommended image types are .gif, .jpeg, or .png. Recommended format is square, at least 128X128px,
+though it will be cropped to a circle for presentation. See <a href="https://stripe.com/checkout">this example</a>.
 <h3>Problems</h3>
 <p>The upload process will fail if:<ul>
 <li>the file is not an image</li>
