@@ -124,6 +124,11 @@ $active
 	$this->Redirect($id,'defaultadmin','',array('message'=>$this->Lang('updated')));
 }
 
+if(isset($params['upstyles']))
+	$this->Redirect($id,'upload_css','',array('account_id'=>$params['account_id']));
+if(isset($params['upicon']))
+	$this->Redirect($id,'upload_icon','',array('account_id'=>$params['account_id']));
+
 if(!is_numeric($params['account_id']) || $params['account_id'] > 0)
 {
 	if(is_numeric($params['account_id']))
@@ -274,7 +279,9 @@ $settings[] = $oneset;
 $oneset = new stdClass();
 $oneset->title = $this->Lang('title_stylesfile');
 if($pmod)
-	$oneset->input = $this->CreateInputText($id,'stylesfile',$row['stylesfile'],48,48);
+	$oneset->input = $this->CreateInputText($id,'stylesfile',$row['stylesfile'],48,48).' '
+	.$this->CreateInputSubmit($id,'upstyles',$this->Lang('upload'),
+	'title="'.$this->Lang('tip_upload').'"');
 elseif($row['stylesfile'])
 	$oneset->input = $row['stylesfile'];
 else
@@ -285,7 +292,9 @@ $settings[] = $oneset;
 $oneset = new stdClass();
 $oneset->title = $this->Lang('title_iconfile');
 if($pmod)
-	$oneset->input = $this->CreateInputText($id,'iconfile',$row['iconfile'],48,48);
+	$oneset->input = $this->CreateInputText($id,'iconfile',$row['iconfile'],48,48).' '
+	.$this->CreateInputSubmit($id,'upicon',$this->Lang('upload'),
+	'title="'.$this->Lang('tip_upload').'"');
 elseif($row['iconfile'])
 	$oneset->input = $row['iconfile'];
 else

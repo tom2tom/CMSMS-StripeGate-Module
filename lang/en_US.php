@@ -34,6 +34,7 @@ $lang['err_badmonth'] = 'Invalid month - enter number 1 to 12';
 $lang['err_badnum'] = 'That doesn\\\'t look like a card-number'; //double-escaped for use in js
 $lang['err_badyear'] = 'Invalid year - enter number %d or greater';
 $lang['err_export'] = 'Export failed';
+$lang['err_file'] = 'Invalid file';
 $lang['err_noamount'] = sprintf($lang['missing_type'],$lang['aamount']);
 $lang['err_nocvc'] = sprintf($lang['missing_type'],$lang['acvc']);
 $lang['err_nomonth'] = sprintf($lang['missing_type'],$lang['amonth']);
@@ -43,8 +44,10 @@ $lang['err_nopurpose'] = sprintf($lang['missing_type'],$lang['apurpose']);
 $lang['err_nowho'] = sprintf($lang['missing_type'],$lang['aname']);
 $lang['err_noyear'] = sprintf($lang['missing_type'],$lang['ayear']);
 $lang['err_parameter'] = 'Parameter error.<br />'.$lang['err__contact'];
+$lang['err_permission'] = 'File system authority lacking';
 $lang['err_system'] = 'System error.<br />'.$lang['err__contact'];
 $lang['err_toosmall'] = 'Minimum charge is %s';
+$lang['err_upload'] = 'Upload failed';
 
 $lang['export'] = 'Export';
 $lang['first'] = 'first';
@@ -54,7 +57,26 @@ $lang['help_amountformat'] = 'Examples: S.00 S.0 S S,0 0S00<br />
 The local currency symbol will be substituted for \'S\',
 a separator (\'.\' or otherwise) indicating the start of part-units is optional,
 the number of trailing 0\'s dictates the number of decimal-places expressed in the part-unit';
+$lang['help_cssupload'] = '<h3>File Format Information</h3>
+<p>The file must be in ASCII stylesheet format. For example, the following represents the default settings:
+<pre>%s</pre>
+<h3>Problems</h3>
+<p>The upload process will fail if:<ul>
+<li>the file does not look like a relevant stylesheet</li>
+<li>the file-size is bigger than about 2 kB</li>
+<li>filesystem permissions are insufficient</li>
+<li>no uploads directory is set</li>
+</ul></p>';
 $lang['help_iconfile'] = 'Icon representing account-holder brand, or purchased product. Module help includes details of file content and location';
+$lang['help_iconupload'] = '<h3>File Format Information</h3>
+<p>Recommended image types are .gif, .jpeg, or .png. Recommended format is square, at least 128X128px.
+It will be cropped to a circle for presentation.
+<h3>Problems</h3>
+<p>The upload process will fail if:<ul>
+<li>the file is not an image</li>
+<li>filesystem permissions are insufficient</li>
+<li>no uploads directory is set</li>
+</ul></p>';
 $lang['help_minpay'] = 'If 0 or empty, no minimum applies, duh. Otherwise, the amount should coform with the format above (except no currency symbol).';
 $lang['help_owner'] = 'If one is chosen, only that user will be able to access account data and settings';
 $lang['help_owner'] = 'Registered site user authorised for account maintenance';
@@ -64,6 +86,7 @@ $lang['help_title'] = 'If none is supplied, a title will be derived from the acc
 $lang['help_updir'] = 'Filesystem path relative to website-host uploads directory. No leading or trailing path-separator, and any intermediate path-separator must be host-system-specific e.g. \'\\\' on Windows. If left blank, the default will be used. Directory could contain .css files for specific checkouts, among others.';
 
 $lang['last'] = 'last';
+$lang['missing'] = '&lt;Missing&gt;';
 $lang['month_template'] = 'MM';
 $lang['name'] = 'Name';
 $lang['next'] = 'next';
@@ -101,6 +124,7 @@ $lang['tip_export'] = 'export account records';
 $lang['tip_exportsel'] = 'export selected records';
 $lang['tip_exportsel2'] = 'export records for selected accounts';
 $lang['tip_toggle'] = 'toggle value';
+$lang['tip_upload'] = 'upload selected file to website host';
 $lang['tip_view'] = 'inspect account details';
 
 $lang['title_account'] = 'Account records: %s';
@@ -110,10 +134,12 @@ $lang['title_alias2'] = 'Account alias';
 $lang['title_amount'] = 'Amount';
 $lang['title_amountformat'] = 'Format for displaying monetary values';
 $lang['title_checkout'] = 'Payment to %s';
+$lang['title_cssfile'] = 'Upload CSS file for \'%s\' checkout form';
 $lang['title_currency'] = 'Currency to be used';
 $lang['title_default'] = 'Default';
 $lang['title_defaultlong'] = 'Default account';
 $lang['title_iconfile'] = 'Checkout-form icon';
+$lang['title_iconfile2'] = 'Upload brand/product image file for \'%s\' checkout form';
 $lang['title_mainpage'] = 'Module main page';
 $lang['title_maintab'] = 'Accounts';
 $lang['title_minpay'] = 'Minimum acceptable payment amount';
@@ -139,10 +165,9 @@ $lang['title_usetest'] = 'Use test keys';
 $lang['updated'] = 'Settings updated';
 $lang['year_template'] = 'YYYY';
 $lang['yes'] = 'Yes';
+$lang['upload']='Upload';
 //$lang['help_import'] = <<<EOS EOS;
 //$lang['import'] = 'Import';
-//$lang['upload']='Upload';
-//$lang['tip_upload']='upload selected file to website host';
 //$lang['reporting_url'] = 'URL to which Stripe can send webhook reports';
 
 $lang['help_module'] = <<<EOS
