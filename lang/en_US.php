@@ -96,6 +96,7 @@ $lang['none'] = 'None';
 $lang['noowner'] = 'No owner';
 
 $lang['param_account'] = 'Override the default account, use this (id-number or alias) instead';
+$lang['param_amount'] = 'Payment-amount, with or without a currency symbol';
 $lang['param_action'] = 'Type of interaction with Stripe. At this time, \'pay\' and \'payplus\' are supported';
 $lang['param_formed'] = 'Whether the output is to be displayed inside another form';
 $lang['param_nosur'] = 'Override the default payplus surcharge rate, use 0 instead';
@@ -103,6 +104,7 @@ $lang['param_title'] = 'Override the default payplus \'form\' title, use this in
 
 $lang['pageof'] = 'showing page %s of %s';
 $lang['pagerows'] = 'rows-per-page';
+$lang['pay'] = 'Pay %s';
 $lang['payamount'] = 'Amount to pay';
 $lang['payfor'] = 'Payment on behalf of';
 $lang['payment_submitted'] = 'The payment has been submitted for processing';

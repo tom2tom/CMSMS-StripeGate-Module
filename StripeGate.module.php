@@ -200,7 +200,7 @@ EOS;
 
 		$this->RestrictUnknownParams();
 		$this->SetParameterType('account',CLEAN_STRING);
-		$this->SetParameterType('task',CLEAN_STRING);
+		$this->SetParameterType('amount',CLEAN_STRING);
 		$this->SetParameterType('title',CLEAN_STRING);
 		$this->SetParameterType('nosur',CLEAN_INT);
 		$this->SetParameterType('formed',CLEAN_INT);
@@ -221,6 +221,7 @@ EOS;
 		//document only the parameters relevant for external (page-tag) usage
 		$this->CreateParameter('action','payplus',$this->Lang('param_action'));
 		$this->CreateParameter('account','',$this->Lang('param_account'));
+		$this->CreateParameter('amount','',$this->Lang('param_amount'));
 		$this->CreateParameter('title','',$this->Lang('param_title'));
 		$this->CreateParameter('nosur',0,$this->Lang('param_nosur'));
 		$this->CreateParameter('formed',0,$this->Lang('param_formed'));
