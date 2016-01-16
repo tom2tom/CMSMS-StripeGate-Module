@@ -64,13 +64,13 @@ if(isset($params['submit']))
 	$params['activetab'] = 'settings';
 }
 
-$smarty->assign(array(
- 'padm'=>$padm,
- 'padd'=>$padd,
- 'pdel'=>$pdel,
- 'pmod'=>$mod, //not $pmod
- 'pdev'=>$pdev
-));
+$tplvars = array(
+	'padm'=>$padm,
+	'padd'=>$padd,
+	'pdel'=>$pdel,
+	'pmod'=>$mod, //not $pmod
+	'pdev'=>$pdev
+);
 
 $indx = 0;
 if(isset($params['activetab']))
@@ -83,17 +83,17 @@ if(isset($params['activetab']))
 	}
 }
 
-$smarty->assign('tabsheader',$this->StartTabHeaders().
+$tplvars['tabsheader'] = $this->StartTabHeaders().
  $this->SetTabHeader('main',$this->Lang('title_maintab'),$indx==0).
  $this->SetTabHeader('settings',$this->Lang('title_settingstab'),$indx==1).
- $this->EndTabHeaders().$this->StartTabContent());
+ $this->EndTabHeaders().$this->StartTabContent();
 
 //NOTE CMSMS 2+ barfs if EndTab() is called before EndTabContent() - some craziness there !!!
-$smarty->assign(array(
- 'tabsfooter' => $this->EndTabContent(),
- 'tab_end' => $this->EndTab(),
- 'form_end' => $this->CreateFormEnd()
-));
+$tplvars = $tplvars + array(
+	'tabsfooter' => $this->EndTabContent(),
+	'tab_end' => $this->EndTab(),
+	'form_end' => $this->CreateFormEnd()
+);
 
 $jsincs = array();
 $jsfuncs = array();
@@ -101,12 +101,12 @@ $jsloads = array();
 $baseurl = $this->GetModuleURLPath();
 
 if(!empty($params['message']))
-	$smarty->assign('message',$params['message']);
+	$tplvars['message'] = $params['message'];
 
 //~~~~~~~~~~~~~~~ ACCOUNTS TAB ~~~~~~~~~~~~~~~~
 
-$smarty->assign('tabstart_main',$this->StartTab('main'));
-$smarty->assign('formstart_main',$this->CreateFormStart($id,'process'));
+$tplvars['tabstart_main'] = $this->StartTab('main');
+$tplvars['formstart_main'] = $this->CreateFormStart($id,'process');
 
 $theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
 	cms_utils::get_theme_object();
@@ -155,7 +155,7 @@ if($rows)
 			$oneset->name = $this->CreateLink($id,'update',$returnid,$row['name'],array('account_id'=>$thisid));
 		else
 			$oneset->name = $row['name'];
-		
+
 		if($pdev)
 		{
 			if($row['alias'])
@@ -202,7 +202,7 @@ if($rows)
 			$oneset->default = ($row['isdefault']) ? $yes : $no;
 			$oneset->active = ($row['isactive']) ? $yes : $no;
 		}
-		
+
 		//view or edit
 		$oneset->editlink = $this->CreateLink($id,'update',$returnid,$icon_open,
 			array('account_id'=>$thisid));
@@ -223,25 +223,25 @@ if($rows)
 	}
 }
 
-$smarty->assign('items',$items);
+$tplvars['items'] = $items;
 if($items)
 {
 	//table titles
-	$smarty->assign(array(
-	 'title_id' => $this->Lang('title_id'),
-	 'title_name' => $this->Lang('name'),
-	 'title_alias' => (($pdev)?$this->Lang('title_tag'):$this->Lang('title_alias')),
-	 'title_owner' => $this->Lang('title_owner'),
-	 'title_default' => $this->Lang('title_default'),
-	 'title_active' => $this->Lang('title_active')
-	));
+	$tplvars = $tplvars + array(
+		'title_id' => $this->Lang('title_id'),
+		'title_name' => $this->Lang('name'),
+		'title_alias' => (($pdev)?$this->Lang('title_tag'):$this->Lang('title_alias')),
+		'title_owner' => $this->Lang('title_owner'),
+		'title_default' => $this->Lang('title_default'),
+		'title_active' => $this->Lang('title_active')
+	);
 
 	if($padm || $pdel)
 	{
 		if(count($items) > 1)
 		{
-			$smarty->assign('selectall',
-				$this->CreateInputCheckbox($id,'selectall',true,false,'onclick="select_all(this);"'));
+			$tplvars['selectall'] =
+				$this->CreateInputCheckbox($id,'selectall',true,false,'onclick="select_all(this);"');
 			$jsfuncs[] = <<<EOS
 function select_all(cb)
 {
@@ -264,8 +264,8 @@ EOS;
 	}
 	if($mod)
 	{
-		$smarty->assign('export',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
-			'title="'.$this->Lang('tip_exportsel2').'" onclick="return confirm_sel_count();"'));
+		$tplvars['export'] = $this->CreateInputSubmit($id,'export',$this->Lang('export'),
+			'title="'.$this->Lang('tip_exportsel2').'" onclick="return confirm_sel_count();"');
 		$jsfuncs[] = <<<EOS
 function confirm_sel_count()
 {
@@ -276,8 +276,8 @@ EOS;
 	}
 	if($pdel)
 	{
-		$smarty->assign('delete',$this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
-		'title="'.$this->Lang('tip_deletesel').'" onclick="return confirm_delete();"'));
+		$tplvars['delete'] = $this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
+		'title="'.$this->Lang('tip_deletesel').'" onclick="return confirm_delete();"');
 		$t = $this->Lang('delsel_confirm');
 		$jsfuncs[] = <<<EOS
 function confirm_delete()
@@ -310,40 +310,40 @@ EOS;
   currentid: 'cpage',
   countid: 'tpage'
  });
-		
+
 EOS;
 	}
 }
 else
-	$smarty->assign('nodata',$this->Lang('nodata'));
+	$tplvars['nodata'] = $this->Lang('nodata');
 
 if($padd)
-	$smarty->assign('add',
+	$tplvars['add'] =
 	 $this->CreateLink($id,'update',$returnid,
 		 $theme->DisplayImage('icons/system/newobject.gif',$this->Lang('additem'),'','','systemicon'),
 		 array('account_id'=>-1),'',false,false,'')
 	 .' '.
 	 $this->CreateLink($id,'update',$returnid,
 		 $this->Lang('additem'),
-		 array('account_id'=>-1),'',false,false,'class="pageoptions"'));
+		 array('account_id'=>-1),'',false,false,'class="pageoptions"');
 
 //~~~~~~~~~~~~~~~ SETTINGS TAB ~~~~~~~~~~~~~~~~
 
-$smarty->assign('tabstart_settings',$this->StartTab('settings'));
-$smarty->assign('formstart_settings',$this->CreateFormStart($id,'defaultadmin'));
+$tplvars['tabstart_settings'] = $this->StartTab('settings');
+$tplvars['formstart_settings'] = $this->CreateFormStart($id,'defaultadmin');
 
-$smarty->assign('title_updir',$this->Lang('title_updir'));
-$smarty->assign('input_updir',$this->CreateInputText($id,'uploads_dir',$this->GetPreference('uploads_dir'),30,60)
-.'<br />'.$this->Lang('help_updir'));
+$tplvars['title_updir'] = $this->Lang('title_updir');
+$tplvars['input_updir'] = $this->CreateInputText($id,'uploads_dir',$this->GetPreference('uploads_dir'),30,60)
+.'<br />'.$this->Lang('help_updir');
 
-$smarty->assign('title_password',$this->Lang('title_password'));
+$tplvars['title_password'] = $this->Lang('title_password');
 $pw = $this->GetPreference('masterpass');
 if($pw)
 	$pw = sgtUtils::unfusc($pw);
 
-$smarty->assign('input_password',
+$tplvars['input_password'] =
 	$this->CreateTextArea(false,$id,$pw,'masterpass','cloaked',
-		$id.'passwd','','',40,2));
+		$id.'passwd','','',40,2);
 
 $jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery-inputCloak.min.js"></script>';
 $jsloads[] = <<<EOS
@@ -356,8 +356,8 @@ EOS;
 
 if($padm)
 {
-	$smarty->assign('submit',$this->CreateInputSubmit($id,'submit',$this->Lang('submit')));
-	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel',$this->Lang('cancel')));
+	$tplvars['submit'] = $this->CreateInputSubmit($id,'submit',$this->Lang('submit'));
+	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('cancel'));
 }
 
 if($jsloads)
@@ -368,8 +368,8 @@ if($jsloads)
 	$jsfuncs[] = '});
 ';
 }
-$smarty->assign('jsfuncs',$jsfuncs);
-$smarty->assign('jsincs',$jsincs);
+$tplvars['jsfuncs'] = $jsfuncs;
+$tplvars['jsincs'] = $jsincs;
 
-echo $this->ProcessTemplate('adminpanel.tpl');
+sgtUtils::ProcessTemplate($this,'adminpanel.tpl',$tplvars);
 ?>

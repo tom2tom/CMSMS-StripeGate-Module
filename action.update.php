@@ -165,14 +165,15 @@ else
 	$account_id = -1;
 }
 
-$smarty->assign('backtomod_nav',$this->CreateLink($id,'defaultadmin',$returnid,
-'&#171; '.$this->Lang('title_mainpage')));
+$tplvars = array();
+$tplvars['backtomod_nav'] = $this->CreateLink($id,'defaultadmin',$returnid,
+'&#171; '.$this->Lang('title_mainpage'));
 if(!empty($params['message']))
-	$smarty->assign('message',$params['message']);
+	$tplvars['message'] = $params['message'];
 
-$smarty->assign('form_start',$this->CreateFormStart($id,'update'));
-$smarty->assign('form_end',$this->CreateFormEnd());
-$smarty->assign('hidden',$this->CreateInputHidden($id,'account_id',$params['account_id']));
+$tplvars['form_start'] = $this->CreateFormStart($id,'update');
+$tplvars['form_end'] = $this->CreateFormEnd();
+$tplvars['hidden'] = $this->CreateInputHidden($id,'account_id',$params['account_id']);
 
 $jsincs = array();
 $jsfuncs = array();
@@ -386,24 +387,24 @@ $oneset->title = $this->Lang('');
 if($pmod)
 	$oneset->input = $this->CreateInput();
 elseif()
-	$oneset->input = 
+	$oneset->input =
 else
 	$oneset->input = $empty;
 $oneset->help = $this->Lang('');
 $settings[] = $oneset;
 */
 
-$smarty->assign('settings',$settings);
+$tplvars['settings'] = $settings;
 
 if($pmod)
 {
-	$smarty->assign('submit',$this->CreateInputSubmit($id,'submit',$this->Lang('submit')));
-	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel',$this->Lang('cancel')));
+	$tplvars['submit'] = $this->CreateInputSubmit($id,'submit',$this->Lang('submit'));
+	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('cancel'));
 }
 else
 {
-	$smarty->assign('submit',NULL);
-	$smarty->assign('cancel',$this->CreateInputSubmit($id,'cancel',$this->Lang('close')));
+	$tplvars['submit'] = NULL;
+	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('close'));
 }
 
 if($jsloads)
@@ -414,9 +415,8 @@ if($jsloads)
 	$jsfuncs[] = '});
 ';
 }
-$smarty->assign('jsfuncs',$jsfuncs);
-$smarty->assign('jsincs',$jsincs);
+$tplvars['jsfuncs'] = $jsfuncs;
+$tplvars['jsincs'] = $jsincs;
 
-echo $this->ProcessTemplate('update.tpl');
-
+sgtUtils::ProcessTemplate($this,'update.tpl',$tplvars);
 ?>

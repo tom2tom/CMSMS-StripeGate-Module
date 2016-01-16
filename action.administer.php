@@ -43,19 +43,19 @@ $pref = cms_db_prefix();
 $row = $db->GetRow('SELECT name,currency,amountformat FROM '.$pref.'module_sgt_account WHERE account_id=?',array($aid));
 $symbol = sgtUtils::GetSymbol($row['currency']);
 
-$smarty->assign(array(
- 'pmod' => $pmod,
- 'backtomod_nav' => $this->CreateLink($id,'defaultadmin',$returnid,'&#171; '.$this->Lang('title_mainpage')),
- 'start_form' => $this->CreateFormStart($id,'processrecords',$returnid,'POST','','','',array('account_id'=>$aid)),
- 'end_form' => $this->CreateFormEnd(),
+$tplvars = array(
+	'pmod' => $pmod,
+	'backtomod_nav' => $this->CreateLink($id,'defaultadmin',$returnid,'&#171; '.$this->Lang('title_mainpage')),
+	'start_form' => $this->CreateFormStart($id,'processrecords',$returnid,'POST','','','',array('account_id'=>$aid)),
+	'end_form' => $this->CreateFormEnd(),
 
- 'title' => $this->Lang('title_account',$row['name']),
- 'title_submitted' => $this->Lang('title_when'),
- 'title_amount' => $this->Lang('title_amount'),
- 'title_what' => $this->Lang('title_what'),
- 'title_for' => $this->Lang('title_who'),
- 'title_token' => $this->Lang('title_token'),
-));
+	'title' => $this->Lang('title_account',$row['name']),
+	'title_submitted' => $this->Lang('title_when'),
+	'title_amount' => $this->Lang('title_amount'),
+	'title_what' => $this->Lang('title_what'),
+	'title_for' => $this->Lang('title_who'),
+	'title_token' => $this->Lang('title_token'),
+);
 
 //script accumulators
 $jsfuncs = array();
@@ -64,7 +64,7 @@ $jsloads = array();
 $baseurl = $this->GetModuleURLPath();
 
 if(!empty($params['message']))
-	$smarty->assign('message',$params['message']);
+	$tplvars['message'] = $params['message'];
 
 $sql = 'SELECT * FROM '.$pref.'module_sgt_record WHERE account_id=? ORDER BY recorded DESC, payfor ASC';
 $data = $db->GetAll($sql,array($aid));
@@ -97,7 +97,7 @@ unset($one);
 
 $pagerows = 15; //arbitrary initial page-length
 
-$smarty->assign('rows',$rows);
+$tplvars['rows'] = $rows;
 $rcount = count($rows);
 if($rcount)
 {
@@ -116,16 +116,16 @@ if($rcount)
 		$curpg='<span id="cpage">1</span>';
 		$totpg='<span id="tpage">'.ceil($rcount/$pagerows).'</span>';
 
-		$smarty->assign(array(
-		 'hasnav' => 1,
-		 'first' => '<a href="javascript:pagefirst()">'.$this->Lang('first').'</a>',
-		 'prev' => '<a href="javascript:pageback()">'.$this->Lang('previous').'</a>',
-		 'next' => '<a href="javascript:pageforw()">'.$this->Lang('next').'</a>',
-		 'last' => '<a href="javascript:pagelast()">'.$this->Lang('last').'</a>',
-		 'pageof' => $this->Lang('pageof',$curpg,$totpg),
-		 'rowchanger' => $this->CreateInputDropdown($id,'pagerows',$choices,-1,$pagerows,
+		$tplvars = $tplvars + array(
+			'hasnav' => 1,
+			'first' => '<a href="javascript:pagefirst()">'.$this->Lang('first').'</a>',
+			'prev' => '<a href="javascript:pageback()">'.$this->Lang('previous').'</a>',
+			'next' => '<a href="javascript:pageforw()">'.$this->Lang('next').'</a>',
+			'last' => '<a href="javascript:pagelast()">'.$this->Lang('last').'</a>',
+			'pageof' => $this->Lang('pageof',$curpg,$totpg),
+			'rowchanger' => $this->CreateInputDropdown($id,'pagerows',$choices,-1,$pagerows,
 			'onchange="pagerows(this);"').'&nbsp;&nbsp;'.$this->Lang('pagerows')
-		));
+		);
 
 		$jsfuncs[] = <<<EOS
 function pagefirst() {
@@ -148,7 +148,7 @@ EOS;
 	}
 	else
 	{
-		$smarty->assign('hasnav',0);
+		$tplvars['hasnav'] = 0;
 	}
 
 	if($rcount > 1)
@@ -174,8 +174,8 @@ EOS;
 
 EOS;
 
-		$smarty->assign('header_checkbox',
-			$this->CreateInputCheckbox($id,'selectall',true,false,'onclick="select_all(this);"'));
+		$tplvars['header_checkbox'] =
+			$this->CreateInputCheckbox($id,'selectall',true,false,'onclick="select_all(this);"');
 
 		$jsfuncs[] = <<<EOS
 function select_all(cb) {
@@ -203,7 +203,7 @@ EOS;
 */
 	}
 	else
-		$smarty->assign('header_checkbox',NULL);
+		$tplvars['header_checkbox'] = NULL;
 
 	$jsfuncs[] = <<<EOS
 function sel_count() {
@@ -223,17 +223,17 @@ function confirm_selected(msg) {
 
 EOS;
 	//if($X) ? perm
-		$smarty->assign('export',$this->CreateInputSubmit($id,'export',$this->Lang('export'),
-		'title="'.$this->Lang('tip_exportsel').'" onclick="return any_selected();"'));
+		$tplvars['export'] = $this->CreateInputSubmit($id,'export',$this->Lang('export'),
+		'title="'.$this->Lang('tip_exportsel').'" onclick="return any_selected();"');
 	if($pmod)
-		$smarty->assign('delete',$this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
+		$tplvars['delete'] = $this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
 		'title="'.$this->Lang('tip_deletesel2').
-		'" onclick="return confirm_selected(\''.$this->Lang('delsel_confirm2').'\');"'));
+		'" onclick="return confirm_selected(\''.$this->Lang('delsel_confirm2').'\');"');
 }
 /*should never happen, in this context
 else
 {
-	$smarty->assign('norecords',$this->Lang('norecords'));
+	$tplvars['norecords'] = $this->Lang('norecords');
 }
 */
 
@@ -245,8 +245,8 @@ if($jsloads)
 	$jsfuncs[] = '});
 ';
 }
-$smarty->assign('jsfuncs',$jsfuncs);
-$smarty->assign('jsincs',$jsincs);
+$tplvars['jsfuncs'] = $jsfuncs;
+$tplvars['jsincs'] = $jsincs;
 
-echo $this->ProcessTemplate('administer.tpl');
+sgtUtils::ProcessTemplate($this,'administer.tpl',$tplvars);
 ?>

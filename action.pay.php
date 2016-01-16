@@ -65,13 +65,15 @@ if($row['iconfile'])
 	$icon = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['iconfile']);
 else
 	$icon = '';
+
+$tplvars = array();
 if(isset($params['formed']))
 {
-//	$smarty->assign('form_start',$this->whatever);
+//	$tplvars['form_start'] = $this->whatever;
 }
-$smarty->assign('hidden',$this->CreateInputHidden($id,'account',$row['account_id']));
+$tplvars['hidden'] = $this->CreateInputHidden($id,'account',$row['account_id']);
 //TODO SETUP button styling
-//$smarty->assign('cssscript',$cssscript);
+//$tplvars['cssscript'] = $cssscript;
 $symbol = sgtUtils::GetSymbol($row['currency']);
 if(strpos($params['amount'],$symbol) !== FALSE) 
 	$t = $symbol;
@@ -80,7 +82,7 @@ else
 //cope with optional currency symbol in amount
 $amount = sgtUtils::GetPrivateAmount($params['amount'],$row['amountformat'],$t);
 $public = sgtUtils::GetPublicAmount($amount,$row['amountformat'],$symbol);
-$smarty->assign('submit',$this->Lang('pay',$public));
+$tplvars['submit'] = $this->Lang('pay',$public);
 
 $jsincs[] = <<<EOS
 <script src="https://checkout.stripe.com/checkout.js"></script>
@@ -132,9 +134,8 @@ if($jsloads)
 	$jsfuncs[] = '});
 ';
 }
-$smarty->assign('jsfuncs',$jsfuncs);
-$smarty->assign('jsincs',$jsincs);
+$tplvars['jsfuncs'] = $jsfuncs;
+$tplvars['jsincs'] = $jsincs;
 
-echo $this->ProcessTemplate('pay.tpl');
-
+sgtUtils::ProcessTemplate($this,'pay.tpl',$tplvars);
 ?>

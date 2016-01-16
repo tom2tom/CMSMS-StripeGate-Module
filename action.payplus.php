@@ -107,7 +107,7 @@ $response = array (
   'fraud_details' => array(),
   'invoice' => null,
   'livemode' => false,
-  'metadata' => 
+  'metadata' =>
     array (
       'paywhat' => 'Test',
       'payfor' => 'Me'
@@ -116,7 +116,7 @@ $response = array (
   'receipt_email' => null,
   'receipt_number' => null,
   'refunded' => false,
-  'refunds' => 
+  'refunds' =>
     array (
       'object' => 'list',
       'data' =>  array (),
@@ -125,7 +125,7 @@ $response = array (
       'url' => '/v1/charges/ch_17Qy5lGajAPEsyVFhftWVEyr/refunds',
 	  ),
   'shipping' => null,
-  'source' => 
+  'source' =>
     array (
       'id' => 'card_17Qy5lGajAPEsyVFYdwJkKgw',
       'object' => 'card',
@@ -238,6 +238,7 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 }
 
 $baseurl = $this->GetModuleURLPath();
+$tplvars = array();
 
 if($row['stylesfile']) //using custom css for checkout display
 {
@@ -251,58 +252,58 @@ if($row['stylesfile']) //using custom css for checkout display
 </script>
 
 EOS;
-	$smarty->assign('cssscript',$t);
+	$tplvars['cssscript'] = $t;
 }
 
 if(!isset($params['formed']))
-	$smarty->assign('form_start',$this->CreateFormStart($id,'payplus',$returnid));
+	$tplvars['form_start'] = $this->CreateFormStart($id,'payplus',$returnid);
 
 $hidden = '<input type="hidden" name="'.$id.'stg_account" value="'.$row['account_id'].'" />';
 if(isset($params['formed']))
 	$hidden .= '<input type="hidden" name="'.$id.'stg_formed" value="'.$params['formed'].'" />';
 if(isset($params['nosur']))
 	$hidden .= '<input type="hidden" name="'.$id.'stg_nosur" value="'.$params['nosur'].'" />';
-$smarty->assign('hidden',$hidden);
+$tplvars['hidden'] = $hidden;
 
 if($message)
-	$smarty->assign('message',$message);
+	$tplvars['message'] = $message;
 
 $symbol = sgtUtils::GetSymbol($row['currency']);
 $t = sgtUtils::GetPublicAmount(1999,$row['amountformat'],$symbol);
 
 //TODO per country U.S. businesses can accept more card-types >> other image for 'logos'
-$smarty->assign(array(
- 'MM' => $this->Lang('month_template'),
- 'YYYY' => $this->Lang('year_template'),
- 'currency_example' => $this->Lang('currency_example',$t),
- 'logos' => $baseurl.'/images/3card-logos-small.gif',
- 'submit' => $this->Lang('submit'),
- 'title_amount' => $this->Lang('payamount'),
- 'amount' => $amount,
- 'title_cvc' => $this->Lang('cardcvc'),
- 'cvc' => $cvc,
- 'title_expiry' => $this->Lang('cardexpiry'),
- 'month' => $month,
- 'year' => $year,
- 'title_number' => $this->Lang('cardnumber'),
- 'number' => $number,
- 'title_payfor' => $this->Lang('payfor'),
- 'payfor' => $payfor,
- 'title_paywhat' => $this->Lang('paywhat'),
- 'paywhat' => $paywhat
-));
+$tplvars = $tplvars + array(
+	'MM' => $this->Lang('month_template'),
+	'YYYY' => $this->Lang('year_template'),
+	'currency_example' => $this->Lang('currency_example',$t),
+	'logos' => $baseurl.'/images/3card-logos-small.gif',
+	'submit' => $this->Lang('submit'),
+	'title_amount' => $this->Lang('payamount'),
+	'amount' => $amount,
+	'title_cvc' => $this->Lang('cardcvc'),
+	'cvc' => $cvc,
+	'title_expiry' => $this->Lang('cardexpiry'),
+	'month' => $month,
+	'year' => $year,
+	'title_number' => $this->Lang('cardnumber'),
+	'number' => $number,
+	'title_payfor' => $this->Lang('payfor'),
+	'payfor' => $payfor,
+	'title_paywhat' => $this->Lang('paywhat'),
+	'paywhat' => $paywhat
+);
 
 if($row['title'])
-	$smarty->assign('title',$row['title']);
+	$tplvars['title'] = $row['title'];
 else
-	$smarty->assign('title',$this->Lang('title_checkout',$row['name']));
+	$tplvars['title'] = $this->Lang('title_checkout',$row['name']);
 
 if($row['surchargerate'] > 0 && empty($params['nosur']))
 {
 	$surrate = $row['surchargerate'];
 	$surstr = number_format($surrate * 100, 2).' '.$this->Lang('percent');
 	$t = '<span id="surcharge">'.$surstr.'</span>';
-	$smarty->assign('surcharge',$this->Lang('surcharge',$t));
+	$tplvars['surcharge'] = $this->Lang('surcharge',$t);
 }
 else
 	$surrate = FALSE;
@@ -483,8 +484,7 @@ if($jsloads)
 	$jsfuncs[] = '});
 ';
 }
-$smarty->assign('jsfuncs',$jsfuncs);
+$tplvars['jsfuncs'] = $jsfuncs;
 
-echo $this->ProcessTemplate('payplus.tpl');
-
+sgtUtils::ProcessTemplate($this,'payplus.tpl',$tplvars);
 ?>

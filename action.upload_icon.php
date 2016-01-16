@@ -72,7 +72,7 @@ if(isset($_FILES) && isset($_FILES[$fn]))
 
 $name = $db->GetOne('SELECT name FROM '.$pref.'module_sgt_account WHERE account_id=?',array($params['account_id']));
 
-$smarty->assign(array(
+$tplvars = array(
 	'start_form' => $this->CreateFormStart($id,'upload_icon',$returnid,'post','multipart/form-data'),
 	'end_form' => $this->CreateFormEnd(),
 	'hidden' => $this->CreateInputHidden($id,'account_id',$params['account_id']),
@@ -81,7 +81,7 @@ $smarty->assign(array(
 	'apply' => $this->CreateInputSubmit($id,'upstart',$this->Lang('upload')),
 	'cancel' => $this->CreateInputSubmit($id,'upcancel',$this->Lang('cancel')),
 	'help' => $this->Lang('help_iconupload')
-));
+);
 
-echo $this->ProcessTemplate('chooser.tpl');
+sgtUtils::ProcessTemplate($this,'chooser.tpl',$tplvars);
 ?>
