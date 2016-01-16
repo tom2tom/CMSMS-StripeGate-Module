@@ -23,16 +23,17 @@ if(empty($params['account']) && empty($params['stg_account']))
 	}
 }
 
+try {
+	require_once (dirname(__FILE__).DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'init.php');
+} catch (Exception $e) {
+	echo $this->Lang('err_system');
+	return;
+}
+
 $pref = cms_db_prefix();
 
 if(isset($params['stg_account'])) //we're back, after submission (no 'submit' parameter!)
 {
-	try {
-		require_once (dirname(__FILE__).DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'init.php');
-	} catch (Exception $e) {
-		echo $this->Lang('err_system');
-		return;
-	}
 	//some of these are needed only if continuing past error
 	$row = $db->GetRow('SELECT name,title,currency,amountformat,minpay,surchargerate,usetest,privtoken,testprivtoken FROM '.
 	$pref.'module_sgt_account WHERE account_id=?',array($params['stg_account']));
@@ -205,6 +206,9 @@ currency,
 amountformat,
 surchargerate,
 minpay,
+usetest,
+privtoken,
+testprivtoken,
 stylesfile
 FROM '.$pref.'module_sgt_account WHERE account_id=? AND isactive=TRUE',array($params['account']));
 	}
@@ -218,6 +222,9 @@ currency,
 amountformat,
 surchargerate,
 minpay,
+usetest,
+privtoken,
+testprivtoken,
 stylesfile
 FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params['account']));
 	}
@@ -271,12 +278,61 @@ if($message)
 $symbol = sgtUtils::GetSymbol($row['currency']);
 $t = sgtUtils::GetPublicAmount(1999,$row['amountformat'],$symbol);
 
-//TODO per country U.S. businesses can accept more card-types >> other image for 'logos'
+/*
+U.S. businesses can accept
+ Visa, MasterCard, American Express, JCB, Discover, Diners Club.
+Australian, Canadian, European, and Japanese businesses can accept
+ Visa, MasterCard, American Express.
+*/
+if($row['usetest'])
+{
+	if($row['testprivtoken'])
+		$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
+	else
+		$privkey = FALSE;
+}
+else
+{
+	if($row['privtoken'])
+		$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
+	else
+		$privkey = FALSE;
+}
+if(!$privkey)
+{
+	echo $this->Lang('err_parameter');
+	return;
+}
+$account = Stripe_Account::retrieve($privkey);
+if($account)
+{
+	$data = $account->__toArray();
+	switch($data['country'])
+	{
+		case 'AU':
+		case 'CA':
+		case 'JP':
+			$iconfile = $baseurl.'/images/3card-logos-small.gif'; //show 3 icons
+			break;
+		case 'US':
+			$iconfile = $baseurl.'/images/6card-logos-small.gif'; //show 6 icons
+			break;
+		default:
+			if(strpos($data['timezone'],'Europe/') === 0)
+				$iconfile = $baseurl.'/images/3card-logos-small.gif';
+			else
+				$iconfile = NULL;
+			break;
+	}
+}
+else
+	$iconfile = NULL;
+
 $tplvars = $tplvars + array(
 	'MM' => $this->Lang('month_template'),
 	'YYYY' => $this->Lang('year_template'),
 	'currency_example' => $this->Lang('currency_example',$t),
-	'logos' => $baseurl.'/images/3card-logos-small.gif',
+	'logos' => $iconfile,
 	'submit' => $this->Lang('submit'),
 	'title_amount' => $this->Lang('payamount'),
 	'amount' => $amount,
