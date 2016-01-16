@@ -47,7 +47,10 @@ class sgtUtils
 			if($db->CompleteTrans())
 				return $ret;
 			else
+			{
 				$nt--;
+				usleep(50000);
+			}
 		}
 		return FALSE;
 	}
@@ -77,7 +80,10 @@ class sgtUtils
 			if($db->CompleteTrans())
 				return TRUE;
 			else
+			{
 				$nt--;
+				usleep(50000);
+			}
 		}
 		return FALSE;
 	}
