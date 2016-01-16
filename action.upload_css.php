@@ -36,7 +36,7 @@ if(isset($_FILES) && isset($_FILES[$fn]))
 			$content = fread($h,512);
 			fclose($h);
 			if($content == FALSE)
-				message = $this->Lang('err_permission');
+				$message = $this->Lang('err_permission');
 			if(!preg_match('/#container.*\\n?{/',$content)) //TODO any actual newline
 				$message = $this->Lang('err_file');
 			unset($content);
