@@ -27,7 +27,7 @@
 {/if}
 <tr>
 <td colspan="2" style="text-align:center;vertical-align:bottom;">
-<img alt="supported cards" src="{$logos}"><br />
+{if $logos}<img alt="supported cards" src="{$logos}" />{else}&nbsp;{/if}
 </td>
 </tr>
 <tr><td class="title">{$title_number}</td><td>
