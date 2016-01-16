@@ -67,10 +67,7 @@ if(isset($params['stg_account'])) //we're back, after submission (no 'submit' pa
 	$amount = sgtUtils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
 	if($row['surchargerate'] && empty($params['nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
-/*DEBUG
-	$card = array('number' => '4242424242424242', 'exp_month' => 8, 'exp_year' => 2018);
-	$amount = 50; min. charge
-*/
+
 	$exdata = array(
 		'paywhat' => $params['stg_paywhat'],
 		'payfor' => $params['stg_payfor']
@@ -88,74 +85,6 @@ if(isset($params['stg_account'])) //we're back, after submission (no 'submit' pa
 		Stripe::setApiKey($privkey);
 		$charge = Stripe_Charge::create($data);
 		$response = $charge->__toArray(TRUE);
-/*DEBUG
-$response = array (
-  'id' => 'ch_17Qy5lGajAPEsyVFhftWVEyr',
-  'object' => 'charge',
-  'amount' => 50,
-  'amount_refunded' => 0,
-  'application_fee' => null,
-  'balance_transaction' => 'txn_17Qy5lGajAPEsyVF75lxMrO4',
-  'captured' => true,
-  'created' => 1452251257,
-  'currency' => 'aud',
-  'customer' => null,
-  'description' => null,
-  'destination' => null,
-  'dispute' => null,
-  'failure_code' => null,
-  'failure_message' => null,
-  'fraud_details' => array(),
-  'invoice' => null,
-  'livemode' => false,
-  'metadata' =>
-    array (
-      'paywhat' => 'Test',
-      'payfor' => 'Me'
-	  ),
-  'paid' => true,
-  'receipt_email' => null,
-  'receipt_number' => null,
-  'refunded' => false,
-  'refunds' =>
-    array (
-      'object' => 'list',
-      'data' =>  array (),
-      'has_more' => false,
-      'total_count' => 0,
-      'url' => '/v1/charges/ch_17Qy5lGajAPEsyVFhftWVEyr/refunds',
-	  ),
-  'shipping' => null,
-  'source' =>
-    array (
-      'id' => 'card_17Qy5lGajAPEsyVFYdwJkKgw',
-      'object' => 'card',
-      'address_city' => null,
-      'address_country' => null,
-      'address_line1' => null,
-      'address_line1_check' => null,
-      'address_line2' => null,
-      'address_state' => null,
-      'address_zip' => null,
-      'address_zip_check' => null,
-      'brand' => 'Visa',
-      'country' => 'US',
-      'customer' => null,
-      'cvc_check' => null,
-      'dynamic_last4' => null,
-      'exp_month' => 8,
-      'exp_year' => 2018,
-      'fingerprint' => 'fkrclzqDN7Vm2zs9',
-      'funding' => 'credit',
-      'last4' => '4242',
-      'metadata' => array (),
-      'name' => null,
-      'tokenization_method' => null,
-	  'statement_descriptor' => null,
-  	  'status' => 'succeeded'
-  	)
-	);
-*/
 		$sql = 'INSERT INTO '.$pref.'module_sgt_record (
 account_id,
 amount,
