@@ -286,7 +286,10 @@ else
 if($row['surchargerate'] > 0 && empty($params['nosur']))
 {
 	$surrate = $row['surchargerate'];
-	$surstr = number_format($surrate * 100, 2).' '.$this->Lang('percent');
+	$t = number_format($surrate * 100,2);
+	if(strrpos($t,'0') > 0)
+		$t = rtrim($t,'0.');
+	$surstr = $this->Lang('percent',$t);
 	$t = '<span id="surcharge">'.$surstr.'</span>';
 	$tplvars['surcharge'] = $this->Lang('surcharge',$t);
 }
