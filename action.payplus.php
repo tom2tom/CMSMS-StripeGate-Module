@@ -57,16 +57,17 @@ if(isset($params['stg_account'])) //we're back, after submission (no 'submit' pa
 		return;
 	}
 
+	$symbol = sgtUtils::GetSymbol($row['currency']);
+	$amount = sgtUtils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
+	if($row['surchargerate'] && empty($params['nosur']))
+		$amount = ceil($amount * (1.0+$row['surchargerate']));
+
 	$card = array(
 		'number' => $params['stg_number'],
 		'exp_month' => $params['stg_month'],
 		'exp_year' => $params['stg_year'],
 		'cvc' => $params['stg_cvc']
 	);
-	$symbol = sgtUtils::GetSymbol($row['currency']);
-	$amount = sgtUtils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
-	if($row['surchargerate'] && empty($params['nosur']))
-		$amount = ceil($amount * (1.0+$row['surchargerate']));
 
 	$exdata = array(
 		'paywhat' => $params['stg_paywhat'],
@@ -74,9 +75,9 @@ if(isset($params['stg_account'])) //we're back, after submission (no 'submit' pa
 	);
 
 	$data = array(
-		'card' => $card,
 		'amount' => $amount,
 		'currency' => $row['currency'],
+		'source' => $card,
 		'metadata' => $exdata
 	);
 
@@ -331,22 +332,22 @@ if(!isset($params['formed']))
 {
 	$jsfuncs[] = <<<EOS
 function lock_inputs() {
- $('#chkout_submit').attr('disabled','disabled');
+ $('#pplus_submit').attr('disabled','disabled');
 }
 function unlock_inputs() {
- $('#chkout_submit').removeAttr('disabled');
+ $('#pplus_submit').removeAttr('disabled');
 }
 
 EOS;
 }
 $jsfuncs[] = <<<EOS
 function show_error(input, message) {
- $('#chkout_' + input).addClass('error');
+ $('#pplus_' + input).addClass('error');
  $('#error_' + input).html('<p>'+message+'</p>').show();
  return false;
 }
 function clear_error(input) {
- $('#chkout_' + input).removeClass('error');
+ $('#pplus_' + input).removeClass('error');
  $('#error_' + input).html('').hide();
 }
 function validate(field,value) {
@@ -394,7 +395,7 @@ function public_amount(amount) {
  return pub;
 }
 function sanitize(field) {
- var \$in = $('#chkout_' + field),
+ var \$in = $('#pplus_' + field),
    value = $.trim(\$in.val());
  switch(field) {
   case 'number':
@@ -425,7 +426,7 @@ $jsloads[] = <<<EOS
  $('#container input').attr('autocomplete','off').blur(function() {
   var \$in = $(this),
    id = \$in.attr('id');
-  if(id && id.lastIndexOf('chkout_',0) === 0) {
+  if(id && id.lastIndexOf('pplus_',0) === 0) {
    var name = id.substring(7);
    sanitize(name);
    validate(name,\$in.val());
@@ -436,7 +437,7 @@ EOS;
 
 if($surrate)
 	$jsloads[] = <<<EOS
- $('#chkout_amount').blur(function(){
+ $('#pplus_amount').blur(function(){
   var value = $.trim($(this).val());
   if(value.length) {
    var amt = value.replace(/[^\d\.]+/g, ''),
@@ -451,7 +452,7 @@ if($surrate)
 EOS;
 
 $jsloads[] = <<<EOS
- $('#chkout_number').closest('form').submit(function() {
+ $('#pplus_number').closest('form').submit(function() {
   lock_inputs();
   $('#container input').blur(); //trigger sanitize/validate functions
   if($('input.error').length > 0) {
