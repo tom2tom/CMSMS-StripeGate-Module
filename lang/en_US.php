@@ -44,6 +44,7 @@ $lang['err_nopurpose'] = sprintf($lang['missing_type'],$lang['apurpose']);
 $lang['err_nowho'] = sprintf($lang['missing_type'],$lang['aname']);
 $lang['err_noyear'] = sprintf($lang['missing_type'],$lang['ayear']);
 $lang['err_parameter'] = 'Parameter error.<br />'.$lang['err__contact'];
+$lang['err_pay'] = 'Error! Payment not possible';
 $lang['err_permission'] = 'File system authority lacking';
 $lang['err_system'] = 'System error.<br />'.$lang['err__contact'];
 $lang['err_toosmall'] = 'Minimum charge is %s';
@@ -187,6 +188,8 @@ Apply module permissions, which are
 At least, create a user-group with the second of these permissions,
 add to that group all users permitted to manage the Stripe account(s) recorded in the module.<br /><br />
 Set up one or more accounts, by activating the Stripe item in the admin 'extensions' menu. If more than one, make one of them the default.<br /><br />
+<h4>Payplus action</h4>
+This displays a 'checkout' form, for the user to populate and submit.<br /><br />
 Put into a relevant page's content block, or into a 'form-builder' field:
 <pre>
 {StripeGate}
@@ -195,15 +198,33 @@ or
 <pre>
 {StripeGate account='account-alias'}
 </pre>
-Adjust the page theme to include the default, or some other relevant, css file, or if instance-specific styling is to be supported,
+Adjust the page theme to include the default (payplus.css), or some other relevant, css file, or if instance-specific styling is to be supported,
 put into the page's 'Page Specific Metadata' field (so it can be modified at runtime):
 <pre>
-&lt;link rel="stylesheet" type="text/css" id="stripestyles" href="{the-correct-site-root-url}/modules/StripeGate/css/checkout.css" media="all" /&gt;
+&lt;link rel="stylesheet" type="text/css" id="stripestyles" href="{the-correct-site-root-url}/modules/StripeGate/css/payplus.css" media="all" /&gt;
 </pre>
-TODO finish and document the 'pay' action - displays just a button, pre-determined payment amount, no metadata
+If the StripeGate tag includes a parameter
 <pre>
-{StripeGate action='pay' amount=19.99}
+formed=1
 </pre>
+then no surrounding &lt;form&gt; &lt;/form&gt; tags will be generated, and the server-side
+data processing will need to be managed independently. TODO document ...
+<br /><br />
+<h4>Pay action</h4>
+This displays an amount-labelled button, which when clicked will initiate a payment of the pre-defined amount.<br /><br />
+Put somewhere in a relevant page's content block, or into a 'form-builder' field:
+<pre>
+{StripeGate action='pay' amount='19.99'}
+</pre>
+The amount parameter may include the relevant currency symbol. A specific account may be used by adding a corresponding parameter as described above.<br /><br />
+Adjust the page theme to include the default (pay.css), or some other relevant, css file, or if instance-specific styling is to be supported,
+put into the page's 'Page Specific Metadata' field (so it can be modified at runtime):
+<pre>
+&lt;link rel="stylesheet" type="text/css" id="stripestyles" href="{the-correct-site-root-url}/modules/StripeGate/css/pay.css" media="screen" /&gt;
+</pre>
+The payment will be processed via an ajax call, and if all is well, a form-submit will then be triggered.
+<br /><br />
+<h4>API</h4>
 A low-level API is available, enabling things like:<br /><br />
 <code>Stripe::setApiKey('d8e8fca2dc0f896fd7cb4cb0031ba249');<br />
 \$myCard = array('number' => '4242424242424242', 'exp_month' => 8, 'exp_year' => 2018);<br />
