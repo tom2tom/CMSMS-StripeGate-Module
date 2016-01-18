@@ -1,0 +1,13 @@
+#pay_submit {
+margin: 10px 0;
+padding: 5px 10px;
+font-size: 1.4em;
+}
+
+#pay_err {
+margin: 10px 0;
+text-align: center;
+font-size: 1.4em;
+color: #f00;
+display: none;
+}

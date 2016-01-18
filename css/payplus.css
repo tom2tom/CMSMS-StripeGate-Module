@@ -1,9 +1,15 @@
-.chkout_message {
+.pplus_message {
 font-weight: bold;
 color: #f00;
 }
 
-#container {
+#pplus_submit {
+margin-top: 10px;
+padding: 5px 10px;
+font-size: 1.4em;
+}
+
+#pplus_container {
 margin: 10px auto;
 border: 1px solid #ccc;
 border-radius: 20px;
@@ -21,39 +27,39 @@ background-color: rgba(100,100,100,0.1);
 background-image: url(../images/background.gif);
 }
 
-#container h2 {
+#pplus_container h2 {
 margin: 0 0 10px 0;
 padding: 0;
 color: #35a7e8;
 }
 
-#container p {
+#pplus_container p {
 font-size: 1.2em;
 }
 
-#container table {
+#pplus_container table {
 width: auto;
 border-width: 0;
 border-collapse: collapse;
 border-spacing: 0.5em;
 }
 
-#container td {
+#pplus_container td {
 margin: 0;
 padding: 0.2em;
 line-height: 1.1;
 }
 
-#container td.title {
+#pplus_container td.title {
 font-size: 1.4em;
 font-weight: normal !important;
 }
 
-#container input {
+#pplus_container input {
 font-size: 1.4em;
 }
 
-#container input[type=text], #container input[type=number] {
+#pplus_container input[type=text], #container input[type=number] {
 overflow: hidden;
 margin-bottom: 1px;
 border: 2px solid #aaa;
@@ -61,14 +67,14 @@ padding: 5px;
 background-color: #fff;
 }
 
-#container input.error {
+#pplus_container input.error {
 overflow: hidden;
 margin-bottom: 0;
 border: 2px solid #e83544 !important;
 border-color: #e83544 !important;
 }
 
-#container div.error_wrapper {
+#pplus_container div.error_wrapper {
 display: none;
 margin: 2px 0;
 padding: 0 2px;
@@ -76,9 +82,4 @@ font-size: 1.2em;
 font-weight: bold;
 color: #e83544;
 background-color: #fff;
-}
-
-#container #chkout_submit {
-padding: 5px 10px;
-font-size: 1.4em;
 }
