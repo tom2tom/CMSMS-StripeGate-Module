@@ -67,13 +67,23 @@ else
 	$icon = '';
 
 $tplvars = array();
-if(isset($params['formed']))
+
+//custom button styling ?
+if($row['stylesfile']) //using custom css for checkout display
 {
-//	$tplvars['form_start'] = $this->whatever;
+	//replace href attribute in existing stylesheet link
+	$u = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
+	$t = <<<EOS
+<script type="text/javascript">
+//<![CDATA[
+ document.getElementById('stripestyles').setAttribute('href',"{$u}");
+//]]>
+</script>
+
+EOS;
+	$tplvars['cssscript'] = $t;
 }
-$tplvars['hidden'] = $this->CreateInputHidden($id,'account',$row['account_id']);
-//TODO SETUP button styling
-//$tplvars['cssscript'] = $cssscript;
+//button label
 $symbol = sgtUtils::GetSymbol($row['currency']);
 if(strpos($params['amount'],$symbol) !== FALSE) 
 	$t = $symbol;
@@ -83,6 +93,14 @@ else
 $amount = sgtUtils::GetPrivateAmount($params['amount'],$row['amountformat'],$t);
 $public = sgtUtils::GetPublicAmount($amount,$row['amountformat'],$symbol);
 $tplvars['submit'] = $this->Lang('pay',$public);
+//ajax-parameters
+$url = $this->CreateLink($id,'payprocess',NULL,NULL,array(
+	'stg_account'=>$row['account_id'],
+	'stg_amount'=>$amount,
+	'stg_token'=>''),NULL,TRUE);
+$offs = strpos($url,'?mact=');
+$ajfirst = str_replace('amp;','',substr($url,$offs+1));
+$ajaxerr = $this->Lang('err_pay'); //default error msg
 
 $jsincs[] = <<<EOS
 <script src="https://checkout.stripe.com/checkout.js"></script>
@@ -95,28 +113,29 @@ $jsloads[] = <<<EOS
   amount: {$amount},
   locale: 'auto',
   token: function(token) {
-  var dbg = 1;
-/* token = object:
-{
-  "id": "tok_17Q5EAGajAPEsyVFahrxVJnZ",
-  "object": "token",
-  "bank_account": {
-  STUFF
-  },
-  "card": {
-  STUFF
-  },
-  "client_ip": whatever,
-  "created": 1452040358, (<< i.e. stamp)
-  "livemode": false,
-  "type": "card",
-  "used": false
-}
-  TODO use the token to create a charge using ajax|server-side script
-*/
+   var ajaxdata = '{$ajfirst}'+token.id;
+   $.ajax({
+    url: 'moduleinterface.php',
+    type: 'POST',
+    data: ajaxdata,
+    dataType: 'text',
+    success: function (data,status) {
+     if(status == 'success' && !data ) {
+       $('#pay_submit').closest('form').submit();
+	 } else {
+      if(!data) {
+       data = '{$ajaxerr}';
+      }
+      $('#pay_err').text(data).css('display','block');
+	  $('#pay_submit').removeAttr('disabled');
+     }
+    }
+   });
   }
  });
- $('#chkout_submit').click(function(ev) {
+ $('#pay_submit').click(function(ev) {
+  $('#pay_err').css('display','none').text('');
+  $(this).attr('disabled','disabled');
   handler.open();
   ev.preventDefault();
  });
