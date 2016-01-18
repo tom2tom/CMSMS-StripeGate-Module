@@ -1,7 +1,6 @@
-{if isset($form_start)}{$form_start}{/if}
-{$hidden}
-<input id="chkout_submit" type="submit" value="{$submit}" name="{$actionid}submit" style="margin-top:10px;" />
-{if isset($form_start)}</form>{/if}
+{if isset($cssscript)}{$cssscript}{/if}
+<input id="pay_submit" type="submit" value="{$submit}" name="{$actionid}submit" />
+<p id="pay_err"></p>
 
 {if !empty($jsincs)}
 {foreach from=$jsincs item=file}{$file}
