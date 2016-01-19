@@ -63,7 +63,7 @@ class StripeGate extends CMSModule
 
 	public function GetVersion()
 	{
-		return '0.2';
+		return '0.8';
 	}
 
 	public function GetAuthor()
@@ -205,12 +205,15 @@ EOS;
 		//for checkout template
 		$this->SetParameterType('submit',CLEAN_STRING);
 		$this->SetParameterType(CLEAN_REGEXP.'/stg_.*/',CLEAN_NONE);
+/* webhook reports not supported ATM
+		$this->SetParameterType('showtemplate',CLEAN_STRING);
 
 		$returnid = cmsms()->GetContentOperations()->GetDefaultPageID(); //any valid id will do ?
-		$this->RegisterRoute('/[Ss]tripe[Gg]ate\/devreport$/',
-		  array('action'=>'devreport',
+		$this->RegisterRoute('/[Ss]tripe[Gg]ate\/webhook$/',
+		  array('action'=>'webhook',
 				'showtemplate'=>'false', //not FALSE, or any of its equivalents !
 				'returnid'=>$returnid));
+*/
 	}
 
 	//partial setup for pre-1.10, backend setup for 1.10+
@@ -262,15 +265,6 @@ EOS;
 			break;
 		}
 		parent::DoAction($name,$id,$params,$returnid);
-	}
-
-	//construct delivery-reports URL (pretty or not)
-	public function get_reporturl()
-	{
-		$returnid = cmsms()->GetContentOperations()->GetDefaultContent();
-		//CMSMS 1.10+ has ->create_url();
-		return $this->CreateLink('m1_','devreport',$returnid,'',array(),'',
-			TRUE,FALSE,'',FALSE,'stripegate/devreport');
 	}
 
 }
