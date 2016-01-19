@@ -85,7 +85,7 @@ EOS;
 }
 //button label
 $symbol = sgtUtils::GetSymbol($row['currency']);
-if(strpos($params['amount'],$symbol) !== FALSE) 
+if(strpos($params['amount'],$symbol) !== FALSE)
 	$t = $symbol;
 else
 	$t = '';
@@ -93,7 +93,9 @@ else
 $amount = sgtUtils::GetPrivateAmount($params['amount'],$row['amountformat'],$t);
 $public = sgtUtils::GetPublicAmount($amount,$row['amountformat'],$symbol);
 $tplvars['submit'] = $this->Lang('pay',$public);
+//TODO find a way to suppress page output from ajax response
 //ajax-parameters
+$_SESSION[CMS_USER_KEY] = 1; //need something for this, to workaround downstream
 $url = $this->CreateLink($id,'payprocess',NULL,NULL,array(
 	'stg_account'=>$row['account_id'],
 	'stg_amount'=>$amount,
@@ -122,12 +124,12 @@ $jsloads[] = <<<EOS
     success: function (data,status) {
      if(status == 'success' && !data ) {
        $('#pay_submit').closest('form').submit();
-	 } else {
+     } else {
       if(!data) {
        data = '{$ajaxerr}';
       }
       $('#pay_err').text(data).css('display','block');
-	  $('#pay_submit').removeAttr('disabled');
+      $('#pay_submit').removeAttr('disabled');
      }
     }
    });
