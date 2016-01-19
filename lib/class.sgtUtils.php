@@ -183,6 +183,19 @@ class sgtUtils
 		return FALSE;
 	}
 
+	/* *
+	GetReportsUrl:
+	Returns: webhook-reports URL (pretty or not)
+	*/
+/*	public static function GetReportsUrl()
+	{
+		$returnid = cmsms()->GetContentOperations()->GetDefaultContent();
+		//CMSMS 1.10+ has ->create_url();
+		return $this->CreateLink('m1_','webhook',$returnid,'',array(),'',
+			TRUE,FALSE,'',FALSE,'stripegate/webhook');
+	}
+*/
+
 	/**
 	encrypt_value:
 	@mod: reference to current module object
