@@ -93,16 +93,16 @@ else
 $amount = sgtUtils::GetPrivateAmount($params['amount'],$row['amountformat'],$t);
 $public = sgtUtils::GetPublicAmount($amount,$row['amountformat'],$symbol);
 $tplvars['submit'] = $this->Lang('pay',$public);
-//TODO find a way to suppress page output from ajax response
-//ajax-parameters
-$_SESSION[CMS_USER_KEY] = 1; //need something for this, to workaround downstream
-$url = $this->CreateLink($id,'payprocess',NULL,NULL,array(
-	'stg_account'=>$row['account_id'],
-	'stg_amount'=>$amount,
-	'stg_token'=>''),NULL,TRUE);
-$offs = strpos($url,'?mact=');
-$ajfirst = str_replace('amp;','',substr($url,$offs+1));
-$ajaxerr = $this->Lang('err_pay'); //default error msg
+
+/*
+NB CMSMS top interpreter (index.php) includes undocumented response to a parameter 'showtemplate' == 'false' (NO prefix, NOT any other flavour of FALSE)
+instead of that, the backend ajax processor clears all output buffers before reporting
+NB maybe faster to provide a returnid to index.php, instead of forcing it to interpret the default
+*/
+//ajax-parameters : mimic API link-creators
+$myname = $this->GetName();
+$ajaxfirst = "mact={$myname},cntnt01,payprocess,0&cntnt01stg_account={$row['account_id']}&cntnt01stg_amount={$amount}&cntnt01stg_token=";
+$defaulterr = $this->Lang('err_pay');
 
 $jsincs[] = <<<EOS
 <script src="https://checkout.stripe.com/checkout.js"></script>
@@ -115,10 +115,9 @@ $jsloads[] = <<<EOS
   amount: {$amount},
   locale: 'auto',
   token: function(token) {
-   var ajaxdata = '{$ajfirst}'+token.id;
+   var ajaxdata = '{$ajaxfirst}'+token.id;
    $.ajax({
-    url: 'moduleinterface.php',
-    type: 'POST',
+    url: 'index.php',
     data: ajaxdata,
     dataType: 'text',
     success: function (data,status) {
@@ -126,7 +125,7 @@ $jsloads[] = <<<EOS
        $('#pay_submit').closest('form').submit();
      } else {
       if(!data) {
-       data = '{$ajaxerr}';
+       data = '{$defaulterr}';
       }
       $('#pay_err').text(data).css('display','block');
       $('#pay_submit').removeAttr('disabled');
