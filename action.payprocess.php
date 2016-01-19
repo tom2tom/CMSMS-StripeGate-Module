@@ -23,11 +23,7 @@ if($handlers)
 		ob_end_clean();
 }
 
-try {
-	require_once (dirname(__FILE__).DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'init.php');
-} catch (Exception $e) {
-	die($this->Lang('err_system'));
-}
+spl_autoload_register(array('sgtUtils','stripe_classload'));
 
 $row = $db->GetRow('SELECT currency,usetest,privtoken,testprivtoken FROM '.
 	cms_db_prefix().'module_sgt_account WHERE account_id=?',array($params['stg_account']));

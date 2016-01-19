@@ -10,6 +10,32 @@ class sgtUtils
 {
 	const ENC_ROUNDS = 10000;
 
+	/**
+	stripe_classload:
+	API-class autoloader
+	@classname: string
+	*/
+	public static function stripe_classload($classname)
+	{
+		$base = dirname(__FILE__).DIRECTORY_SEPARATOR.'Stripe'.DIRECTORY_SEPARATOR;
+		include_once($base.'Stripe.php');
+		if($classname == 'Stripe')
+		{
+			include_once($base.'Stripe.php');
+		}
+		else
+		{
+			$fn = substr($classname,7); //drop the 'Stripe_' prefix
+			if(strpos($fn,'Util_') !== 0)
+				include_once($base.$fn.'.php');
+			else
+			{
+				$fn = substr($fn,5); //drop the 'Util_' prefix
+				include_once($base.'Util'.DIRECTORY_SEPARATOR.$fn.'.php');
+			}
+		}
+	}
+
 	/* *
 	SafeGet:
 	Execute SQL command(s) with minimal chance of data-race
