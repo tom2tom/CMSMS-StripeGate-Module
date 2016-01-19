@@ -8,7 +8,7 @@
 # This action handles ajax-processing after a pay-button is clicked
 /*supplied $params[]
  'stg_account' => account id
- 'stg_amount' => private amount 
+ 'stg_amount' => private amount
  'stg_token' => stripe token
 */
 try {
@@ -17,6 +17,7 @@ try {
 	echo $this->Lang('err_system');
 	exit;
 }
+$pref = cms_db_prefix();
 $row = $db->GetRow('SELECT currency,usetest,privtoken,testprivtoken FROM '.
 $pref.'module_sgt_account WHERE account_id=?',array($params['stg_account']));
 if($row['usetest'])
