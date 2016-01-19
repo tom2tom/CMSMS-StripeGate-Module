@@ -16,6 +16,7 @@ $lang['apurpose'] = 'a desciption of the payment';
 $lang['ayear'] = 'a year';
 
 $lang['additem'] = 'Add new account';
+$lang['anonymous'] = 'Anonymous payer';
 $lang['any'] = 'Any';
 $lang['all'] = 'All';
 $lang['cancel'] = 'Cancel';
@@ -225,13 +226,9 @@ put into the page's 'Page Specific Metadata' field (so it can be modified at run
 The payment will be processed via an ajax call, and if all is well, a form-submit will then be triggered.
 <br /><br />
 <h4>API</h4>
-A low-level API is available, enabling things like:<br /><br />
-<code>Stripe::setApiKey('d8e8fca2dc0f896fd7cb4cb0031ba249');<br />
-\$myCard = array('number' => '4242424242424242', 'exp_month' => 8, 'exp_year' => 2018);<br />
-\$result = Stripe_Charge::create(array('card' => \$myCard, 'amount' => 2000, 'currency' => 'usd'));<br />
-do_something_with(\$result);</code><br /><br />
+A complete API library is included, so things related to Accounts, Customers and so on can be programmed.
+Note that this is Stripe's older, non-namespaced, version of the library (to support some earlier PHP's).
 <a href="https://stripe.com/docs/api">Visit Stripe</a> for up-to-date documentation.
-Note that this module uses Stripe's older, non-namespaced, interface library (to support some earlier PHP's).
 <h3>Requirements:</h3>
 <ul>
 <li>CMS Made Simple 1.9+</li>
