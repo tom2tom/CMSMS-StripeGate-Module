@@ -12,10 +12,13 @@ $dict = NewDataDictionary($db);
 $pref = cms_db_prefix();
 $taboptarray = array('mysql' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci',
  'mysqli' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci');
-
+*/
 switch($oldversion)
 {
+ case '0.8':
+	$fp = dirname(__FILE__).DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'init.php';
+	if(is_file($fp))
+		unlink($fp);
 }
-*/
 
 ?>
