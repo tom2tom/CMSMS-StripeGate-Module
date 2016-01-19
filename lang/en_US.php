@@ -211,8 +211,8 @@ then no surrounding &lt;form&gt; &lt;/form&gt; tags will be generated, and the s
 data processing will need to be managed independently. TODO document ...
 <br /><br />
 <h4>Pay action</h4>
-This displays an amount-labelled button, which when clicked will initiate a payment of the pre-defined amount.<br /><br />
-Put somewhere in a relevant page's content block, or into a 'form-builder' field:
+This displays an amount-labelled button, which when clicked will initiate a payment of the pre-defined amount, then trigger a form-submit.<br /><br />
+Put somewhere inside &lt;form&gt; &lt;/form&gt; tags on a relevant page's content block, or into a 'form-builder' field:
 <pre>
 {StripeGate action='pay' amount='19.99'}
 </pre>
