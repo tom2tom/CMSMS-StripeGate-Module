@@ -23,12 +23,7 @@ if(empty($params['account']) && empty($params['stg_account']))
 	}
 }
 
-try {
-	require_once (dirname(__FILE__).DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'init.php');
-} catch (Exception $e) {
-	echo $this->Lang('err_system');
-	return;
-}
+spl_autoload_register(array('sgtUtils','stripe_classload'));
 
 $pref = cms_db_prefix();
 
@@ -233,6 +228,7 @@ if(!$privkey)
 	echo $this->Lang('err_parameter');
 	return;
 }
+
 $account = Stripe_Account::retrieve($privkey);
 if($account)
 {
@@ -407,6 +403,7 @@ function sanitize(field) {
   case 'exp_month':
    value = value.replace(/\D/g,'');
    value = value.replace(/^0+/,'');
+   if(value.length == 1) { value = '0' + value; }
    break;
   case 'exp_year':
    value = value.replace(/\D/g,'');
@@ -423,11 +420,11 @@ function sanitize(field) {
 EOS;
 
 $jsloads[] = <<<EOS
- $('#container input').attr('autocomplete','off').blur(function() {
+ $('#pplus_container input').attr('autocomplete','off').blur(function() {
   var \$in = $(this),
    id = \$in.attr('id');
   if(id && id.lastIndexOf('pplus_',0) === 0) {
-   var name = id.substring(7);
+   var name = id.substring(6);
    sanitize(name);
    validate(name,\$in.val());
   }
@@ -454,7 +451,7 @@ EOS;
 $jsloads[] = <<<EOS
  $('#pplus_number').closest('form').submit(function() {
   lock_inputs();
-  $('#container input').blur(); //trigger sanitize/validate functions
+  $('#pplus_container input').blur(); //trigger sanitize/validate functions
   if($('input.error').length > 0) {
    unlock_inputs();
    $('input.error:first').focus();
