@@ -14,10 +14,10 @@ $handlers = ob_list_handlers();
 if($handlers)
 {
 	$l = count($handlers);
-	for ($cnt = 0; $cnt < $l; $cnt++)
+	for ($c = 0; $c < $l; $c++)
 		ob_end_clean();
 }
 
-die(NOT YET SUPPORTED);
+exit('NOT YET SUPPORTED');
 
 ?>
