@@ -14,8 +14,7 @@
 try {
 	require_once (dirname(__FILE__).DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'init.php');
 } catch (Exception $e) {
-	echo $this->Lang('err_system');
-	exit;
+	die($this->Lang('err_system'));
 }
 $pref = cms_db_prefix();
 $row = $db->GetRow('SELECT currency,usetest,privtoken,testprivtoken FROM '.
@@ -36,8 +35,7 @@ else
 }
 if(!$privkey)
 {
-	echo $this->Lang('err_parameter');
-	exit;
+	die($this->Lang('err_parameter'));
 }
 
 $data = array(
@@ -68,12 +66,11 @@ identifier
 		$response['created'],
 		$response['id']));
 
-	echo 0; //success
+	die(); //no message = success
 }
 catch (Exception $e)
 {
-	echo $e->getMessage();
+	die($e->getMessage());
 }
-exit;
 
 ?>
