@@ -142,8 +142,6 @@ EOS;
 	{
 		if(isset($_SERVER['QUERY_STRING']))
 		{
-//$adbg = $_SERVER;
-//$this->Crash();
 			if(strpos($_SERVER['QUERY_STRING'],'export') !== FALSE)
 				return TRUE;
 		}
