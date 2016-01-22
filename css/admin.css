@@ -1,9 +1,10 @@
-p.pagetext { margin-left:0 !important; }
+.leftwards { margin-left:0 !important }
 
-table.pagetable {
- border-spacing: 0;
+table.leftside {
  margin-left: 0;
  padding: 3px;
+ border-spacing: 0;
+ border-collapse: collapse;
  width: auto;
 }
 
@@ -15,7 +16,7 @@ table.table_sort th
  padding: 5px;
  margin-left: 20px;
  margin-right: 20px;
- border-collapse:collapse;
+ border-collapse: collapse;
  background-image: none;
  text-align: left;
  cursor: default;
