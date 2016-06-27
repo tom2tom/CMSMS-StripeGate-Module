@@ -418,5 +418,5 @@ if($jsloads)
 $tplvars['jsfuncs'] = $jsfuncs;
 $tplvars['jsincs'] = $jsincs;
 
-sgtUtils::ProcessTemplate($this,'update.tpl',$tplvars);
+echo sgtUtils::ProcessTemplate($this,'update.tpl',$tplvars);
 ?>

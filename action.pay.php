@@ -157,5 +157,5 @@ if($jsloads)
 $tplvars['jsfuncs'] = $jsfuncs;
 $tplvars['jsincs'] = $jsincs;
 
-sgtUtils::ProcessTemplate($this,'pay.tpl',$tplvars);
+echo sgtUtils::ProcessTemplate($this,'pay.tpl',$tplvars);
 ?>

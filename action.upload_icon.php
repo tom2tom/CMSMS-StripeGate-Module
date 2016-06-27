@@ -83,5 +83,5 @@ $tplvars = array(
 	'help' => $this->Lang('help_iconupload')
 );
 
-sgtUtils::ProcessTemplate($this,'chooser.tpl',$tplvars);
+echo sgtUtils::ProcessTemplate($this,'chooser.tpl',$tplvars);
 ?>

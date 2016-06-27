@@ -91,5 +91,5 @@ $tplvars = array(
 	'help' => $this->Lang('help_cssupload',$example)
 );
 
-sgtUtils::ProcessTemplate($this,'chooser.tpl',$tplvars);
+echo sgtUtils::ProcessTemplate($this,'chooser.tpl',$tplvars);
 ?>

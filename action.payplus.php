@@ -30,7 +30,7 @@ $pref = cms_db_prefix();
 if(isset($params['stg_account'])) //we're back, after submission (no 'submit' parameter!)
 {
 	//some of these are needed only if continuing past error
-	$row = $db->GetRow('SELECT name,title,currency,amountformat,minpay,surchargerate,usetest,privtoken,testprivtoken FROM '.
+	$row = $db->GetRow('SELECT name,title,currency,amountformat,minpay,surchargerate,usetest,privtoken,testprivtoken,stylesfile FROM '.
 	$pref.'module_sgt_account WHERE account_id=?',array($params['stg_account']));
 	if($row['usetest'])
 	{
@@ -472,5 +472,5 @@ if($jsloads)
 }
 $tplvars['jsfuncs'] = $jsfuncs;
 
-sgtUtils::ProcessTemplate($this,'payplus.tpl',$tplvars);
+echo sgtUtils::ProcessTemplate($this,'payplus.tpl',$tplvars);
 ?>
