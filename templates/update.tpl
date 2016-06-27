@@ -12,8 +12,7 @@
 </div>
 {$form_end}
 
-{if !empty($jsincs)}
-{foreach from=$jsincs item=file}{$file}
+{if !empty($jsincs)}{foreach from=$jsincs item=inc}{$inc}
 {/foreach}{/if}
 {if !empty($jsfuncs)}
 <script type="text/javascript">
