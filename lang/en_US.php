@@ -227,8 +227,7 @@ The payment will be processed via an ajax call, and if all is well, a form-submi
 <br /><br />
 <h4>API</h4>
 A complete API library is included, so things related to Accounts, Customers and so on can be programmed.
-Note that this is Stripe's older, non-namespaced, version of the library (to support some earlier PHP's).
-<a href="https://stripe.com/docs/api">Visit Stripe</a> for up-to-date documentation.
+<a href="https://stripe.com/docs/api">Visit Stripe</a> for documentation.
 <h3>Requirements:</h3>
 <ul>
 <li>CMS Made Simple 1.9+</li>
