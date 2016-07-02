@@ -28,6 +28,7 @@ class StripeGate extends CMSModule
 		$this->havemcrypt = function_exists('mcrypt_encrypt');
 		global $CMS_VERSION;
 		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
+//		spl_autoload_register(array('sgtUtils','stripe_classload')); won't work yet ...
 	}
 
 	public function AllowAutoInstall()
