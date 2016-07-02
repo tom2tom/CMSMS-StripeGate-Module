@@ -7,8 +7,6 @@
 #----------------------------------------------------------------------
 # This action handles webhook-reports from upstream Stripe
 
-//TODO process & record stuff
-
 //clear all page content echoed before now
 $handlers = ob_list_handlers();
 if($handlers)
@@ -18,6 +16,7 @@ if($handlers)
 		ob_end_clean();
 }
 
-exit('NOT YET SUPPORTED');
+//TODO process & record stuff
+exit('WEBHOOK PROCESSING NOT YET SUPPORTED');
 
 ?>
