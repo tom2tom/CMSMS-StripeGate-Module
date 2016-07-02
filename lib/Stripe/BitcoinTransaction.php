@@ -1,7 +1,8 @@
 <?php
 
-class Stripe_BitcoinTransaction extends Stripe_ApiResource
+namespace Stripe;
+
+class BitcoinTransaction extends ApiResource
 {
 
 }
-

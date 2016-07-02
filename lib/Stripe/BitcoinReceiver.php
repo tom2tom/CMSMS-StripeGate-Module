@@ -1,61 +1,80 @@
 <?php
 
-class Stripe_BitcoinReceiver extends Stripe_ApiResource
+namespace Stripe;
+
+class BitcoinReceiver extends ExternalAccount
 {
-  /**
-   * @param string $class Ignored.
-   *
-   * @return string The class URL for this resource. It needs to be special
-   *    cased because it doesn't fit into the standard resource pattern.
-   */
-  public static function classUrl($class)
-  {
-    return "/v1/bitcoin/receivers";
-  }
+    /**
+     * @return string The class URL for this resource. It needs to be special
+     *    cased because it doesn't fit into the standard resource pattern.
+     */
+    public static function classUrl()
+    {
+        return "/v1/bitcoin/receivers";
+    }
 
-  /**
-   * @param string $id The ID of the Bitcoin Receiver to retrieve.
-   * @param string|null $apiKey
-   *
-   * @return Stripe_BitcoinReceiver
-   */
-  public static function retrieve($id, $apiKey=null)
-  {
-    $class = get_class();
-    return self::_scopedRetrieve($class, $id, $apiKey);
-  }
+    /**
+     * @return string The instance URL for this resource. It needs to be special
+     *    cased because it doesn't fit into the standard resource pattern.
+     */
+    public function instanceUrl()
+    {
+        $result = parent::instanceUrl();
+        if ($result) {
+            return $result;
+        } else {
+            $id = $this['id'];
+            $id = Util\Util::utf8($id);
+            $extn = urlencode($id);
+            $base = BitcoinReceiver::classUrl();
+            return "$base/$extn";
+        }
+    }
 
-  /**
-   * @param array|null $params
-   * @param string|null $apiKey
-   *
-   * @return array An array of Stripe_BitcoinReceivers.
-   */
-  public static function all($params=null, $apiKey=null)
-  {
-    $class = get_class();
-    return self::_scopedAll($class, $params, $apiKey);
-  }
+    /**
+     * @param string $id The ID of the Bitcoin Receiver to retrieve.
+     * @param array|string|null $opts
+     *
+     * @return BitcoinReceiver
+     */
+    public static function retrieve($id, $opts = null)
+    {
+        return self::_retrieve($id, $opts);
+    }
 
-  /**
-   * @param array|null $params
-   * @param string|null $apiKey
-   *
-   * @return Stripe_BitcoinReceiver The created Bitcoin Receiver item.
-   */
-  public static function create($params=null, $apiKey=null)
-  {
-    $class = get_class();
-    return self::_scopedCreate($class, $params, $apiKey);
-  }
+    /**
+     * @param array|null $params
+     * @param array|string|null $opts
+     *
+     * @return Collection of BitcoinReceivers
+     */
+    public static function all($params = null, $opts = null)
+    {
+        return self::_all($params, $opts);
+    }
 
-  /**
-   * @return Stripe_BitcoinReceiver The saved Bitcoin Receiver item.
-   */
-  public function save()
-  {
-    $class = get_class();
-    return self::_scopedSave($class);
-  }
+    /**
+     * @param array|null $params
+     * @param array|string|null $opts
+     *
+     * @return BitcoinReceiver The created Bitcoin Receiver item.
+     */
+    public static function create($params = null, $opts = null)
+    {
+        return self::_create($params, $opts);
+    }
+
+    /**
+     * @param array|null $params
+     * @param array|string|null $options
+     *
+     * @return BitcoinReceiver The refunded Bitcoin Receiver item.
+     */
+    public function refund($params = null, $options = null)
+    {
+        $url = $this->instanceUrl() . '/refund';
+        list($response, $opts) = $this->_request('post', $url, $params, $options);
+        $this->refreshFrom($response, $opts);
+        return $this;
+    }
 }
-

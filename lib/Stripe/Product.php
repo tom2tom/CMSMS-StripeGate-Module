@@ -2,13 +2,13 @@
 
 namespace Stripe;
 
-class Plan extends ApiResource
+class Product extends ApiResource
 {
     /**
-     * @param string $id The ID of the plan to retrieve.
+     * @param string $id The ID of the Product to retrieve.
      * @param array|string|null $opts
      *
-     * @return Plan
+     * @return Product
      */
     public static function retrieve($id, $opts = null)
     {
@@ -19,7 +19,7 @@ class Plan extends ApiResource
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Plan The created plan.
+     * @return Product The created Product.
      */
     public static function create($params = null, $opts = null)
     {
@@ -27,11 +27,11 @@ class Plan extends ApiResource
     }
 
     /**
-     * @param string $id The ID of the plan to update.
+     * @param string $id The ID of the product to update.
      * @param array|null $params
      * @param array|string|null $options
      *
-     * @return Plan The updated plan.
+     * @return Product The updated product.
      */
     public static function update($id, $params = null, $options = null)
     {
@@ -39,20 +39,9 @@ class Plan extends ApiResource
     }
 
     /**
-     * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Plan The deleted plan.
-     */
-    public function delete($params = null, $opts = null)
-    {
-        return $this->_delete($params, $opts);
-    }
-
-    /**
-     * @param array|string|null $opts
-     *
-     * @return Plan The saved plan.
+     * @return Product The saved Product.
      */
     public function save($opts = null)
     {
@@ -63,10 +52,21 @@ class Plan extends ApiResource
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Collection of Plans
+     * @return Collection of Products
      */
     public static function all($params = null, $opts = null)
     {
         return self::_all($params, $opts);
+    }
+
+    /**
+     * @param array|null $params
+     * @param array|string|null $opts
+     *
+     * @return Product The deleted product.
+     */
+    public function delete($params = null, $opts = null)
+    {
+        return $this->_delete($params, $opts);
     }
 }

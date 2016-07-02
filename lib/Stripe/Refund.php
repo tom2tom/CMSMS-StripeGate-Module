@@ -1,36 +1,62 @@
 <?php
 
-class Stripe_Refund extends Stripe_ApiResource
+namespace Stripe;
+
+class Refund extends ApiResource
 {
-  /**
-   * @return string The API URL for this Stripe refund.
-   */
-  public function instanceUrl()
-  {
-    $id = $this['id'];
-    $charge = $this['charge'];
-    if (!$id) {
-      throw new Stripe_InvalidRequestError(
-          "Could not determine which URL to request: " .
-          "class instance has invalid ID: $id",
-          null
-      );
+
+    /**
+     * @param string $id The ID of the refund to retrieve.
+     * @param array|string|null $options
+     *
+     * @return Refund
+     */
+    public static function retrieve($id, $options = null)
+    {
+        return self::_retrieve($id, $options);
     }
-    $id = Stripe_ApiRequestor::utf8($id);
-    $charge = Stripe_ApiRequestor::utf8($charge);
 
-    $base = self::classUrl('Stripe_Charge');
-    $chargeExtn = urlencode($charge);
-    $extn = urlencode($id);
-    return "$base/$chargeExtn/refunds/$extn";
-  }
+    /**
+     * @param string $id The ID of the refund to update.
+     * @param array|null $params
+     * @param array|string|null $options
+     *
+     * @return Refund The updated refund.
+     */
+    public static function update($id, $params = null, $options = null)
+    {
+        return self::_update($id, $params, $options);
+    }
 
-  /**
-   * @return Stripe_Refund The saved refund.
-   */
-  public function save()
-  {
-    $class = get_class();
-    return self::_scopedSave($class);
-  }
+    /**
+     * @param array|null $params
+     * @param array|string|null $options
+     *
+     * @return Collection of Refunds
+     */
+    public static function all($params = null, $options = null)
+    {
+        return self::_all($params, $options);
+    }
+
+    /**
+     * @param array|null $params
+     * @param array|string|null $options
+     *
+     * @return Refund The created refund.
+     */
+    public static function create($params = null, $options = null)
+    {
+        return self::_create($params, $options);
+    }
+
+    /**
+     * @param array|string|null $opts
+     *
+     * @return Refund The saved refund.
+     */
+    public function save($opts = null)
+    {
+        return $this->_save($opts);
+    }
 }

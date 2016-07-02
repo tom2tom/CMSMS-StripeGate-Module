@@ -1,174 +1,200 @@
 <?php
 
-abstract class Stripe_ApiResource extends Stripe_Object
+namespace Stripe;
+
+abstract class ApiResource extends StripeObject
 {
-  public static function baseUrl()
-  {
-    return Stripe::$apiBase;
-  }
+    private static $HEADERS_TO_PERSIST = array('Stripe-Account' => true, 'Stripe-Version' => true);
 
-  protected static function _scopedRetrieve($class, $id, $options=null)
-  {
-    $opts = Stripe_RequestOptions::parse($options);
-    $instance = new $class($id, $opts->apiKey);
-    $instance->refresh();
-    return $instance;
-  }
-
-  /**
-   * @returns Stripe_ApiResource The refreshed resource.
-   */
-  public function refresh()
-  {
-    $requestor = new Stripe_ApiRequestor($this->_apiKey, self::baseUrl());
-    $url = $this->instanceUrl();
-
-    list($response, $apiKey) = $requestor->request(
-        'get',
-        $url,
-        $this->_retrieveOptions
-    );
-    $this->refreshFrom($response, $apiKey);
-    return $this;
-  }
-
-  /**
-   * @param array options
-   *
-   * @returns Stripe_RequestOptions with either passed in or saved API key
-   */
-  public function parseOptions($options)
-  {
-    $opts = Stripe_RequestOptions::parse($options);
-    $key = ($opts->apiKey ? $opts->apiKey : $this->_apiKey);
-    $opts->apiKey = $key;
-    return $opts;
-  }
-
-  /**
-   * @param string $class
-   *
-   * @returns string The name of the class, with namespacing and underscores
-   *    stripped.
-   */
-  public static function className($class)
-  {
-    // Useful for namespaces: Foo\Stripe_Charge
-    if ($postfixNamespaces = strrchr($class, '\\')) {
-      $class = substr($postfixNamespaces, 1);
+    public static function baseUrl()
+    {
+        return Stripe::$apiBase;
     }
-    // Useful for underscored 'namespaces': Foo_Stripe_Charge
-    if ($postfixFakeNamespaces = strrchr($class, 'Stripe_')) {
-      $class = $postfixFakeNamespaces;
-    }
-    if (substr($class, 0, strlen('Stripe')) == 'Stripe') {
-      $class = substr($class, strlen('Stripe'));
-    }
-    $class = str_replace('_', '', $class);
-    $name = urlencode($class);
-    $name = strtolower($name);
-    return $name;
-  }
 
-  /**
-   * @param string $class
-   *
-   * @returns string The endpoint URL for the given class.
-   */
-  public static function classUrl($class)
-  {
-    $base = self::_scopedLsb($class, 'className', $class);
-    return "/v1/${base}s";
-  }
+    /**
+     * @return ApiResource The refreshed resource.
+     */
+    public function refresh()
+    {
+        $requestor = new ApiRequestor($this->_opts->apiKey, static::baseUrl());
+        $url = $this->instanceUrl();
 
-  /**
-   * @returns string The full API URL for this API resource.
-   */
-  public function instanceUrl()
-  {
-    $id = $this['id'];
-    $class = get_class($this);
-    if ($id === null) {
-      $message = "Could not determine which URL to request: "
+        list($response, $this->_opts->apiKey) = $requestor->request(
+            'get',
+            $url,
+            $this->_retrieveOptions,
+            $this->_opts->headers
+        );
+        $this->setLastResponse($response);
+        $this->refreshFrom($response->json, $this->_opts);
+        return $this;
+    }
+
+    /**
+     * @return string The name of the class, with namespacing and underscores
+     *    stripped.
+     */
+    public static function className()
+    {
+        $class = get_called_class();
+        // Useful for namespaces: Foo\Charge
+        if ($postfixNamespaces = strrchr($class, '\\')) {
+            $class = substr($postfixNamespaces, 1);
+        }
+        // Useful for underscored 'namespaces': Foo_Charge
+        if ($postfixFakeNamespaces = strrchr($class, '')) {
+            $class = $postfixFakeNamespaces;
+        }
+        if (substr($class, 0, strlen('Stripe')) == 'Stripe') {
+            $class = substr($class, strlen('Stripe'));
+        }
+        $class = str_replace('_', '', $class);
+        $name = urlencode($class);
+        $name = strtolower($name);
+        return $name;
+    }
+
+    /**
+     * @return string The endpoint URL for the given class.
+     */
+    public static function classUrl()
+    {
+        $base = static::className();
+        return "/v1/${base}s";
+    }
+
+    /**
+     * @return string The instance endpoint URL for the given class.
+     */
+    public static function resourceUrl($id)
+    {
+        if ($id === null) {
+            $class = get_called_class();
+            $message = "Could not determine which URL to request: "
                . "$class instance has invalid ID: $id";
-      throw new Stripe_InvalidRequestError($message, null);
+            throw new Error\InvalidRequest($message, null);
+        }
+        $id = Util\Util::utf8($id);
+        $base = static::classUrl();
+        $extn = urlencode($id);
+        return "$base/$extn";
     }
-    $id = Stripe_ApiRequestor::utf8($id);
-    $base = $this->_lsb('classUrl', $class);
-    $extn = urlencode($id);
-    return "$base/$extn";
-  }
 
-  private static function _validateCall($method, $params=null, $options=null)
-  {
-    if ($params && !is_array($params)) {
-      $message = "You must pass an array as the first argument to Stripe API "
+    /**
+     * @return string The full API URL for this API resource.
+     */
+    public function instanceUrl()
+    {
+        return static::resourceUrl($this['id']);
+    }
+
+    private static function _validateParams($params = null)
+    {
+        if ($params && !is_array($params)) {
+            $message = "You must pass an array as the first argument to Stripe API "
                . "method calls.  (HINT: an example call to create a charge "
-               . "would be: \"StripeCharge::create(array('amount' => 100, "
+               . "would be: \"Stripe\\Charge::create(array('amount' => 100, "
                . "'currency' => 'usd', 'card' => array('number' => "
                . "4242424242424242, 'exp_month' => 5, 'exp_year' => 2015)))\")";
-      throw new Stripe_Error($message);
+            throw new Error\Api($message);
+        }
     }
 
-    if ($options && (!is_string($options) && !is_array($options))) {
-      $message = 'The second argument to Stripe API method calls is an '
-               . 'optional per-request apiKey, which must be a string, or '
-               . 'per-request options, which must be an array. '
-               . '(HINT: you can set a global apiKey by '
-               . '"Stripe::setApiKey(<apiKey>)")';
-      throw new Stripe_Error($message);
+    protected function _request($method, $url, $params = array(), $options = null)
+    {
+        $opts = $this->_opts->merge($options);
+        list($resp, $options) = static::_staticRequest($method, $url, $params, $opts);
+        $this->setLastResponse($resp);
+        return array($resp->json, $options);
     }
-  }
 
-  protected static function _scopedAll($class, $params=null, $options=null)
-  {
-    self::_validateCall('all', $params, $options);
-    $base = self::_scopedLsb($class, 'baseUrl');
-    $url = self::_scopedLsb($class, 'classUrl', $class);
-    $opts = Stripe_RequestOptions::parse($options);
-    $requestor = new Stripe_ApiRequestor($opts->apiKey, $base);
-    list($response, $apiKey) = 
-      $requestor->request('get', $url, $params, $opts->headers);
-    return Stripe_Util::convertToStripeObject($response, $apiKey);
-  }
-
-  protected static function _scopedCreate($class, $params=null, $options=null)
-  {
-    self::_validateCall('create', $params, $options);
-    $opts = Stripe_RequestOptions::parse($options);
-    $base = self::_scopedLsb($class, 'baseUrl');
-    $requestor = new Stripe_ApiRequestor($opts->apiKey, $base);
-    $url = self::_scopedLsb($class, 'classUrl', $class);
-    list($response, $apiKey) = 
-      $requestor->request('post', $url, $params, $opts->headers);
-    return Stripe_Util::convertToStripeObject($response, $apiKey);
-  }
-
-  protected function _scopedSave($class, $options=null)
-  {
-    self::_validateCall('save', null, $options);
-    $opts = Stripe_RequestOptions::parse($options);
-    $key = ($opts->apiKey ? $opts->apiKey : $this->_apiKey);
-    $requestor = new Stripe_ApiRequestor($key, self::baseUrl());
-    $params = $this->serializeParameters();
-
-    if (count($params) > 0) {
-      $url = $this->instanceUrl();
-      list($response, $apiKey) = $requestor->request('post', $url, $params);
-      $this->refreshFrom($response, $apiKey);
+    protected static function _staticRequest($method, $url, $params, $options)
+    {
+        $opts = Util\RequestOptions::parse($options);
+        $requestor = new ApiRequestor($opts->apiKey, static::baseUrl());
+        list($response, $opts->apiKey) = $requestor->request($method, $url, $params, $opts->headers);
+        foreach ($opts->headers as $k => $v) {
+            if (!array_key_exists($k, self::$HEADERS_TO_PERSIST)) {
+                unset($opts->headers[$k]);
+            }
+        }
+        return array($response, $opts);
     }
-    return $this;
-  }
 
-  protected function _scopedDelete($class, $params=null, $options=null)
-  {
-    self::_validateCall('delete', $params, $options);
-    $opts = Stripe_RequestOptions::parse($options);
-    $key = ($opts->apiKey ? $opts->apiKey : $this->_apiKey);
-    $requestor = new Stripe_ApiRequestor($key, self::baseUrl());
-    $url = $this->instanceUrl();
-    list($response, $apiKey) = $requestor->request('delete', $url, $params);
-    $this->refreshFrom($response, $apiKey);
-    return $this;
-  }
+    protected static function _retrieve($id, $options = null)
+    {
+        $opts = Util\RequestOptions::parse($options);
+        $instance = new static($id, $opts);
+        $instance->refresh();
+        return $instance;
+    }
+
+    protected static function _all($params = null, $options = null)
+    {
+        self::_validateParams($params);
+        $url = static::classUrl();
+
+        list($response, $opts) = static::_staticRequest('get', $url, $params, $options);
+        $obj = Util\Util::convertToStripeObject($response->json, $opts);
+        if (!is_a($obj, 'Stripe\\Collection')) {
+            $class = get_class($obj);
+            $message = "Expected type \"Stripe\\Collection\", got \"$class\" instead";
+            throw new Error\Api($message);
+        }
+        $obj->setLastResponse($response);
+        $obj->setRequestParams($params);
+        return $obj;
+    }
+
+    protected static function _create($params = null, $options = null)
+    {
+        self::_validateParams($params);
+        $base = static::baseUrl();
+        $url = static::classUrl();
+
+        list($response, $opts) = static::_staticRequest('post', $url, $params, $options);
+        $obj = Util\Util::convertToStripeObject($response->json, $opts);
+        $obj->setLastResponse($response);
+        return $obj;
+    }
+
+    /**
+     * @param string $id The ID of the API resource to update.
+     * @param array|null $params
+     * @param array|string|null $opts
+     *
+     * @return ApiResource the updated API resource
+     */
+    protected static function _update($id, $params = null, $options = null)
+    {
+        self::_validateParams($params);
+        $base = static::baseUrl();
+        $url = static::resourceUrl($id);
+
+        list($response, $opts) = static::_staticRequest('post', $url, $params, $options);
+        $obj = Util\Util::convertToStripeObject($response->json, $opts);
+        $obj->setLastResponse($response);
+        return $obj;
+    }
+
+    protected function _save($options = null)
+    {
+        $params = $this->serializeParameters();
+        if (count($params) > 0) {
+            $url = $this->instanceUrl();
+            list($response, $opts) = $this->_request('post', $url, $params, $options);
+            $this->refreshFrom($response, $opts);
+        }
+        return $this;
+    }
+
+    protected function _delete($params = null, $options = null)
+    {
+        self::_validateParams($params);
+
+        $url = $this->instanceUrl();
+        list($response, $opts) = $this->_request('delete', $url, $params, $options);
+        $this->refreshFrom($response, $opts);
+        return $this;
+    }
 }

@@ -2,13 +2,13 @@
 
 namespace Stripe;
 
-class Token extends ApiResource
+class OrderReturn extends ApiResource
 {
     /**
-     * @param string $id The ID of the token to retrieve.
+     * @param string $id The ID of the OrderReturn to retrieve.
      * @param array|string|null $opts
      *
-     * @return Token
+     * @return Order
      */
     public static function retrieve($id, $opts = null)
     {
@@ -19,10 +19,10 @@ class Token extends ApiResource
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Token The created token.
+     * @return Collection of OrderReturns
      */
-    public static function create($params = null, $opts = null)
+    public static function all($params = null, $opts = null)
     {
-        return self::_create($params, $opts);
+        return self::_all($params, $opts);
     }
 }

@@ -2,13 +2,13 @@
 
 namespace Stripe;
 
-class Plan extends ApiResource
+class SKU extends ApiResource
 {
     /**
-     * @param string $id The ID of the plan to retrieve.
+     * @param string $id The ID of the SKU to retrieve.
      * @param array|string|null $opts
      *
-     * @return Plan
+     * @return SKU
      */
     public static function retrieve($id, $opts = null)
     {
@@ -19,7 +19,7 @@ class Plan extends ApiResource
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Plan The created plan.
+     * @return SKU The created SKU.
      */
     public static function create($params = null, $opts = null)
     {
@@ -27,11 +27,11 @@ class Plan extends ApiResource
     }
 
     /**
-     * @param string $id The ID of the plan to update.
+     * @param string $id The ID of the SKU to update.
      * @param array|null $params
      * @param array|string|null $options
      *
-     * @return Plan The updated plan.
+     * @return SKU The updated SKU.
      */
     public static function update($id, $params = null, $options = null)
     {
@@ -39,20 +39,9 @@ class Plan extends ApiResource
     }
 
     /**
-     * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Plan The deleted plan.
-     */
-    public function delete($params = null, $opts = null)
-    {
-        return $this->_delete($params, $opts);
-    }
-
-    /**
-     * @param array|string|null $opts
-     *
-     * @return Plan The saved plan.
+     * @return SKU The saved SKU.
      */
     public function save($opts = null)
     {
@@ -63,10 +52,21 @@ class Plan extends ApiResource
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Collection of Plans
+     * @return Collection of SKUs
      */
     public static function all($params = null, $opts = null)
     {
         return self::_all($params, $opts);
+    }
+
+    /**
+     * @param array|null $params
+     * @param array|string|null $opts
+     *
+     * @return SKU The deleted sku.
+     */
+    public function delete($params = null, $opts = null)
+    {
+        return $this->_delete($params, $opts);
     }
 }

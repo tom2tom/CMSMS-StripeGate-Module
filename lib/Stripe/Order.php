@@ -2,13 +2,13 @@
 
 namespace Stripe;
 
-class Plan extends ApiResource
+class Order extends ApiResource
 {
     /**
-     * @param string $id The ID of the plan to retrieve.
+     * @param string $id The ID of the Order to retrieve.
      * @param array|string|null $opts
      *
-     * @return Plan
+     * @return Order
      */
     public static function retrieve($id, $opts = null)
     {
@@ -19,7 +19,7 @@ class Plan extends ApiResource
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Plan The created plan.
+     * @return Order The created Order.
      */
     public static function create($params = null, $opts = null)
     {
@@ -27,11 +27,11 @@ class Plan extends ApiResource
     }
 
     /**
-     * @param string $id The ID of the plan to update.
+     * @param string $id The ID of the order to update.
      * @param array|null $params
      * @param array|string|null $options
      *
-     * @return Plan The updated plan.
+     * @return Order The updated order.
      */
     public static function update($id, $params = null, $options = null)
     {
@@ -39,20 +39,9 @@ class Plan extends ApiResource
     }
 
     /**
-     * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Plan The deleted plan.
-     */
-    public function delete($params = null, $opts = null)
-    {
-        return $this->_delete($params, $opts);
-    }
-
-    /**
-     * @param array|string|null $opts
-     *
-     * @return Plan The saved plan.
+     * @return Order The saved Order.
      */
     public function save($opts = null)
     {
@@ -63,10 +52,31 @@ class Plan extends ApiResource
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Collection of Plans
+     * @return Collection of Orders
      */
     public static function all($params = null, $opts = null)
     {
         return self::_all($params, $opts);
+    }
+
+    /**
+     * @return Order The paid order.
+     */
+    public function pay($params = null, $opts = null)
+    {
+        $url = $this->instanceUrl() . '/pay';
+        list($response, $opts) = $this->_request('post', $url, $params, $opts);
+        $this->refreshFrom($response, $opts);
+        return $this;
+    }
+
+    /**
+     * @return OrderReturn The newly created return.
+     */
+    public function returnOrder($params = null, $opts = null)
+    {
+        $url = $this->instanceUrl() . '/returns';
+        list($response, $opts) = $this->_request('post', $url, $params, $opts);
+        return Util\Util::convertToStripeObject($response, $opts);
     }
 }

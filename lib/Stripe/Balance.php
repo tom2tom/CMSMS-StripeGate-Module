@@ -1,15 +1,16 @@
 <?php
 
-class Stripe_Balance extends Stripe_SingletonApiResource
+namespace Stripe;
+
+class Balance extends SingletonApiResource
 {
-  /**
-    * @param string|null $apiKey
-    *
-    * @return Stripe_Balance
-    */
-  public static function retrieve($apiKey=null)
-  {
-    $class = get_class();
-    return self::_scopedSingletonRetrieve($class, $apiKey);
-  }
+    /**
+     * @param array|string|null $opts
+     *
+     * @return Balance
+     */
+    public static function retrieve($opts = null)
+    {
+        return self::_singletonRetrieve($opts);
+    }
 }

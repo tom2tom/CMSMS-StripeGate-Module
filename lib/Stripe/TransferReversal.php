@@ -2,15 +2,15 @@
 
 namespace Stripe;
 
-class ApplicationFeeRefund extends ApiResource
+class TransferReversal extends ApiResource
 {
     /**
-     * @return string The API URL for this Stripe refund.
+     * @return string The API URL for this Stripe transfer reversal.
      */
     public function instanceUrl()
     {
         $id = $this['id'];
-        $fee = $this['fee'];
+        $transfer = $this['transfer'];
         if (!$id) {
             throw new Error\InvalidRequest(
                 "Could not determine which URL to request: " .
@@ -19,18 +19,18 @@ class ApplicationFeeRefund extends ApiResource
             );
         }
         $id = Util\Util::utf8($id);
-        $fee = Util\Util::utf8($fee);
+        $transfer = Util\Util::utf8($transfer);
 
-        $base = ApplicationFee::classUrl();
-        $feeExtn = urlencode($fee);
+        $base = Transfer::classUrl();
+        $transferExtn = urlencode($transfer);
         $extn = urlencode($id);
-        return "$base/$feeExtn/refunds/$extn";
+        return "$base/$transferExtn/reversals/$extn";
     }
 
     /**
      * @param array|string|null $opts
      *
-     * @return ApplicationFeeRefund The saved refund.
+     * @return TransferReversal The saved reversal.
      */
     public function save($opts = null)
     {
