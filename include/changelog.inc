@@ -10,4 +10,9 @@
    <li>Autoload Stripe classes on-demand instead of all-at-once</li>
   </ul>
  </li>
+ <li>Version 0.9 - July 2016
+  <ul>
+   <li>Upgrade Swipe API library to 3.15.0</li>
+  </ul>
+ </li>
 </ul>
