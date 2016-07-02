@@ -188,7 +188,7 @@ Apply module permissions, which are
 </ul>
 At least, create a user-group with the second of these permissions,
 add to that group all users permitted to manage the Stripe account(s) recorded in the module.<br /><br />
-Set up one or more accounts, by activating the Stripe item in the admin 'extensions' menu. If more than one, make one of them the default.<br /><br />
+Set up one or more accounts, by activating the Stripe item in the admin 'e-commerce' menu. If more than one, make one of them the default.<br /><br />
 <h4>Payplus action</h4>
 This displays a 'checkout' form, for the user to populate and submit.<br /><br />
 Put into a relevant page's content block, or into a 'form-builder' field:
@@ -232,7 +232,7 @@ Note that this is Stripe's older, non-namespaced, version of the library (to sup
 <h3>Requirements:</h3>
 <ul>
 <li>CMS Made Simple 1.9+</li>
-<li>PHP 5.2+</li>
+<li>PHP 5.3.3+</li>
 <li>PHP extensions
 <ul>
 <li>cURL</li>
