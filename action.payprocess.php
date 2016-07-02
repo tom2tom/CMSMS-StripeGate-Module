@@ -55,8 +55,8 @@ $data = array(
 
 try
 {
-	Stripe::setApiKey($privkey);
-	$charge = Stripe_Charge::create($data);
+	\Stripe\Stripe::setApiKey($privkey);
+	$charge = \Stripe\Charge::create($data);
 	$response = $charge->__toArray(TRUE);
 	$sql = 'INSERT INTO '.$pref.'module_sgt_record (
 account_id,

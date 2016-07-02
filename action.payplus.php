@@ -78,8 +78,8 @@ if(isset($params['stg_account'])) //we're back, after submission (no 'submit' pa
 
 	try
 	{
-		Stripe::setApiKey($privkey);
-		$charge = Stripe_Charge::create($data);
+		\Stripe\Stripe::setApiKey($privkey);
+		$charge = \Stripe\Charge::create($data);
 		$response = $charge->__toArray(TRUE);
 		$sql = 'INSERT INTO '.$pref.'module_sgt_record (
 account_id,
@@ -229,7 +229,7 @@ if(!$privkey)
 	return;
 }
 
-$account = Stripe_Account::retrieve($privkey);
+$account = \Stripe\Account::retrieve($privkey);
 if($account)
 {
 	$data = $account->__toArray();
@@ -302,14 +302,14 @@ $err5 = $this->Lang('err_noamount');
 $err6 = $this->Lang('err_nowho');
 $err7 = $this->Lang('err_nopurpose');
 //bad-value errors
-$err13 = $this->Lang('err_badnum');
-$err10 = $this->Lang('err_badmonth');
+$err12 = $this->Lang('err_badnum');
+$err13 = $this->Lang('err_badmonth');
 $yr = date('Y');
 $cent = substr($yr,0,2);
-$err11 = $this->Lang('err_badyear',$yr);
+$err14 = $this->Lang('err_badyear',$yr);
 $rawmin = preg_replace('/\D/','',$row['minpay']);
 $min = sgtUtils::GetPublicAmount($rawmin,$row['amountformat'],$symbol);
-$err12 = $this->Lang('err_toosmall',$min);
+$err15 = $this->Lang('err_toosmall',$min);
 if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches))
 {
 	$sep = ($matches[1]) ? $symbol : $matches[3];
@@ -357,23 +357,23 @@ function validate(field,value) {
   case 'number':
    var len = value.length;
    if(len==0) { return show_error(field,'{$err1}'); }
-   if(len<12 || len>16) { return show_error(field,'{$err13}'); }
+   if(len<12 || len>16) { return show_error(field,'{$err12}'); }
    break;
   case 'cvc':
    if(!value.length) { return show_error(field,'{$err2}'); }
    break;
   case 'exp_month':
    if(!value.length) { return show_error(field,'{$err3}'); }
-   if(value < 1 || value > 12) { return show_error(field,'{$err10}'); }
+   if(value < 1 || value > 12) { return show_error(field,'{$err13}'); }
    break;
   case 'exp_year':
    if(!value.length) { return show_error(field,'{$err4}'); }
-   if(value < {$yr}) { return show_error(field,'{$err11}'); }
+   if(value < {$yr}) { return show_error(field,'{$err14}'); }
    break;
   case 'amount':
    if(!value.length) { return show_error(field,'{$err5}'); }
    value = value.replace(/\D/g,'');
-   if(value < {$rawmin}) { return show_error(field,'{$err12}'); }
+   if(value < {$rawmin}) { return show_error(field,'{$err15}'); }
    break;
  }
  clear_error(field);

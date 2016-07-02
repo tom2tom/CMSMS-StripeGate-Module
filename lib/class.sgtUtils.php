@@ -12,26 +12,39 @@ class sgtUtils
 
 	/**
 	stripe_classload:
-	API-class autoloader
-	@classname: string
+	namespaced API-classes autoloader
+	@classname: string which may include namespacing
 	*/
 	public static function stripe_classload($classname)
 	{
 		$base = dirname(__FILE__).DIRECTORY_SEPARATOR.'Stripe'.DIRECTORY_SEPARATOR;
-		include_once($base.'Stripe.php');
-		if($classname == 'Stripe')
+		include_once($base.'Stripe.php'); // Stripe singleton
+		$parts = explode('\\',$classname);
+		$class = array_pop($parts);
+		if($class != 'Stripe')
 		{
-			include_once($base.'Stripe.php');
-		}
-		else
-		{
-			$fn = substr($classname,7); //drop the 'Stripe_' prefix
-			if(strpos($fn,'Util_') !== 0)
-				include_once($base.$fn.'.php');
+			if($parts[0] == '') {
+				unset($parts[0]); }
+			if($parts[0] == 'Stripe') {
+				unset($parts[0]); }
+			if($parts) {
+				$base .= implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR; }
+			if(strpos($class,'Stripe_') !== 0)
+				$fn = $class;
 			else
+				$fn = substr($class,7); //drop the prefix
+			//subdirs are hardcoded so we can specify the search-order
+			foreach(array('','Util','HttpClient','Error') as $sub)
 			{
-				$fn = substr($fn,5); //drop the 'Util_' prefix
-				include_once($base.'Util'.DIRECTORY_SEPARATOR.$fn.'.php');
+				if($sub)
+					$sub .= DIRECTORY_SEPARATOR;
+				$fp = $base.$sub.$fn.'.php';
+				if(file_exists($fp))
+				{
+					include($fp);
+					if(class_exists($classname)) {
+						break; }
+				}
 			}
 		}
 	}
