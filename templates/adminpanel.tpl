@@ -57,9 +57,11 @@
 {$tabstart_settings}
 {$formstart_settings}
 <div class="pageinput pageoverflow">
-<p class="pagetext">{$title_updir}:</p>
+<p class="pagetext" style="margin-left:0;">{$title_hook}:</p>
+<p>{$info_hook}<pre>{$url_hook}</pre></p>
+<p class="pagetext" style="margin-left:0;">{$title_updir}:</p>
 <p>{$input_updir}</p>
-<p class="pagetext">{$title_password}:</p>
+<p class="pagetext" style="margin-left:0;">{$title_password}:</p>
 <p>{$input_password}</p>
 {if isset($submit)}
 <br />

@@ -85,8 +85,15 @@ $lang['help_owner'] = 'Registered site user authorised for account maintenance';
 $lang['help_stylesfile'] = 'If none is supplied, default styles will be used. Otherwise, module help includes details of file content and location';
 $lang['help_surchargerate'] = 'If 0 or empty, no surcharge applies, duh. Otherwise, enter a decimal value, or a percentage value followed by \'%\'';
 $lang['help_title'] = 'If none is supplied, a title will be derived from the account name at runtime';
+$lang['help_reports_url'] =<<<EOS
+A webhook is the mechanism used by Stripe to report errors and other events such as declined transactions.
+Information is sent to an URL that has been specified in the Stripe account's control panel.
+That URL should be set to
+EOS;
 $lang['help_updir'] = 'Filesystem path relative to website-host uploads directory. No leading or trailing path-separator, and any intermediate path-separator must be host-system-specific e.g. \'\\\' on Windows. If left blank, the default will be used. Directory could contain .css files for specific checkouts, among others.';
 
+//$lang['import'] = 'Import';
+//$lang['help_import'] = <<<EOS EOS;
 $lang['last'] = 'last';
 $lang['missing'] = '&lt;Missing&gt;';
 $lang['month_template'] = 'MM';
@@ -116,6 +123,7 @@ $lang['perm_adm'] = 'Modify Stripe Gateway Settings';
 $lang['perm_mod'] = 'Modify Stripe Accounts';
 $lang['perm_use'] = 'Use Stripe Accounts';
 $lang['previous'] = 'previous';
+$lang['reports_url'] = 'URL to which Stripe can send webhook reports';
 $lang['submit'] = 'Submit';
 $lang['surcharge'] = 'A small surcharge (%s) will be applied, to help cover the transaction costs.';
 
@@ -170,9 +178,6 @@ $lang['updated'] = 'Settings updated';
 $lang['year_template'] = 'YYYY';
 $lang['yes'] = 'Yes';
 $lang['upload']='Upload';
-//$lang['help_import'] = <<<EOS EOS;
-//$lang['import'] = 'Import';
-//$lang['reporting_url'] = 'URL to which Stripe can send webhook reports';
 
 $lang['help_module'] = <<<EOS
 <h3>What does it do?</h3>

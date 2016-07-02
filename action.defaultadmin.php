@@ -332,6 +332,17 @@ if($padd)
 $tplvars['tabstart_settings'] = $this->StartTab('settings');
 $tplvars['formstart_settings'] = $this->CreateFormStart($id,'defaultadmin');
 
+//URL for running action.webhook, with dummy returnid
+$url = $this->CreateLink ('_','webhook',1,'',array(),'',TRUE);
+//strip the fake returnid, so that the default will be used
+$sep = strpos($url,'&amp;');
+$newurl = substr($url,0,$sep);
+$tplvars = $tplvars + array(
+	'title_hook' => $this->Lang('reports_url'),
+	'info_hook' => $this->Lang('help_reports_url'),
+	'url_hook' => $newurl
+);
+
 $tplvars['title_updir'] = $this->Lang('title_updir');
 $tplvars['input_updir'] = $this->CreateInputText($id,'uploads_dir',$this->GetPreference('uploads_dir'),30,60)
 .'<br />'.$this->Lang('help_updir');
