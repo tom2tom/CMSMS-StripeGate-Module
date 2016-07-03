@@ -86,9 +86,9 @@ $lang['help_stylesfile'] = 'If none is supplied, default styles will be used. Ot
 $lang['help_surchargerate'] = 'If 0 or empty, no surcharge applies, duh. Otherwise, enter a decimal value, or a percentage value followed by \'%\'';
 $lang['help_title'] = 'If none is supplied, a title will be derived from the account name at runtime';
 $lang['help_reports_url'] =<<<EOS
-A webhook is the mechanism used by Stripe to report errors and other events such as declined transactions.
-Information is sent to an URL that has been specified in the Stripe account's control panel.
-That URL should be set to
+A webhook is the mechanism used by Stripe to notify about events that happen in a Stripe account,
+such as errors and declined transactions. Information is sent to an URL that has been specified
+in the account's dashboard. That URL should be set to
 EOS;
 $lang['help_updir'] = 'Filesystem path relative to website-host uploads directory. No leading or trailing path-separator, and any intermediate path-separator must be host-system-specific e.g. \'\\\' on Windows. If left blank, the default will be used. Directory could contain .css files for specific checkouts, among others.';
 
