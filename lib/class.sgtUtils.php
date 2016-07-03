@@ -10,45 +10,6 @@ class sgtUtils
 {
 	const ENC_ROUNDS = 10000;
 
-	/**
-	stripe_classload:
-	namespaced API-classes autoloader
-	@classname: string which may include namespacing
-	*/
-	public static function stripe_classload($classname)
-	{
-		$base = dirname(__FILE__).DIRECTORY_SEPARATOR.'Stripe'.DIRECTORY_SEPARATOR;
-		include_once($base.'Stripe.php'); // Stripe singleton
-		$parts = explode('\\',$classname);
-		$class = array_pop($parts);
-		if($class != 'Stripe')
-		{
-			if($parts[0] == '') {
-				unset($parts[0]); }
-			if($parts[0] == 'Stripe') {
-				unset($parts[0]); }
-			if($parts) {
-				$base .= implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR; }
-			if(strpos($class,'Stripe_') !== 0)
-				$fn = $class;
-			else
-				$fn = substr($class,7); //drop the prefix
-			//subdirs are hardcoded so we can specify the search-order
-			foreach(array('','Util','HttpClient','Error') as $sub)
-			{
-				if($sub)
-					$sub .= DIRECTORY_SEPARATOR;
-				$fp = $base.$sub.$fn.'.php';
-				if(file_exists($fp))
-				{
-					include($fp);
-					if(class_exists($classname)) {
-						break; }
-				}
-			}
-		}
-	}
-
 	/* *
 	SafeGet:
 	Execute SQL command(s) with minimal chance of data-race

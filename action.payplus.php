@@ -23,7 +23,7 @@ if(empty($params['account']) && empty($params['stg_account']))
 	}
 }
 
-spl_autoload_register(array('sgtUtils','stripe_classload'));
+//spl_autoload_register(array('sgtUtils','stripe_classload'));
 
 $pref = cms_db_prefix();
 
@@ -78,8 +78,8 @@ if(isset($params['stg_account'])) //we're back, after submission (no 'submit' pa
 
 	try
 	{
-		\Stripe\Stripe::setApiKey($privkey);
-		$charge = \Stripe\Charge::create($data);
+		Stripe\Stripe::setApiKey($privkey);
+		$charge = Stripe\Charge::create($data);
 		$response = $charge->__toArray(TRUE);
 		$sql = 'INSERT INTO '.$pref.'module_sgt_record (
 account_id,
@@ -229,7 +229,7 @@ if(!$privkey)
 	return;
 }
 
-$account = \Stripe\Account::retrieve($privkey);
+$account = Stripe\Account::retrieve($privkey);
 if($account)
 {
 	$data = $account->__toArray();

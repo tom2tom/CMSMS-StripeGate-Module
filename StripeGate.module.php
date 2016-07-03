@@ -28,7 +28,10 @@ class StripeGate extends CMSModule
 		$this->havemcrypt = function_exists('mcrypt_encrypt');
 		global $CMS_VERSION;
 		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
-//		spl_autoload_register(array('sgtUtils','stripe_classload')); won't work yet ...
+
+		$fp = cms_join_path(__DIR__,'lib','Stripe','Stripe.php'); // Stripe singleton always
+		require($fp);
+		spl_autoload_register(array($this,'stripe_classload'));
 	}
 
 	public function AllowAutoInstall()
@@ -79,7 +82,7 @@ class StripeGate extends CMSModule
 
 	public function GetChangeLog()
 	{
-		return ''.@file_get_contents(cms_join_path(dirname(__FILE__),'include','changelog.inc'));
+		return ''.@file_get_contents(cms_join_path(__DIR__,'include','changelog.inc'));
 	}
 
 	public function IsPluginModule()
@@ -266,6 +269,41 @@ EOS;
 			break;
 		}
 		parent::DoAction($name,$id,$params,$returnid);
+	}
+
+	/**
+	stripe_classload:
+	autoloader for namespaced Stripe-API-classes (as of library V.3.15.0)
+	@classname: string which may include namespacing
+	*/
+	public function stripe_classload($classname)
+	{
+		$parts = explode('\\',$classname);
+		if($parts[0] != 'Stripe') {
+			return; }
+		$class = array_pop($parts);
+		if($class != 'Stripe') //Stripe\Stripe loaded in __construct()
+		{
+			$base = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR
+				. implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR;
+			if(strpos($class,'Stripe_') !== 0)
+				$fn = $class;
+			else
+				$fn = substr($class,7); //drop the prefix
+			//subdirs are hardcoded so we can specify the search-order
+			foreach(array('','Util','HttpClient','Error') as $sub)
+			{
+				if($sub)
+					$sub .= DIRECTORY_SEPARATOR;
+				$fp = $base.$sub.$fn.'.php';
+				if(file_exists($fp))
+				{
+					include($fp);
+					if(class_exists($classname)) {
+						break; }
+				}
+			}
+		}
 	}
 
 }

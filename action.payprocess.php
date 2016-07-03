@@ -23,7 +23,7 @@ if($handlers)
 		ob_end_clean();
 }
 
-spl_autoload_register(array('sgtUtils','stripe_classload'));
+//spl_autoload_register(array('sgtUtils','stripe_classload'));
 
 $row = $db->GetRow('SELECT currency,usetest,privtoken,testprivtoken FROM '.
 	cms_db_prefix().'module_sgt_account WHERE account_id=?',array($params['stg_account']));
@@ -55,8 +55,8 @@ $data = array(
 
 try
 {
-	\Stripe\Stripe::setApiKey($privkey);
-	$charge = \Stripe\Charge::create($data);
+	Stripe\Stripe::setApiKey($privkey);
+	$charge = Stripe\Charge::create($data);
 	$response = $charge->__toArray(TRUE);
 	$sql = 'INSERT INTO '.$pref.'module_sgt_record (
 account_id,
