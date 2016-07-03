@@ -70,7 +70,7 @@ if(isset($_FILES) && isset($_FILES[$fn]))
 
 $name = $db->GetOne('SELECT name FROM '.$pref.'module_sgt_account WHERE account_id=?',array($params['account_id']));
 
-$fn = cms_join_path(dirname(__FILE__),'css','payplus.css');
+$fn = cms_join_path(__DIR__,'css','payplus.css');
 $styles = @file_get_contents($fn);
 if($styles)
 {
