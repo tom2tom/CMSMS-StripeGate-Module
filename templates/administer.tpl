@@ -9,28 +9,28 @@
   <table id="itemdata" class="pagetable">
    <thead><tr>
 {strip}
-			<th class="{ldelim}sss:'isoDate'{rdelim}">{$title_submitted}</th>
-			<th class="{ldelim}sss:'number'{rdelim}">{$title_amount}</th>
-			<th>{$title_what}</th>
-			<th>{$title_for}</th>
-			<th>{$title_token}</th>
-			<th class="nosort pageicon"></th>
-{if $pmod}	<th class="nosort pageicon"></th>{/if}
-			<th class="nosort checkbox" style="width:20px;">{$header_checkbox}</th>
+	<th class="{ldelim}sss:'isoDate'{rdelim}">{$title_submitted}</th>
+	<th class="{ldelim}sss:'number'{rdelim}">{$title_amount}</th>
+	<th>{$title_what}</th>
+	<th>{$title_for}</th>
+	<th>{$title_token}</th>
+	<th class="nosort pageicon"></th>
+{if $pmod} <th class="nosort pageicon"></th>{/if}
+	<th class="nosort checkbox" style="width:20px;">{$header_checkbox}</th>
 {/strip}
    </tr></thead>
    <tbody>
 {foreach from=$rows item=payment}{cycle values='row1,row2' assign='rowclass'}
     <tr class="{$rowclass}" onmouseover="this.className='{$rowclass}hover';" onmouseout="this.className='{$rowclass}';">
 {strip}
-			<td>{$payment->submitted}</td>
-			<td style="text-align:right;">{$payment->amount}</td>
-			<td>{$payment->what}</td>
-			<td>{$payment->who}</td>
-			<td>{$payment->token}</td>
-			<td>{$payment->export}</td>
-{if $pmod}	<td>{$payment->delete}</td>{/if}
-			<td>{$payment->selected}</td>
+	<td>{$payment->submitted}</td>
+	<td style="text-align:right;">{$payment->amount}</td>
+	<td>{$payment->what}</td>
+	<td>{$payment->who}</td>
+	<td>{$payment->token}</td>
+	<td>{$payment->export}</td>
+{if $pmod} <td>{$payment->delete}</td>{/if}
+	<td>{$payment->selected}</td>
 {/strip}
     </tr>
 {/foreach}
