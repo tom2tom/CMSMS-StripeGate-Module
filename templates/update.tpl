@@ -4,7 +4,7 @@
 {$hidden}
 <div class="pageinput pageoverflow">
 {foreach from=$settings item=setting}
- <p class="pagetext">{$setting->title}:</p>
+ <p class="pagetext" style="margin-left:0;">{$setting->title}:</p>
  <div>{$setting->input}{if isset($setting->help)}<br />{$setting->help}{/if}</div>
 {/foreach}
 <br />
