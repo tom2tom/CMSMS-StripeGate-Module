@@ -59,15 +59,13 @@ $sqlarray = $dict->CreateTableSQL($pref.'module_sgt_record',$flds,$taboptarray);
 $dict->ExecuteSQLArray($sqlarray);
 
 $ud = $config['uploads_path'];
-if($ud && is_dir($ud))
-{
+if ($ud && is_dir($ud)) {
 	$name = $this->GetName();
 	$ud = cms_join_path($ud,$name);
-	if(!is_dir($ud))
+	if (!is_dir($ud))
 		mkdir($ud,0755);
 	$this->SetPreference('uploads_dir',$name); //path relative to host uploads dir
-}
-else
+} else
 	$this->SetPreference('uploads_dir',FALSE);
 $this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
 
@@ -75,5 +73,3 @@ $this->CreatePermission('UseStripeAccount',$this->Lang('perm_use'));
 $this->CreatePermission('ModifyStripeAccount',$this->Lang('perm_mod'));
 $this->CreatePermission('ModifyStripeGateProperties',$this->Lang('perm_adm'));
 //$this->CreateEvent('');
-
-?>

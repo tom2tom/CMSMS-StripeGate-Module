@@ -92,8 +92,8 @@ class StripeGate extends CMSModule
 
 /*	public function HasCapability($capability,$params = array())
 	{
-		switch($capability)
-		{
+		switch ($capability) {
+		 case 'whatever':
 			return TRUE;
 		 default:
 			return FALSE;
@@ -142,11 +142,10 @@ class StripeGate extends CMSModule
 EOS;
 	}
 
-	function SuppressAdminOutput(&$request)
+	public function SuppressAdminOutput(&$request)
 	{
-		if(isset($_SERVER['QUERY_STRING']))
-		{
-			if(strpos($_SERVER['QUERY_STRING'],'export') !== FALSE)
+		if (isset($_SERVER['QUERY_STRING'])) {
+			if (strpos($_SERVER['QUERY_STRING'],'export') !== FALSE)
 				return TRUE;
 		}
 		return FALSE;
@@ -234,8 +233,7 @@ EOS;
 
 /*	public function GetEventDescription($eventname)
 	{
-		switch($eventname)
-		{
+		switch ($eventname) {
 		 case 'StripeDeliveryReported':
 			return $this->Lang('event_desc_delivery');
 		 default:
@@ -245,8 +243,7 @@ EOS;
 
 	public function GetEventHelp($eventname)
 	{
-		switch($eventname)
-		{
+		switch ($eventname) {
 		 case 'StripeDeliveryReported':
 			return $this->Lang('event_help_delivery');
 		 default:
@@ -259,11 +256,10 @@ EOS;
 		return new stripe_clearlog_task();
 	}
 */
-	function DoAction($name,$id,$params,$returnid='')
+	public function DoAction($name, $id, $params, $returnid='')
 	{
 		//diversions
-		switch ($name)
-		{
+		switch ($name) {
 		 case 'default':
 			$name = 'payplus';
 			break;
@@ -279,33 +275,29 @@ EOS;
 	public function stripe_classload($classname)
 	{
 		$parts = explode('\\',$classname);
-		if($parts[0] != 'Stripe') {
-			return; }
+		if ($parts[0] != 'Stripe') {
+			return;
+		}
 		$class = array_pop($parts);
-		if($class != 'Stripe') //Stripe\Stripe loaded in __construct()
-		{
+		if ($class != 'Stripe') { //Stripe\Stripe loaded in __construct()
 			$base = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR
 				. implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR;
-			if(strpos($class,'Stripe_') !== 0)
+			if (strpos($class,'Stripe_') !== 0)
 				$fn = $class;
 			else
 				$fn = substr($class,7); //drop the prefix
 			//subdirs are hardcoded so we can specify the search-order
-			foreach(array('','Util','HttpClient','Error') as $sub)
-			{
-				if($sub)
+			foreach (array('','Util','HttpClient','Error') as $sub) {
+				if ($sub)
 					$sub .= DIRECTORY_SEPARATOR;
 				$fp = $base.$sub.$fn.'.php';
-				if(file_exists($fp))
-				{
+				if (file_exists($fp)) {
 					include($fp);
-					if(class_exists($classname)) {
-						break; }
+					if (class_exists($classname)) {
+						break;
+					}
 				}
 			}
 		}
 	}
-
 }
-
-?>

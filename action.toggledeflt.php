@@ -6,13 +6,12 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(!$this->CheckPermission('ModifyStripeGateProperties')) exit;
+if (!$this->CheckPermission('ModifyStripeGateProperties')) exit;
 
 $newval = ($params['current']) ? 0:1;
 $pref = cms_db_prefix();
-if($newval)
+if ($newval)
 	$db->Execute('UPDATE '.$pref.'module_sgt_account SET isdefault=0');
 $db->Execute('UPDATE '.$pref.'module_sgt_account SET isdefault='.$newval.' WHERE account_id=?',array($params['account_id']));
 
 $this->Redirect($id,'defaultadmin');
-?>

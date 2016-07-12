@@ -28,24 +28,19 @@ class sgtExport
 	@account_id: index of the account to process, or array of such, or FALSE if @record_id is provided
 	@record_id: index of the record to process, or array of such, or FALSE if @account_id is provided
 	*/
-	private function ExportName(&$mod,$account_id=FALSE,$record_id=FALSE)
+	private function ExportName(&$mod, $account_id=FALSE, $record_id=FALSE)
 	{
-		if($account_id)
-		{
-			if(is_array($account_id))
-			{
+		if ($account_id) {
+			if (is_array($account_id)) {
 				$c = count($account_id);
-				if($c == 1)
+				if ($c == 1)
 					$aname = self::GetAccountNameFromID($account_id[0]);
 				else
 					$aname = 'Multi('.$c.')Accounts';
-			}
-			else
+			} else
 				$aname = self::GetAccountNameFromID($account_id);
-		}
-		else
-		{
-			if(is_array($record_id))
+		} else {
+			if (is_array($record_id))
 				$rid = reset($record_id);
 			else
 				$rid = $record_id;
@@ -76,60 +71,50 @@ class sgtExport
 	(except when the separator is '&', '#' or ';', those become %...%)
 	Returns: TRUE/string, or FALSE on error
 	*/
-	private function CSV(&$mod,$account_id=FALSE,$record_id=FALSE,$fp = FALSE,$sep = ',')
+	private function CSV(&$mod, $account_id=FALSE, $record_id=FALSE, $fp=FALSE, $sep=',')
 	{
 		global $db;
 		$pref = cms_db_prefix();
 		$adata = $db->GetAssoc('SELECT account_id,name,currency,amountformat FROM '.$pref.'module_sgt_account');
-		if(!$adata)
+		if (!$adata)
 			return FALSE;
 
-		if($account_id)
-		{
-			if(is_array($account_id))
-			{
+		if ($account_id) {
+			if (is_array($account_id)) {
 				$sql = 'SELECT record_id FROM '.$pref.
 				'module_sgt_record WHERE account_id IN('.
 				implode('?,',count($account_id)-1).'?) ORDER BY account_id,recorded';
 				$all = $db->GetCol($sql,$account_id);
-			}
-			else
-			{
+			} else {
 				$sql = 'SELECT record_id FROM '.$pref.
 				'module_sgt_record WHERE account_id=? ORDER BY recorded';
 				$all = $db->GetCol($sql,array($account_id));
 			}
-		}
-		elseif($record_id)
-		{
-			if(is_array($record_id))
+		} elseif ($record_id) {
+			if (is_array($record_id))
 				$all = $record_id;
 			else
 				$all = array($record_id);
-		}
-		else
+		} else
 			return FALSE;
 
-		foreach($adata as $id=>&$row)
+		foreach ($adata as $id=>&$row)
 			$row['symbol'] = sgtUtils::GetSymbol($row['currency']);
 		unset($row);
 
-		if($fp && ini_get('mbstring.internal_encoding') !== FALSE) //send to file, and conversion is possible
-		{
+		if ($fp && ini_get('mbstring.internal_encoding') !== FALSE) { //send to file, and conversion is possible
 			$config = cmsms()->GetConfig();
-			if(!empty($config['default_encoding']))
+			if (!empty($config['default_encoding']))
 				$defchars = trim($config['default_encoding']);
 			else
 				$defchars = 'UTF-8';
 			$expchars = $mod->GetPreference('export_file_encoding','ISO-8859-1');
 			$convert = (strcasecmp ($expchars,$defchars) != 0);
-		}
-		else
+		} else
 			$convert = FALSE;
 
 		$sep2 = ($sep != ' ')?' ':',';
-		switch ($sep)
-		{
+		switch ($sep) {
 		 case '&':
 			$r = '%38%';
 			break;
@@ -157,26 +142,22 @@ class sgtExport
 		));
 		$outstr .= PHP_EOL;
 
-		if($all)
-		{
+		if ($all) {
 			$sql = 'SELECT * FROM '.$pref.
 			'module_sgt_record WHERE record_id IN('.implode(',',$all).')';
 			$all = $db->GetAll($sql);
 			//data lines(s)
-			foreach($all as &$row)
-			{
+			foreach ($all as &$row) {
 				unset($row['record_id']);
 				$aid = (int)$row['account_id'];
 				unset($row['account_id']);
 			 	$fv = $adata[$aid]['name'];
-				if($strip)
+				if ($strip)
 					$fv = strip_tags($fv);
 				$fv = str_replace($sep,$r,$fv);
 				$outstr .= preg_replace('/[\n\t\r]/',$sep2,$fv);
-				foreach($row as $fn=>$fv)
-				{
-					switch($fn)
-					{
+				foreach ($row as $fn=>$fv) {
+					switch ($fn) {
 					 case 'amount':
 					 	$outstr .= $sep.sgtUtils::GetPublicAmount($fv,$adata[$aid]['amountformat'],$adata[$aid]['symbol']);
 						break;
@@ -184,23 +165,19 @@ class sgtExport
 						$outstr .= $sep.date('Y-m-d H:i:s',$fv);
 						break;
 					 default:
-						if($strip)
+						if ($strip)
 							$fv = strip_tags($fv);
 						$fv = str_replace($sep,$r,$fv);
 						$outstr .= $sep.preg_replace('/[\n\t\r]/',$sep2,$fv);
 					}
 				}
 				$outstr .= PHP_EOL;
-				if($fp)
-				{
-					if($convert)
-					{
+				if ($fp) {
+					if ($convert) {
 						$conv = mb_convert_encoding($outstr, $expchars, $defchars);
 						fwrite($fp, $conv);
 						unset($conv);
-					}
-					else
-					{
+					} else {
 						fwrite($fp, $outstr);
 					}
 					$outstr = '';
@@ -208,24 +185,18 @@ class sgtExport
 			}
 			unset($row);
 
-			if($fp)
+			if ($fp)
 				return TRUE;
 			else
 				return $outstr; //encoding conversion upstream
-		}
-		else
-		{
+		} else {
 			//no data, produce just a header line
-			if($fp)
-			{
-				if($convert)
-				{
+			if ($fp) {
+				if ($convert) {
 					$conv = mb_convert_encoding($outstr, $expchars, $defchars);
 					fwrite($fp, $conv);
 					unset($conv);
-				}
-				else
-				{
+				} else {
 					fwrite($fp, $outstr);
 				}
 				return TRUE;
@@ -243,25 +214,21 @@ class sgtExport
 	At least one of @account_id or @record_id must be provided.
 	Returns: TRUE on success, or lang key for error message upon failure
 	*/
-	public function Export(&$mod,$account_id=FALSE,$record_id=FALSE,$sep = ',')
+	public function Export(&$mod, $account_id=FALSE, $record_id=FALSE, $sep=',')
 	{
 		if (!($account_id || $record_id))
 			return 'err_parameter';
 		$fname = self::ExportName($mod,$account_id,$record_id);
 
-		if($mod->GetPreference('export_file',FALSE))
-		{
+		if ($mod->GetPreference('export_file',FALSE)) {
 			$updir = sgtUtils::GetUploadsPath($mod);
-			if($updir)
-			{
+			if ($updir) {
 				$filepath = $updir.DIRECTORY_SEPARATOR.$fname;
 				$fp = fopen($filepath,'w');
-				if($fp)
-				{
+				if ($fp) {
 					$success = self::CSV($mod,$account_id,$record_id,$fp,$sep);
 					fclose($fp);
-					if($success)
-					{
+					if ($success) {
 						$url = sgtUtils::GetUploadsUrl($mod).'/'.$fname;
 						@ob_clean();
 						@ob_clean();
@@ -270,25 +237,19 @@ class sgtExport
 					}
 				}
 			}
-		}
-		else
-		{
+		} else {
 			$csv = self::CSV($mod,$account_id,$record_id,FALSE,$sep);
-			if($csv)
-			{
+			if ($csv) {
 				$config = cmsms()->GetConfig();
-				if(!empty($config['default_encoding']))
+				if (!empty($config['default_encoding']))
 					$defchars = trim($config['default_encoding']);
 				else
 					$defchars = 'UTF-8';
 
-				if(ini_get('mbstring.internal_encoding') !== FALSE) //conversion is possible
-				{
+				if (ini_get('mbstring.internal_encoding') !== FALSE) { //conversion is possible
 					$expchars = $mod->GetPreference('export_file_encoding','ISO-8859-1');
 					$convert = (strcasecmp ($expchars,$defchars) != 0);
-				}
-				else
-				{
+				} else {
 					$expchars = $defchars;
 					$convert = FALSE;
 				}
@@ -304,7 +265,7 @@ class sgtExport
 				header('Content-Type: text/csv; charset='.$expchars);
 				header('Content-Length: '.strlen($csv));
 				header('Content-Disposition: attachment; filename='.$fname);
-				if($convert)
+				if ($convert)
 					echo mb_convert_encoding($csv,$expchars,$defchars);
 				else
 					echo $csv;
@@ -314,5 +275,3 @@ class sgtExport
 		return 'err_export';
 	}
 }
-
-?>

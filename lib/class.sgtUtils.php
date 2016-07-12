@@ -22,12 +22,10 @@ class sgtUtils
 	{
 		$db = cmsms()->GetDb();
 		$nt = 10;
-		while($nt > 0)
-		{
+		while ($nt > 0) {
 			$db->Execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
 			$db->StartTrans();
-			switch($mode)
-			{
+			switch ($mode) {
 			 case 'one':
 				$ret = $db->GetOne($sql,$args);
 				break;
@@ -44,10 +42,9 @@ class sgtUtils
 				$ret = $db->GetAll($sql,$args);
 				break;
 			}
-			if($db->CompleteTrans())
+			if ($db->CompleteTrans())
 				return $ret;
-			else
-			{
+			else {
 				$nt--;
 				usleep(50000);
 			}
@@ -62,25 +59,21 @@ class sgtUtils
 	@args: array of arguments for @sql, or array of them
 	Returns: boolean indicating successful completion
 	*/
-/*	public static function SafeExec($sql,$args)
+/*	public static function SafeExec($sql, $args)
 	{
 		$db = cmsms()->GetDb();
 		$nt = 10;
-		while($nt > 0)
-		{
+		while ($nt > 0) {
 			$db->Execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE'); //this isn't perfect!
 			$db->StartTrans();
-			if(is_array($sql))
-			{
-				foreach($sql as $i=>$cmd)
+			if (is_array($sql)) {
+				foreach ($sql as $i=>$cmd)
 					$db->Execute($cmd,$args[$i]);
-			}
-			else
+			} else
 				$db->Execute($sql,$args);
-			if($db->CompleteTrans())
+			if ($db->CompleteTrans())
 				return TRUE;
-			else
-			{
+			else {
 				$nt--;
 				usleep(50000);
 			}
@@ -96,27 +89,21 @@ class sgtUtils
 	@cache: optional boolean, default TRUE
 	Returns: string, processed template
 	*/
-	public static function ProcessTemplate(&$mod,$tplname,$tplvars,$cache=TRUE)
+	public static function ProcessTemplate(&$mod, $tplname, $tplvars, $cache=TRUE)
 	{
 		global $smarty;
-		if($mod->before20)
-		{
+		if ($mod->before20) {
 			$smarty->assign($tplvars);
 			return $mod->ProcessTemplate($tplname);
-		}
-		else
-		{
-			if($cache)
-			{
+		} else {
+			if ($cache) {
 				$cache_id = md5('sgt'.$tplname.serialize(array_keys($tplvars)));
 				$lang = CmsNlsOperations::get_current_language();
 				$compile_id = md5('sgt'.$tplname.$lang);
 				$tpl = $smarty->CreateTemplate($mod->GetFileResource($tplname),$cache_id,$compile_id,$smarty);
-				if(!$tpl->isCached())
+				if (!$tpl->isCached())
 					$tpl->assign($tplvars);
-			}
-			else
-			{
+			} else {
 				$tpl = $smarty->CreateTemplate($mod->GetFileResource($tplname),NULL,NULL,$smarty,$tplvars);
 			}
 			return $tpl->fetch();
@@ -132,9 +119,8 @@ class sgtUtils
 		$db = cmsms()->GetDb();
 		$ids = $db->GetAll(
 'SELECT account_id,isdefault FROM '.cms_db_prefix().'module_sgt_account ORDER BY isdefault DESC,account_id');
-		if($ids)
-		{
-			if($ids[0]['isdefault'] == TRUE || count($ids) == 1)
+		if ($ids) {
+			if ($ids[0]['isdefault'] == TRUE || count($ids) == 1)
 				return (int)$ids[0]['account_id'];
 		}
 		return FALSE;
@@ -149,12 +135,11 @@ class sgtUtils
 	{
 		$config = cmsms()->GetConfig();
 		$up = $config['uploads_path'];
-		if($up)
-		{
+		if ($up) {
 			$rp = $mod->GetPreference('uploads_dir');
-			if($rp)
+			if ($rp)
 				$up .= DIRECTORY_SEPARATOR.$rp;
-			if(is_dir($up))
+			if (is_dir($up))
 				return $up;
 		}
 		return FALSE;
@@ -170,11 +155,9 @@ class sgtUtils
 		$config = cmsms()->GetConfig();
 		$key = (empty($_SERVER['HTTPS'])) ? 'uploads_url':'ssl_uploads_url';
 		$up = $config[$key];
-		if($up)
-		{
+		if ($up) {
 			$rp = $mod->GetPreference('uploads_dir');
-			if($rp)
-			{
+			if ($rp) {
 				$rp = str_replace('\\','/',$rp);
 				$up .= '/'.$rp;
 			}
@@ -204,22 +187,18 @@ class sgtUtils
 	@based: optional boolean, whether to base64_encode the encrypted value, default FALSE
 	Returns: encrypted @value, or just @value if it's empty
 	*/
-	public static function encrypt_value(&$mod,$value,$passwd=FALSE,$based=FALSE)
+	public static function encrypt_value(&$mod, $value, $passwd=FALSE, $based=FALSE)
 	{
-		if($value)
-		{
-			if(!$passwd)
-			{
+		if ($value) {
+			if (!$passwd) {
 				$passwd = self::unfusc($mod->GetPreference('masterpass'));
 			}
-			if($passwd && $mod->havemcrypt)
-			{
+			if ($passwd && $mod->havemcrypt) {
 				$e = new Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
 				$value = $e->encrypt($value,$passwd);
-				if($based)
+				if ($based)
 					$value = base64_encode($value);
-			}
-			else
+			} else
 				$value = self::fusc($passwd.$value);
 		}
 		return $value;
@@ -233,22 +212,18 @@ class sgtUtils
 	@based: optional boolean, whether to base64_decode the value, default FALSE
 	Returns: decrypted @value, or just @value if it's empty
 	*/
-	public static function decrypt_value(&$mod,$value,$passwd=FALSE,$based=FALSE)
+	public static function decrypt_value(&$mod, $value, $passwd=FALSE, $based=FALSE)
 	{
-		if($value)
-		{
-			if(!$passwd)
-			{
+		if ($value) {
+			if (!$passwd) {
 				$passwd = self::unfusc($mod->GetPreference('masterpass'));
 			}
-			if($passwd && $mod->havemcrypt)
-			{
-				if($based)
+			if ($passwd && $mod->havemcrypt) {
+				if ($based)
 					$value = base64_decode($value);
 				$e = new Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
 				$value = $e->decrypt($value,$passwd);
-			}
-			else
+			} else
 				$value = substr(strlen($passwd),self::unfusc($value));
 		}
 		return $value;
@@ -261,8 +236,7 @@ class sgtUtils
 	*/
 	public static function fusc($str)
 	{
-		if($str)
-		{
+		if ($str) {
 			$s = substr(base64_encode(md5(microtime())),0,5);
 			return $s.base64_encode($s.$str);
 		}
@@ -276,8 +250,7 @@ class sgtUtils
 	*/
 	public static function unfusc($str)
 	{
-		if($str)
-		{
+		if ($str) {
 			$s = base64_decode(substr($str,5));
 			return substr($s,5);
 		}
@@ -290,10 +263,10 @@ class sgtUtils
 	@fullname: account name
 	Returns: alias-suitable string, max 15 chars
 	*/
-	public static function ConstructAlias($alias,$fullname)
+	public static function ConstructAlias($alias, $fullname)
 	{
 		$alias = mb_convert_case(trim($alias),MB_CASE_LOWER); //TODO encoding
-		if(!$alias)
+		if (!$alias)
 			$alias = mb_convert_case(trim($fullname,"\t\n\r\0 _"),MB_CASE_LOWER);
 		$alias = preg_replace('/\W+/','_',$alias); //TODO mb_
 		$parts = array_slice(explode('_',$alias),0,5);
@@ -591,7 +564,7 @@ class sgtUtils
 		'zmw'=>'ZK'
 		);
 
-		if(array_key_exists($code,$symbols))
+		if (array_key_exists($code,$symbols))
 			return $symbols[$code];
 		return '<?>';
 	}
@@ -603,29 +576,24 @@ class sgtUtils
 	@symbol: currency symbol string
 	Returns: formatted string representing amount e.g. $19.99
 	*/
-	public static function GetPublicAmount($units,$format,$symbol)
+	public static function GetPublicAmount($units, $format, $symbol)
 	{
-		if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches))
-		{
+		if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches)) {
 			$places = strlen($matches[4]);
 			$times = pow(10,$places);
 			$num = number_format($units/$times,$places);
-			if($matches[1])
-			{
-				if(strpos('.',$num) !== FALSE)
+			if ($matches[1]) {
+				if (strpos('.',$num) !== FALSE)
 					$num = str_replace('.',$symbol,$num); //workaround PHP<5.4
 				else
 					$num .= $symbol;
-			}
-			else
-			{
-				if($matches[3] != '.')
+			} else {
+				if ($matches[3] != '.')
 					$num = str_replace('.',$matches[3],$num);
 				$num = $symbol.$num;
 			}
 			return $num;
-		}
-		else
+		} else
 			return $symbol.number_format($units/100,2);
 	}
 
@@ -636,22 +604,17 @@ class sgtUtils
 	@symbol: currency symbol string
 	Returns: number, in 'indivisible' units as used internally by Stripe
 	*/
-	public static function GetPrivateAmount($amount,$format,$symbol)
+	public static function GetPrivateAmount($amount, $format, $symbol)
 	{
-		if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches))
-		{
-			if($matches[1])
+		if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches)) {
+			if ($matches[1])
 				$num = str_replace($symbol,'.',$amount);
 			else
 				$num = str_replace(array($symbol,$matches[3]),array('','.'),$amount);
 			$places = strlen($matches[4]);
 			$times = pow(10,$places);
 			return (int)($num * $times);
-		}
-		else
+		} else
 			return preg_replace('/\D/','',$amount) + 0; //assume 'raw' is good enough, in this context
 	}
-
 }
-
-?>

@@ -6,66 +6,54 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(!($this->CheckPermission('ModifyStripeGateProperties')
+if (!($this->CheckPermission('ModifyStripeGateProperties')
   || $this->CheckPermission('ModifyStripeAccount'))) exit;
 
-if(isset($params['upcancel']))
+if (isset($params['upcancel']))
 	$this->Redirect($id,'update',$returnid,array('account_id'=>$params['account_id']));
 
 $pref = cms_db_prefix();
 
 $fn = $id.'iconfile';
-if(isset($_FILES) && isset($_FILES[$fn]))
-{
+if (isset($_FILES) && isset($_FILES[$fn])) {
 	$file_data = $_FILES[$fn];
-	if($file_data['error'] != 0
-	 || strpos($file_data['type'],'image/') !== 0)
-	{
+	if ($file_data['error'] != 0
+	 || strpos($file_data['type'],'image/') !== 0) {
 		$message = $this->Lang('err_file');
-	}
-	else
-	{
+	} else {
 		$img = FALSE;
 		$tmpname = $file_data['tmp_name'];
-		if(function_exists('finfo_fopen'))
-		{
+		if (function_exists('finfo_fopen')) {
 			$finfo = new finfo();
 			$mtype = $finfo->file($tmpname,FILEINFO_MIME_TYPE);
 			$img = (strpos($mtype,'image/') === 0);
-		} elseif(function_exists('getimagesize'))
-		{
+		} elseif (function_exists('getimagesize')) {
 			$img = getimagesize($tmpname) ? TRUE:FALSE;
-		} elseif(function_exists('exif_imagetype'))
-		{
+		} elseif (function_exists('exif_imagetype')) {
 			$img = (exif_imagetype($tmpname) !== FALSE);
-		} elseif(function_exists('mime_content_type'))
-		{
+		} elseif (function_exists('mime_content_type')) {
 			$mtype = mime_content_type($tmpname);
 			$img = (strpos($mtype,'image/') === 0);
 		}
-		if(!$img)
+		if (!$img)
 			$message = $this->Lang('err_file');
 	}
 
-	if(empty($message))
-	{
+	if (empty($message)) {
 		$fp = sgtUtils::GetUploadsPath($this);
-		if($fp)
-		{
+		if ($fp) {
 			$fp = cms_join_path($fp,$file_data['name']);
 			if (!chmod($file_data['tmp_name'],0644) ||
 				!cms_move_uploaded_file($file_data['tmp_name'],$fp))
 				$message = $this->Lang('err_upload');
-			else //all good
-			{
+			else { //all good
 				$sql = 'UPDATE '.$pref.'module_sgt_account SET iconfile=? WHERE account_id=?';
 				$db->Execute($sql,array($file_data['name'],$params['account_id']));
 			}
-		}
-		else
+		} else
 			$message = $this->Lang('err_upload');
 	}
-	if(empty($message))
+	if (empty($message))
 		$message = FALSE;
 	$this->Redirect($id,'update',$returnid,array('account_id'=>$params['account_id'],'message'=>$message));
 }
@@ -84,4 +72,3 @@ $tplvars = array(
 );
 
 echo sgtUtils::ProcessTemplate($this,'chooser.tpl',$tplvars);
-?>

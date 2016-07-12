@@ -6,18 +6,14 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(empty($params['account']) && empty($params['stg_account']))
-{
+if (empty($params['account']) && empty($params['stg_account'])) {
 	$default = sgtUtils::GetAccount();
-	if($default)
-	{
-		if(isset($params['submit']))
+	if ($default) {
+		if (isset($params['submit']))
 			$params['stg_account'] = $default;
 		else
 			$params['account'] = $default;
-	}
-	else
-	{
+	} else {
 		echo $this->Lang('err_parameter');
 		return;
 	}
@@ -27,34 +23,29 @@ if(empty($params['account']) && empty($params['stg_account']))
 
 $pref = cms_db_prefix();
 
-if(isset($params['stg_account'])) //we're back, after submission (no 'submit' parameter!)
-{
+if (isset($params['stg_account'])) { //we're back, after submission (no 'submit' parameter!)
 	//some of these are needed only if continuing past error
 	$row = $db->GetRow('SELECT name,title,currency,amountformat,minpay,surchargerate,usetest,privtoken,testprivtoken,stylesfile FROM '.
 	$pref.'module_sgt_account WHERE account_id=?',array($params['stg_account']));
-	if($row['usetest'])
-	{
-		if($row['testprivtoken'])
+	if ($row['usetest']) {
+		if ($row['testprivtoken'])
 			$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
 		else
 			$privkey = FALSE;
-	}
-	else
-	{
-		if($row['privtoken'])
+	} else {
+		if ($row['privtoken'])
 			$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
 		else
 			$privkey = FALSE;
 	}
-	if(!$privkey)
-	{
+	if (!$privkey) {
 		echo $this->Lang('err_parameter');
 		return;
 	}
 
 	$symbol = sgtUtils::GetSymbol($row['currency']);
 	$amount = sgtUtils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
-	if($row['surchargerate'] && empty($params['nosur']))
+	if ($row['surchargerate'] && empty($params['nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
 
 	$card = array(
@@ -76,8 +67,7 @@ if(isset($params['stg_account'])) //we're back, after submission (no 'submit' pa
 		'metadata' => $exdata
 	);
 
-	try
-	{
+	try {
 		Stripe\Stripe::setApiKey($privkey);
 		$charge = Stripe\Charge::create($data);
 		$response = $charge->__toArray(TRUE);
@@ -99,9 +89,7 @@ identifier
 
 		echo $this->Lang('payment_submitted');
 		return;
-	}
-	catch (Exception $e)
-	{
+	} catch (Exception $e) {
 		$message = $e->getMessage();
 		$row['account_id'] = $params['stg_account'];
 		//all inputs resume
@@ -113,16 +101,13 @@ identifier
 		$paywhat = $params['stg_paywhat'];
 		$year = $params['stg_year'];
 
-		if(isset($params['stg_formed']))
+		if (isset($params['stg_formed']))
 			$params['formed'] = $params['stg_formed'];
-		if(isset($params['stg_nosur']))
+		if (isset($params['stg_nosur']))
 			$params['nosur'] = $params['stg_nosur'];
 	}
-}
-else //not submitted
-{
-	if(is_numeric($params['account']))
-	{
+} else { //not submitted
+	if (is_numeric($params['account'])) {
 		$row = $db->GetRow('SELECT
 account_id,
 name,
@@ -136,9 +121,7 @@ privtoken,
 testprivtoken,
 stylesfile
 FROM '.$pref.'module_sgt_account WHERE account_id=? AND isactive=TRUE',array($params['account']));
-	}
-	else
-	{
+	} else {
 		$row = $db->GetRow('SELECT
 account_id,
 name,
@@ -153,8 +136,7 @@ testprivtoken,
 stylesfile
 FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params['account']));
 	}
-	if(!$row)
-	{
+	if (!$row) {
 		echo $this->Lang('err_parameter');
 		return;
 	}
@@ -172,8 +154,7 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 $baseurl = $this->GetModuleURLPath();
 $tplvars = array();
 
-if($row['stylesfile']) //using custom css for checkout display
-{
+if ($row['stylesfile']) { //using custom css for checkout display
 	//replace href attribute in existing stylesheet link
 	$u = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
 	$t = <<<EOS
@@ -187,17 +168,17 @@ EOS;
 	$tplvars['cssscript'] = $t;
 }
 
-if(!isset($params['formed']))
+if (!isset($params['formed']))
 	$tplvars['form_start'] = $this->CreateFormStart($id,'payplus',$returnid);
 
 $hidden = '<input type="hidden" name="'.$id.'stg_account" value="'.$row['account_id'].'" />';
-if(isset($params['formed']))
+if (isset($params['formed']))
 	$hidden .= '<input type="hidden" name="'.$id.'stg_formed" value="'.$params['formed'].'" />';
-if(isset($params['nosur']))
+if (isset($params['nosur']))
 	$hidden .= '<input type="hidden" name="'.$id.'stg_nosur" value="'.$params['nosur'].'" />';
 $tplvars['hidden'] = $hidden;
 
-if($message)
+if ($message)
 	$tplvars['message'] = $message;
 
 $symbol = sgtUtils::GetSymbol($row['currency']);
@@ -209,32 +190,26 @@ U.S. businesses can accept
 Australian, Canadian, European, and Japanese businesses can accept
  Visa, MasterCard, American Express.
 */
-if($row['usetest'])
-{
-	if($row['testprivtoken'])
+if ($row['usetest']) {
+	if ($row['testprivtoken'])
 		$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
 	else
 		$privkey = FALSE;
-}
-else
-{
-	if($row['privtoken'])
+} else {
+	if ($row['privtoken'])
 		$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
 	else
 		$privkey = FALSE;
 }
-if(!$privkey)
-{
+if (!$privkey) {
 	echo $this->Lang('err_parameter');
 	return;
 }
 
 $account = Stripe\Account::retrieve($privkey);
-if($account)
-{
+if ($account) {
 	$data = $account->__toArray();
-	switch($data['country'])
-	{
+	switch ($data['country']) {
 		case 'AU':
 		case 'CA':
 		case 'JP':
@@ -244,14 +219,13 @@ if($account)
 			$iconfile = $baseurl.'/images/6card-logos-small.gif'; //show 6 icons
 			break;
 		default:
-			if(strpos($data['timezone'],'Europe/') === 0)
+			if (strpos($data['timezone'],'Europe/') === 0)
 				$iconfile = $baseurl.'/images/3card-logos-small.gif';
 			else
 				$iconfile = NULL;
 			break;
 	}
-}
-else
+} else
 	$iconfile = NULL;
 
 $tplvars = $tplvars + array(
@@ -275,22 +249,20 @@ $tplvars = $tplvars + array(
 	'paywhat' => $paywhat
 );
 
-if($row['title'])
+if ($row['title'])
 	$tplvars['title'] = $row['title'];
 else
 	$tplvars['title'] = $this->Lang('title_checkout',$row['name']);
 
-if($row['surchargerate'] > 0 && empty($params['nosur']))
-{
+if ($row['surchargerate'] > 0 && empty($params['nosur'])) {
 	$surrate = $row['surchargerate'];
 	$t = number_format($surrate * 100,2);
-	if(strrpos($t,'0') > 0)
+	if (strrpos($t,'0') > 0)
 		$t = rtrim($t,'0.');
 	$surstr = $this->Lang('percent',$t);
 	$t = '<span id="surcharge">'.$surstr.'</span>';
 	$tplvars['surcharge'] = $this->Lang('surcharge',$t);
-}
-else
+} else
 	$surrate = FALSE;
 
 //missing-value errors
@@ -310,13 +282,10 @@ $err14 = $this->Lang('err_badyear',$yr);
 $rawmin = preg_replace('/\D/','',$row['minpay']);
 $min = sgtUtils::GetPublicAmount($rawmin,$row['amountformat'],$symbol);
 $err15 = $this->Lang('err_toosmall',$min);
-if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches))
-{
+if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches)) {
 	$sep = ($matches[1]) ? $symbol : $matches[3];
 	$places = strlen($matches[4]);
-}
-else //defaults like US$
-{
+} else { //defaults like US$
 	$sep = '.';
 	$places = 2;
 }
@@ -324,8 +293,7 @@ else //defaults like US$
 $jsfuncs = array();
 $jsloads = array();
 
-if(!isset($params['formed']))
-{
+if (!isset($params['formed'])) {
 	$jsfuncs[] = <<<EOS
 function lock_inputs() {
  $('#pplus_submit').attr('disabled','disabled');
@@ -347,33 +315,33 @@ function clear_error(input) {
  $('#error_' + input).html('').hide();
 }
 function validate(field,value) {
- switch(field) {
+ switch (field) {
   case 'paywhat':
-   if(!value.length) { return show_error(field,'{$err7}'); }
+   if (!value.length) { return show_error(field,'{$err7}'); }
    break;
   case 'payfor':
-   if(!value.length) { return show_error(field,'{$err6}'); }
+   if (!value.length) { return show_error(field,'{$err6}'); }
    break;
   case 'number':
    var len = value.length;
-   if(len==0) { return show_error(field,'{$err1}'); }
-   if(len<12 || len>16) { return show_error(field,'{$err12}'); }
+   if (len==0) { return show_error(field,'{$err1}'); }
+   if (len<12 || len>16) { return show_error(field,'{$err12}'); }
    break;
   case 'cvc':
-   if(!value.length) { return show_error(field,'{$err2}'); }
+   if (!value.length) { return show_error(field,'{$err2}'); }
    break;
   case 'exp_month':
-   if(!value.length) { return show_error(field,'{$err3}'); }
-   if(value < 1 || value > 12) { return show_error(field,'{$err13}'); }
+   if (!value.length) { return show_error(field,'{$err3}'); }
+   if (value < 1 || value > 12) { return show_error(field,'{$err13}'); }
    break;
   case 'exp_year':
-   if(!value.length) { return show_error(field,'{$err4}'); }
-   if(value < {$yr}) { return show_error(field,'{$err14}'); }
+   if (!value.length) { return show_error(field,'{$err4}'); }
+   if (value < {$yr}) { return show_error(field,'{$err14}'); }
    break;
   case 'amount':
-   if(!value.length) { return show_error(field,'{$err5}'); }
+   if (!value.length) { return show_error(field,'{$err5}'); }
    value = value.replace(/\D/g,'');
-   if(value < {$rawmin}) { return show_error(field,'{$err15}'); }
+   if (value < {$rawmin}) { return show_error(field,'{$err15}'); }
    break;
  }
  clear_error(field);
@@ -382,10 +350,10 @@ function validate(field,value) {
 function public_amount(amount) {
  var sep = '{$sep}',
   pub = parseFloat(amount).toFixed({$places});
- if(sep !== '.') {
+ if (sep !== '.') {
   pub = pub.replace('.',sep);
  }
- if(sep != '{$symbol}') {
+ if (sep != '{$symbol}') {
   pub = '{$symbol}'+pub;
  }
  return pub;
@@ -393,7 +361,7 @@ function public_amount(amount) {
 function sanitize(field) {
  var \$in = $('#pplus_' + field),
    value = $.trim(\$in.val());
- switch(field) {
+ switch (field) {
   case 'number':
    value = value.replace(/\D/g,'');
    break;
@@ -403,15 +371,15 @@ function sanitize(field) {
   case 'exp_month':
    value = value.replace(/\D/g,'');
    value = value.replace(/^0+/,'');
-   if(value.length == 1) { value = '0' + value; }
+   if (value.length == 1) { value = '0' + value; }
    break;
   case 'exp_year':
    value = value.replace(/\D/g,'');
-   if(value.length == 2) { value = '{$cent}' + value; }
+   if (value.length == 2) { value = '{$cent}' + value; }
    break;
   case 'amount':
    value = value.replace(/[^\d\.]/g,'');
-   if(value.length) { value = public_amount(value); }
+   if (value.length) { value = public_amount(value); }
    break;
  }
  \$in.val(value);
@@ -423,7 +391,7 @@ $jsloads[] = <<<EOS
  $('#pplus_container input').attr('autocomplete','off').blur(function() {
   var \$in = $(this),
    id = \$in.attr('id');
-  if(id && id.lastIndexOf('pplus_',0) === 0) {
+  if (id && id.lastIndexOf('pplus_',0) === 0) {
    var name = id.substring(6);
    sanitize(name);
    validate(name,\$in.val());
@@ -432,11 +400,11 @@ $jsloads[] = <<<EOS
 
 EOS;
 
-if($surrate)
+if ($surrate)
 	$jsloads[] = <<<EOS
  $('#pplus_amount').blur(function(){
   var value = $.trim($(this).val());
-  if(value.length) {
+  if (value.length) {
    var amt = value.replace(/[^\d\.]+/g, ''),
      num = parseFloat(amt) * {$surrate};
    amt = public_amount(num);
@@ -452,7 +420,7 @@ $jsloads[] = <<<EOS
  $('#pplus_number').closest('form').submit(function() {
   lock_inputs();
   $('#pplus_container input').blur(); //trigger sanitize/validate functions
-  if($('input.error').length > 0) {
+  if ($('input.error').length > 0) {
    unlock_inputs();
    $('input.error:first').focus();
    return false;
@@ -462,8 +430,7 @@ $jsloads[] = <<<EOS
 
 EOS;
 
-if($jsloads)
-{
+if ($jsloads) {
 	$jsfuncs[] = '$(document).ready(function() {
 ';
 	$jsfuncs = array_merge($jsfuncs,$jsloads);
@@ -473,4 +440,3 @@ if($jsloads)
 $tplvars['jsfuncs'] = $jsfuncs;
 
 echo sgtUtils::ProcessTemplate($this,'payplus.tpl',$tplvars);
-?>

@@ -7,56 +7,48 @@
 #----------------------------------------------------------------------
 
 $padm = $this->CheckPermission('ModifyStripeGateProperties');
-if($padm)
-{
+if ($padm) {
 	$pmod = true;
 	$padd = true;
 	$pdel = true;
-}
-else
-{
+} else {
 	$pmod = $this->CheckPermission('ModifyStripeAccount');
 	$padd = $pmod;
 	$pdel = $pmod;
 }
 $psee = $this->CheckPermission('UseStripeAccount');
-if(!($padm || $pmod || $psee)) exit;
+if (!($padm || $pmod || $psee)) exit;
 
 $pdev = $this->CheckPermission('Modify Any Page');
 $mod = $padm || $pmod;
 
-if(isset($params['submit']))
-{
-	if($padm)
-	{
+if (isset($params['submit'])) {
+	if ($padm) {
 		$oldpw = $this->GetPreference('masterpass');
-		if($oldpw)
+		if ($oldpw)
 			$oldpw = sgtUtils::unfusc($oldpw);
 
 		$newpw = trim($params['masterpass']);
-		if($oldpw != $newpw)
-		{
+		if ($oldpw != $newpw) {
 			//update all data which uses current password
 			$pre = cms_db_prefix();
 			$sql = 'SELECT account_id,privtoken,testprivtoken FROM '.$pre.'module_sgt_account';
 			$rst = $db->Execute($sql);
-			if($rst)
-			{
+			if ($rst) {
 				$sql = 'UPDATE '.$pre.'module_sgt_account SET privtoken=?,testprivtoken=? WHERE account_id=?';
-				while(!$rst->EOF)
-				{
+				while (!$rst->EOF) {
 					$t = sgtUtils::decrypt_value($mod,$rst->fields[1],$oldpw);
 					$t = ($newpw) ? sgtUtils::encrypt_value($mod,$t,$newpw):sgtUtils::fusc($t);
 					$t2 = sgtUtils::decrypt_value($mod,$rst->fields[2],$oldpw);
 					$t2 = ($newpw) ? sgtUtils::encrypt_value($mod,$t2,$newpw):sgtUtils::fusc($t2);
 					$db->Execute($sql,array($t,$t2,$rst->fields[0]));
-					if(!$rst->MoveNext())
+					if (!$rst->MoveNext())
 						break;
 				}
 				$rst->Close();
 			}
 			//TODO if record-table data is encrypted
-			if($newpw)
+			if ($newpw)
 				$newpw = sgtUtils::fusc($newpw);
 			$this->SetPreference('masterpass',$newpw);
 		}
@@ -73,10 +65,8 @@ $tplvars = array(
 );
 
 $indx = 0;
-if(isset($params['activetab']))
-{
-	switch($params['activetab'])
-	{
+if (isset($params['activetab'])) {
+	switch ($params['activetab']) {
 	 case 'settings':
 		$indx = 1;
 		break;
@@ -100,7 +90,7 @@ $jsfuncs = array();
 $jsloads = array();
 $baseurl = $this->GetModuleURLPath();
 
-if(!empty($params['message']))
+if (!empty($params['message']))
 	$tplvars['message'] = $params['message'];
 
 //~~~~~~~~~~~~~~~ ACCOUNTS TAB ~~~~~~~~~~~~~~~~
@@ -111,8 +101,7 @@ $tplvars['formstart_main'] = $this->CreateFormStart($id,'process');
 $theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
 	cms_utils::get_theme_object();
 
-if($mod)
-{
+if ($mod) {
 	$icon_open = $theme->DisplayImage('icons/system/edit.gif',$this->Lang('tip_edit'),'','','systemicon');
 	$t = $this->Lang('tip_toggle');
 	$icon_yes = $theme->DisplayImage('icons/system/true.gif',$t,'','','systemicon');
@@ -120,14 +109,12 @@ if($mod)
 	$icon_export = $theme->DisplayImage('icons/system/export.gif',$this->Lang('tip_export'),'','','systemicon');
 	$t = $this->Lang('tip_admin');
 	$icon_admin = '<img src="'.$baseurl.'/images/administer.png" alt="'.$t.'" title="'.$t.'" class="systemicon" />';
-}
-else
-{
+} else {
 	$icon_open = $theme->DisplayImage('icons/system/view.gif',$this->Lang('tip_view'),'','','systemicon');
 	$yes = $this->Lang('yes');
 	$no = $this->Lang('no');
 }
-if($pdel)
+if ($pdel)
 	$icon_del = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('tip_delete'),'','','systemicon');
 
 $items = array();
@@ -144,61 +131,51 @@ ORDER BY A.name
 EOS;
 
 $rows = $db->GetAll($sql);
-if($rows)
-{
-	foreach($rows as $row)
-	{
+if ($rows) {
+	foreach ($rows as $row) {
 		$thisid	= (int)$row['account_id'];
 		$oneset = new stdClass();
 //		$oneset->id = $thisid; //may be hidden
-		if($mod)
+		if ($mod)
 			$oneset->name = $this->CreateLink($id,'update',$returnid,$row['name'],array('account_id'=>$thisid));
 		else
 			$oneset->name = $row['name'];
 
-		if($pdev)
-		{
-			if($row['alias'])
+		if ($pdev) {
+			if ($row['alias'])
 				$oneset->alias = '{StripeGate account=\''.$row['alias'].'\'}';
 			else
 				$oneset->alias = '{StripeGate account='.$thisid.'}';
-		}
-		else
+		} else
 			$oneset->alias = $row['alias'];
 
 		$name = trim($row['first_name'].' '.$row['last_name']);
-		if($name == '') $name = '<'.$this->Lang('noowner').'>';
+		if ($name == '') $name = '<'.$this->Lang('noowner').'>';
 		$oneset->ownername	= $name;
 
-		if($mod)
-		{
-			if($row['isdefault']) //it's active so create a deactivate-link
+		if ($mod) {
+			if ($row['isdefault']) //it's active so create a deactivate-link
 				$oneset->default = $this->CreateLink($id,'toggledeflt',$returnid,$icon_yes,
 					array('account_id'=>$thisid,'current'=>true));
 			else //it's inactive so create an activate-link
 				$oneset->default = $this->CreateLink($id,'toggledeflt',$returnid,$icon_no,
 					array('account_id'=>$thisid,'current'=>false));
-			if($row['isactive'])
+			if ($row['isactive'])
 				$oneset->active = $this->CreateLink($id,'toggleactive',$returnid,$icon_yes,
 					array('account_id'=>$thisid,'current'=>true));
 			else
 				$oneset->active = $this->CreateLink($id,'toggleactive',$returnid,$icon_no,
 					array('account_id'=>$thisid,'current'=>false));
-			if($row['record_count'] > 0)
-			{
+			if ($row['record_count'] > 0) {
 				$oneset->adminlink = $this->CreateLink($id,'administer',$returnid,$icon_admin,
 					array('account_id'=>$thisid));
 				$oneset->exportlink = $this->CreateLink($id,'export',$returnid,$icon_export,
 					array('account_id'=>$thisid));
-			}
-			else
-			{
+			} else {
 				$oneset->adminlink = NULL;
 				$oneset->exportlink = NULL;
 			}
-		}
-		else
-		{
+		} else {
 			$oneset->default = ($row['isdefault']) ? $yes : $no;
 			$oneset->active = ($row['isactive']) ? $yes : $no;
 		}
@@ -207,7 +184,7 @@ if($rows)
 		$oneset->editlink = $this->CreateLink($id,'update',$returnid,$icon_open,
 			array('account_id'=>$thisid));
 
-		if($pdel)
+		if ($pdel)
 			$oneset->deletelink = $this->CreateLink($id,'delete',$returnid,$icon_del,
 				array('account_id'=>$thisid),
 				$this->Lang('delitm_confirm',$row['name']));
@@ -224,8 +201,7 @@ if($rows)
 }
 
 $tplvars['items'] = $items;
-if($items)
-{
+if ($items) {
 	//table titles
 	$tplvars = $tplvars + array(
 		'title_id' => $this->Lang('title_id'),
@@ -236,17 +212,15 @@ if($items)
 		'title_active' => $this->Lang('title_active')
 	);
 
-	if($padm || $pdel)
-	{
-		if(count($items) > 1)
-		{
+	if ($padm || $pdel) {
+		if (count($items) > 1) {
 			$tplvars['selectall'] =
 				$this->CreateInputCheckbox($id,'selectall',true,false,'onclick="select_all(this);"');
 			$jsfuncs[] = <<<EOS
 function select_all(cb)
 {
  var st = $(cb).attr('checked');
- if(! st) st = false;
+ if (! st) st = false;
  $('input[name="{$id}selitems[]"]').attr('checked',st);
 }
 
@@ -262,8 +236,7 @@ function sel_count()
 
 EOS;
 	}
-	if($mod)
-	{
+	if ($mod) {
 		$tplvars['export'] = $this->CreateInputSubmit($id,'export',$this->Lang('export'),
 			'title="'.$this->Lang('tip_exportsel2').'" onclick="return confirm_sel_count();"');
 		$jsfuncs[] = <<<EOS
@@ -274,8 +247,7 @@ function confirm_sel_count()
 
 EOS;
 	}
-	if($pdel)
-	{
+	if ($pdel) {
 		$tplvars['delete'] = $this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
 		'title="'.$this->Lang('tip_deletesel').'" onclick="return confirm_delete();"');
 		$t = $this->Lang('delsel_confirm');
@@ -290,8 +262,7 @@ function confirm_delete()
 EOS;
 	}
 
-	if(count($items) > 1)
-	{
+	if (count($items) > 1) {
 		$jsincs[] = <<<EOS
 <script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
 <script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
@@ -313,11 +284,10 @@ EOS;
 
 EOS;
 	}
-}
-else
+} else
 	$tplvars['nodata'] = $this->Lang('nodata');
 
-if($padd)
+if ($padd)
 	$tplvars['add'] =
 	 $this->CreateLink($id,'update',$returnid,
 		 $theme->DisplayImage('icons/system/newobject.gif',$this->Lang('additem'),'','','systemicon'),
@@ -349,7 +319,7 @@ $tplvars['input_updir'] = $this->CreateInputText($id,'uploads_dir',$this->GetPre
 
 $tplvars['title_password'] = $this->Lang('title_password');
 $pw = $this->GetPreference('masterpass');
-if($pw)
+if ($pw)
 	$pw = sgtUtils::unfusc($pw);
 
 $tplvars['input_password'] =
@@ -365,14 +335,12 @@ $jsloads[] = <<<EOS
 
 EOS;
 
-if($padm)
-{
+if ($padm) {
 	$tplvars['submit'] = $this->CreateInputSubmit($id,'submit',$this->Lang('submit'));
 	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('cancel'));
 }
 
-if($jsloads)
-{
+if ($jsloads) {
 	$jsfuncs[] = '$(document).ready(function() {
 ';
 	$jsfuncs = array_merge($jsfuncs,$jsloads);
@@ -383,4 +351,3 @@ $tplvars['jsfuncs'] = $jsfuncs;
 $tplvars['jsincs'] = $jsincs;
 
 echo sgtUtils::ProcessTemplate($this,'adminpanel.tpl',$tplvars);
-?>

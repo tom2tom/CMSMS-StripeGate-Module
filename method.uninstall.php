@@ -10,17 +10,13 @@
 function delTree($dir)
 {
 	$files = array_diff(scandir($dir),array('.','..'));
-	if($files)
-	{
-		foreach($files as $file)
-		{
+	if ($files) {
+		foreach ($files as $file) {
 			$fp = cms_join_path($dir,$file);
-			if(is_dir($fp))
-			{
-			 	if(!delTree($fp))
+			if (is_dir($fp)) {
+			 	if (!delTree($fp))
 					return false;
-			}
-			else
+			} else
 				unlink($fp);
 		}
 		unset($files);
@@ -28,42 +24,34 @@ function delTree($dir)
 	return rmdir($dir);
 }
 
-if(!$this->CheckPermission('ModifyStripeGateProperties')) return;
+if (!$this->CheckPermission('ModifyStripeGateProperties')) return;
 
 $dict = NewDataDictionary($db);
 $pref = cms_db_prefix();
 
 $fp = $config['uploads_path'];
-if($fp && is_dir($fp))
-{
+if ($fp && is_dir($fp)) {
 	$ud = $this->GetPreference('uploads_dir','');
-	if($ud)
-	{
+	if ($ud) {
 		$fp = cms_join_path($fp,$ud);
-		if($fp && is_dir($fp))
+		if ($fp && is_dir($fp))
 			delTree($fp);
-	}
-	else
-	{
-		$files = $db->GetCol("SELECT DISTINCT stylesfile FROM ".$pref."module_sgt_account
-WHERE stylesfile<>''"); //also excludes NULL's
-		if($files)
-		{
-			foreach($files as $fn)
-			{
+	} else {
+		$files = $db->GetCol("SELECT DISTINCT stylesfile FROM ".$pref.
+		"module_sgt_account WHERE stylesfile<>''"); //also excludes NULL's
+		if ($files) {
+			foreach ($files as $fn) {
 				$fn = cms_join_path($fp,$fn);
-				if(is_file($fn))
+				if (is_file($fn))
 					unlink($fn);
 			}
 		}
-		$files = $db->GetCol("SELECT DISTINCT iconfile FROM ".$pref."module_sgt_account
-WHERE iconfile<>''");
-		if($files)
-		{
-			foreach($files as $fn)
-			{
+		$files = $db->GetCol("SELECT DISTINCT iconfile FROM ".$pref.
+		"module_sgt_account WHERE iconfile<>''");
+		if ($files) {
+			foreach ($files as $fn) {
 				$fn = cms_join_path($fp,$fn);
-				if(is_file($fn))
+				if (is_file($fn))
 					unlink($fn);
 			}
 		}
@@ -82,5 +70,3 @@ $this->RemovePermission('ModifyStripeAccount');
 $this->RemovePermission('ModifyStripeGateProperties');
 
 //$this->RemoveEvent($this->GetName(),'');
-
-?>

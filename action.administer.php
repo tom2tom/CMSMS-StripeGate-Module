@@ -6,28 +6,22 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(!function_exists('get_report_amount'))
-{
+if (!function_exists('get_report_amount')) {
  function get_report_amount($units,$format,$char)
  {
-	if(preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches))
-	{
+	if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$format,$matches)) {
 		$places = strlen($matches[4]);
 		$times = pow(10,$places);
 		$num = number_format($units/$times,$places);
-		if($matches[1])
-		{
-			if(strpos('.',$num) !== FALSE)
+		if ($matches[1]) {
+			if (strpos('.',$num) !== FALSE)
 				$num = str_replace('.',$char,$num); //workaround PHP<5.4
-		}
-		else
-		{
-			if($matches[3] != '.')
+		} else {
+			if ($matches[3] != '.')
 				$num = str_replace('.',$matches[3],$num);
 		}
 		return $num;
-	}
-	else
+	} else
 		return number_format($units/100,2);
  }
 }
@@ -36,7 +30,7 @@ $padm = $this->CheckPermission('ModifyStripeGateProperties');
 $pmod = $padm || $this->CheckPermission('ModifyStripeAccount');
 $psee = $padm || $this->CheckPermission('UseStripeAccount');
 
-if(!($padm || $pmod || $psee)) exit;
+if (!($padm || $pmod || $psee)) exit;
 
 $aid = (int)$params['account_id'];
 $pref = cms_db_prefix();
@@ -63,7 +57,7 @@ $jsincs = array();
 $jsloads = array();
 $baseurl = $this->GetModuleURLPath();
 
-if(!empty($params['message']))
+if (!empty($params['message']))
 	$tplvars['message'] = $params['message'];
 
 $sql = 'SELECT * FROM '.$pref.'module_sgt_record WHERE account_id=? ORDER BY recorded DESC, payfor ASC';
@@ -75,8 +69,7 @@ $theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
 $icon_delete = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('delete'),'','','systemicon');
 $icon_export = $theme->DisplayImage('icons/system/export.gif',$this->Lang('export'),'','','systemicon');
 
-foreach($data as &$one)
-{
+foreach ($data as &$one) {
 	$rid = (int)($one['record_id']);
 	$oneset = new stdClass();
 	$oneset->submitted =  date('Y-m-d H:i:s',$one['recorded']);
@@ -86,7 +79,7 @@ foreach($data as &$one)
 	$oneset->token = $one['identifier'];
 	$oneset->export = $this->CreateLink($id,'exportrecord','',
 		$icon_export,array('record_id'=>$rid,'account_id'=>$aid));
-	if($pmod)
+	if ($pmod)
 	  $oneset->delete = $this->CreateLink($id,'deleterecord','',
 		$icon_delete,array('record_id'=>$rid,'account_id'=>$aid),
 		$this->Lang('delitm_confirm',$oneset->token));
@@ -99,18 +92,68 @@ $pagerows = 15; //arbitrary initial page-length
 
 $tplvars['rows'] = $rows;
 $rcount = count($rows);
-if($rcount)
-{
-	if($pagerows && $rcount>$pagerows)
-	{
-		//setup for SSsort
+if ($rcount) {
+	if ($rcount > 1) {
+		$jsincs[] = <<<EOS
+<script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
+EOS;
+		$jsloads[] = <<<EOS
+ $('#itemdata').addClass('table_sort').SSsort({
+  sortClass: 'SortAble',
+  ascClass: 'SortUp',
+  descClass: 'SortDown',
+  oddClass: 'row1',
+  evenClass: 'row2',
+  oddsortClass: 'row1s',
+  evensortClass: 'row2s',
+  paginate: true,
+  pagesize: {$pagerows},
+  currentid: 'cpage',
+  countid: 'tpage'
+ });
+
+EOS;
+
+		$tplvars['header_checkbox'] =
+			$this->CreateInputCheckbox($id,'selectall',true,false,'onclick="select_all(this);"');
+
+		$jsfuncs[] = <<<EOS
+function select_all(cb) {
+ $('#itemdata > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
+}
+
+EOS;
+
+/*	$jsfuncs[] = <<< EOS
+ $.SSsort.addParser({
+  id: 'textinput',
+  is: function(s,node) {
+   var n = node.childNodes[0];
+   return (n && n.nodeName.toLowerCase() == 'input' && n.type.toLowerCase() == 'text');
+  },
+  format: function(s,node) {
+   return $.trim(node.childNodes[0].value);
+  },
+  watch: true,
+  type: 'text'
+ });
+
+EOS;
+*/
+	} //$rcount > 1
+	else
+		$tplvars['header_checkbox'] = NULL;
+
+	if ($pagerows && $rcount>$pagerows) {
+		//more setup for SSsort
 		$choices = array(strval($pagerows) => $pagerows);
 		$f = ($pagerows < 4) ? 5 : 2;
 		$n = $pagerows * $f;
-		if($n < $rcount)
+		if ($n < $rcount)
 			$choices[strval($n)] = $n;
 		$n *= 2;
-		if($n < $rcount)
+		if ($n < $rcount)
 			$choices[strval($n)] = $n;
 		$choices[$this->Lang('all')] = 0;
 		$curpg='<span id="cpage">1</span>';
@@ -145,65 +188,9 @@ function pagerows(cb) {
 }
 
 EOS;
-	}
-	else
-	{
+	} else {
 		$tplvars['hasnav'] = 0;
 	}
-
-	if($rcount > 1)
-	{
-		$jsincs[] = <<<EOS
-<script type="text/javascript" src="{$baseurl}/include/jquery.metadata.min.js"></script>
-<script type="text/javascript" src="{$baseurl}/include/jquery.SSsort.min.js"></script>
-EOS;
-		$jsloads[] = <<<EOS
- $('#itemdata').addClass('table_sort').SSsort({
-  sortClass: 'SortAble',
-  ascClass: 'SortUp',
-  descClass: 'SortDown',
-  oddClass: 'row1',
-  evenClass: 'row2',
-  oddsortClass: 'row1s',
-  evensortClass: 'row2s',
-  paginate: true,
-  pagesize: {$pagerows},
-  currentid: 'cpage',
-  countid: 'tpage'
- });
-
-EOS;
-
-		$tplvars['header_checkbox'] =
-			$this->CreateInputCheckbox($id,'selectall',true,false,'onclick="select_all(this);"');
-
-		$jsfuncs[] = <<<EOS
-function select_all(cb) {
- $('#itemdata > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
-}
-
-EOS;
-
-/*
-	$jsfuncs[] = <<< EOS
- $.SSsort.addParser({
-  id: 'textinput',
-  is: function(s,node) {
-   var n = node.childNodes[0];
-   return (n && n.nodeName.toLowerCase() == 'input' && n.type.toLowerCase() == 'text');
-  },
-  format: function(s,node) {
-   return $.trim(node.childNodes[0].value);
-  },
-  watch: true,
-  type: 'text'
- });
-
-EOS;
-*/
-	}
-	else
-		$tplvars['header_checkbox'] = NULL;
 
 	$jsfuncs[] = <<<EOS
 function sel_count() {
@@ -214,7 +201,7 @@ function any_selected() {
  return (sel_count() > 0);
 }
 function confirm_selected(msg) {
- if(sel_count() > 0) {
+ if (sel_count() > 0) {
   return confirm(msg);
  } else {
   return false;
@@ -222,23 +209,21 @@ function confirm_selected(msg) {
 }
 
 EOS;
-	//if($X) ? perm
+	//if ($X) ? perm
 		$tplvars['export'] = $this->CreateInputSubmit($id,'export',$this->Lang('export'),
 		'title="'.$this->Lang('tip_exportsel').'" onclick="return any_selected();"');
-	if($pmod)
+	if ($pmod)
 		$tplvars['delete'] = $this->CreateInputSubmit($id,'delete',$this->Lang('delete'),
 		'title="'.$this->Lang('tip_deletesel2').
 		'" onclick="return confirm_selected(\''.$this->Lang('delsel_confirm2').'\');"');
-}
+} //$rcount
 /*should never happen, in this context
-else
-{
+else {
 	$tplvars['norecords'] = $this->Lang('norecords');
 }
 */
 
-if($jsloads)
-{
+if ($jsloads) {
 	$jsfuncs[] = '$(document).ready(function() {
 ';
 	$jsfuncs = array_merge($jsfuncs,$jsloads);
@@ -249,4 +234,3 @@ $tplvars['jsfuncs'] = $jsfuncs;
 $tplvars['jsincs'] = $jsincs;
 
 echo sgtUtils::ProcessTemplate($this,'administer.tpl',$tplvars);
-?>

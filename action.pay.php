@@ -6,28 +6,23 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(empty($params['amount']))
-{
+if (empty($params['amount'])) {
 	echo $this->Lang('err_parameter');
 	return;
-}
-else
+} else
 	$params['amount'] = html_entity_decode($params['amount']);
 
-if(empty($params['account']))
-{
+if (empty($params['account'])) {
 	$default = sgtUtils::GetAccount();
-	if($default)
+	if ($default)
 		$params['account'] = $default;
-	else
-	{
+	else {
 		echo $this->Lang('err_parameter');
 		return;
 	}
 }
 $pref = cms_db_prefix();
-if(is_numeric($params['account']))
-{
+if (is_numeric($params['account'])) {
 	$row = $db->GetRow('SELECT
 account_id,
 name,
@@ -39,9 +34,7 @@ testpubtoken,
 stylesfile,
 iconfile
 FROM '.$pref.'module_sgt_account WHERE account_id=? AND isactive=TRUE',array($params['account']));
-}
-else
-{
+} else {
 	$row = $db->GetRow('SELECT
 account_id,
 name,
@@ -54,14 +47,13 @@ stylesfile,
 iconfile
 FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params['account']));
 }
-if(!$row)
-{
+if (!$row) {
 	echo $this->Lang('err_parameter');
 	return;
 }
 
 $pubkey = $row['usetest'] ? $row['testpubtoken'] : $row['pubtoken'];
-if($row['iconfile'])
+if ($row['iconfile'])
 	$icon = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['iconfile']);
 else
 	$icon = '';
@@ -69,8 +61,7 @@ else
 $tplvars = array();
 
 //custom button styling ?
-if($row['stylesfile']) //using custom css for checkout display
-{
+if ($row['stylesfile']) { //using custom css for checkout display
 	//replace href attribute in existing stylesheet link
 	$u = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
 	$t = <<<EOS
@@ -85,7 +76,7 @@ EOS;
 }
 //button label
 $symbol = sgtUtils::GetSymbol($row['currency']);
-if(strpos($params['amount'],$symbol) !== FALSE)
+if (strpos($params['amount'],$symbol) !== FALSE)
 	$t = $symbol;
 else
 	$t = '';
@@ -121,10 +112,10 @@ $jsloads[] = <<<EOS
     data: ajaxdata,
     dataType: 'text',
     success: function (data,status) {
-     if(status == 'success' && !data ) {
+     if (status == 'success' && !data ) {
        $('#pay_submit').closest('form').submit();
      } else {
-      if(!data) {
+      if (!data) {
        data = '{$defaulterr}';
       }
       $('#pay_err').text(data).css('display','block');
@@ -146,8 +137,7 @@ $jsloads[] = <<<EOS
 
 EOS;
 
-if($jsloads)
-{
+if ($jsloads) {
 	$jsfuncs[] = '$(document).ready(function() {
 ';
 	$jsfuncs = array_merge($jsfuncs,$jsloads);
@@ -158,4 +148,3 @@ $tplvars['jsfuncs'] = $jsfuncs;
 $tplvars['jsincs'] = $jsincs;
 
 echo sgtUtils::ProcessTemplate($this,'pay.tpl',$tplvars);
-?>

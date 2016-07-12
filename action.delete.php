@@ -6,7 +6,7 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(!($this->CheckPermission('ModifyStripeGateProperties')
+if (!($this->CheckPermission('ModifyStripeGateProperties')
   || $this->CheckPermission('ModifyStripeAccount'))) exit;
 
 //TODO delete 'no-longer-needed' uploaded css|icon files
@@ -18,4 +18,3 @@ $sql = 'DELETE FROM '.$pref.'module_sgt_record WHERE account_id=?';
 $db->Execute($sql,array($aid));
 
 $this->Redirect($id,'defaultadmin');
-?>

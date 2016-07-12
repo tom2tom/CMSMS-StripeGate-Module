@@ -7,17 +7,14 @@
 #----------------------------------------------------------------------
 # This action handles webhook-reports from upstream Stripe
 
-if(!function_exists('http_response_code'))
-{
+if (!function_exists('http_response_code')) {
  function http_response_code($code) //PHP<5.4
  {
-	switch ($code)
-	{
+	switch ($code) {
 		case 200: $text = 'OK'; break;
 		default: $code = NULL; break;
 	}
-	if($code !== NULL)
-	{
+	if ($code !== NULL) {
 		$protocol = ((!empty($_SERVER['SERVER_PROTOCOL'])) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
 		header($protocol.' '.$code.' '.$text);
 		$GLOBALS['http_response_code'] = $code;
@@ -27,51 +24,42 @@ if(!function_exists('http_response_code'))
 
 //clear all page content echoed before now
 $handlers = ob_list_handlers();
-if($handlers)
-{
+if ($handlers) {
 	$l = count($handlers);
 	for ($c = 0; $c < $l; $c++)
 		ob_end_clean();
 }
 //set relevant secret key
-if(isset($params['account']))
+if (isset($params['account']))
 	$row = $db->GetRow('SELECT usetest,privtoken,testprivtoken FROM '.
 		cms_db_prefix().'module_sgt_account WHERE account_id=?',array($params['account']));
 else
 	$row = $db->GetRow('SELECT usetest,privtoken,testprivtoken FROM '.
 		cms_db_prefix().'module_sgt_account WHERE isdefault>0 AND isdefault>0');
-if($row)
-{
-	if($row['usetest'])
-	{
-		if($row['testprivtoken'])
+if ($row) {
+	if ($row['usetest']) {
+		if ($row['testprivtoken'])
 			$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
 		else
 			$privkey = FALSE;
-	}
-	else
-	{
-		if($row['privtoken'])
+	} else {
+		if ($row['privtoken'])
 			$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
 		else
+			$privkey = FALSE;
 	}
-}
-else
+} else
 	$privkey = FALSE;
-if($privkey)
-{
+if ($privkey) {
 	Stripe\Stripe::setApiKey($privkey);
 	//retrieve the request's body and parse it as JSON
 	$input = @file_get_contents("php://input");
 	$event_json = json_decode($input);
 	//TODO do something with $event_json
 	echo 'WEBHOOK PROCESSING NOT YET SUPPORTED';
-}
-else
-{
+} else {
 	echo $this->Lang('err_parameter');
 }
 //acknowledge receipt
 http_response_code(200);
 exit;
-?>

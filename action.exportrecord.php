@@ -6,14 +6,13 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-if(!$this->CheckPermission('ModifyStripeAccount')) exit;
+if (!$this->CheckPermission('ModifyStripeAccount')) exit;
 
 $funcs = new sgtExport();
 $res = $funcs->Export($this,FALSE,$params['record_id']);
-if($res === TRUE)
+if ($res === TRUE)
 	exit;
 unset($funcs);
 $this->Redirect($id,'administer','',array(
 	'account_id'=>$params['account_id'],
 	'message' => $this->Lang($res)));
-?>

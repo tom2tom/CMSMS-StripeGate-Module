@@ -16,8 +16,7 @@
 
 //clear all page-content echoed before now
 $handlers = ob_list_handlers();
-if($handlers)
-{
+if ($handlers) {
 	$l = count($handlers);
 	for ($c = 0; $c < $l; $c++)
 		ob_end_clean();
@@ -27,22 +26,18 @@ if($handlers)
 
 $row = $db->GetRow('SELECT currency,usetest,privtoken,testprivtoken FROM '.
 	cms_db_prefix().'module_sgt_account WHERE account_id=?',array($params['stg_account']));
-if($row['usetest'])
-{
-	if($row['testprivtoken'])
+if ($row['usetest']) {
+	if ($row['testprivtoken'])
 		$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
 	else
 		$privkey = FALSE;
-}
-else
-{
-	if($row['privtoken'])
+} else {
+	if ($row['privtoken'])
 		$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
 	else
 		$privkey = FALSE;
 }
-if(!$privkey)
-{
+if (!$privkey) {
 	die($this->Lang('err_parameter'));
 }
 
@@ -53,8 +48,7 @@ $data = array(
 	'source' => $params['stg_token']
 );
 
-try
-{
+try {
 	Stripe\Stripe::setApiKey($privkey);
 	$charge = Stripe\Charge::create($data);
 	$response = $charge->__toArray(TRUE);
@@ -75,10 +69,6 @@ identifier
 		$response['id']));
 
 	die(); //no message = success
-}
-catch (Exception $e)
-{
+} catch (Exception $e) {
 	die($e->getMessage());
 }
-
-?>
