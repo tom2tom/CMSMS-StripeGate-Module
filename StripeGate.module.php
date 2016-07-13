@@ -31,7 +31,14 @@ class StripeGate extends CMSModule
 
 		$fp = cms_join_path(__DIR__,'lib','Stripe','Stripe.php'); // Stripe singleton always
 		require($fp);
-		spl_autoload_register(array($this,'stripe_classload'));
+		spl_autoload_register(array($this,'stripe_spacedload'));
+	}
+
+	public function __destruct()
+	{
+		spl_autoload_unregister(array($this,'stripe_spacedload'));
+		if (function_exists('parent::__destruct'))
+			parent::__destruct();
 	}
 
 	public function AllowAutoInstall()
@@ -268,11 +275,13 @@ EOS;
 	}
 
 	/**
-	stripe_classload:
-	autoloader for namespaced Stripe-API-classes (as of library V.3.15.0)
-	@classname: string which may include namespacing
+	stripe_spacedload:
+	Stripe library autoloader. Not for generic StripeGate\Stripe\...,
+	cuz the lib can't cope with a 'StripeGate' dir in the file-path
+	Suits namespaced Stripe-API-classes (as of library V.3.15.0)
+	@classname: string like A[\B...]
 	*/
-	public function stripe_classload($classname)
+	private function stripe_spacedload($classname)
 	{
 		$parts = explode('\\',$classname);
 		if ($parts[0] != 'Stripe') {
