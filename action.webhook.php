@@ -7,8 +7,8 @@
 #----------------------------------------------------------------------
 # This action handles webhook-reports from upstream Stripe
 
-if (!function_exists('http_response_code')) {
- function http_response_code($code) //PHP<5.4
+if (!function_exists('http_response_code')) { //PHP<5.4
+ function http_response_code($code)
  {
 	switch ($code) {
 		case 200: $text = 'OK'; break;
