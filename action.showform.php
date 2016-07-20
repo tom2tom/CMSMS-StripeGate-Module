@@ -5,23 +5,20 @@
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
-/* This is a superset of the 'payplus' action, suitable for initiation by other modules */
-use StripeGate\Stripe;
-
-/* supported on-first-arrival $params:
-Y'account',
-Y'amount',
-Y'cancel',
-N'contact'
-Y'currency'
-Y'message'
-Y'payer',
-Y'payfor',
-'metadata', //TODO check format json'ish
-Y'surrate'
-Y'passthru'
+/*
+This is a superset of the 'payplus' action, suitable for initiation by other modules
+Supported on-first-arrival $params are:
+'account',
+'amount',
+'surrate' 
+'currency'
+'payer',
+'payfor',
+'message'
+'withcancel',
+'passthru'
+all except 'passthru' are optional
 */
-
 if (empty($params['account']) && empty($params['stg_account'])) {
 	$default = sgtUtils::GetAccount();
 	if ($default) {
@@ -41,8 +38,6 @@ if (isset($params['cancel'])) { //we're back, after the user cancelled
 		$funcs->HandleResult($params); //redirects
 		exit;
 }
-
-//spl_autoload_register(array('sgtUtils','stripe_classload'));
 
 $pref = cms_db_prefix();
 
@@ -163,7 +158,7 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 	//populate inputs from supplied data
 	if (!empty($params['amount'])) {
 		$symbol = sgtUtils::GetSymbol($row['currency']);
-		$amount = sgtUtils::GetPrivateAmount($amount,$row['amountformat'],$symbol);
+		$amount = sgtUtils::CleanPublicAmount($params['amount'],$row['amountformat'],$symbol);
 	} else {
 		$amount = NULL;
 	}
@@ -275,7 +270,7 @@ $tplvars = $tplvars + array(
 	'title_paywhat' => $this->Lang('paywhat'),
 	'paywhat' => $paywhat
 );
-if (isset($params['cancel']))
+if (isset($params['withcancel']))
 	$tplvars['cancel'] = $this->Lang('cancel');
 
 if ($row['title'])
