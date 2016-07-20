@@ -3,12 +3,6 @@ font-weight: bold;
 color: #f00;
 }
 
-#pplus_submit {
-margin-top: 10px;
-padding: 5px 10px;
-font-size: 1.4em;
-}
-
 #pplus_container {
 margin: 10px auto;
 border: 1px solid #ccc;
@@ -65,6 +59,12 @@ margin-bottom: 1px;
 border: 2px solid #aaa;
 padding: 5px;
 background-color: #fff;
+}
+
+#pplus_container input[type="submit"] {
+margin-top: 10px;
+padding: 5px 10px;
+font-size: 1.4em;
 }
 
 #pplus_container input.error {
