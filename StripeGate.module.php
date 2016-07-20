@@ -16,10 +16,16 @@
 # Read the License online: http://www.gnu.org/licenses/licenses.html#AGPL
 #-------------------------------------------------------------------------
 
+//cURL needed by Stripe API at least
+if (!function_exists('curl_init')) {
+	echo '<h1 style="color:red;">StripeGate module error: the PHP cURL module is not available.</h1>';
+	return;
+}
+
 class StripeGate extends CMSModule
 {
-	//whether password encryption is supported
-	public $havemcrypt;
+	public $havecurl = TRUE;
+	public $havemcrypt; //whether password encryption is supported
 	public $before20;
 
 	public function __construct()
