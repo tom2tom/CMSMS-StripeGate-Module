@@ -49,6 +49,9 @@
 </table>
 {if isset($form_start)}
 <input id="pplus_submit" type="submit" value="{$submit}" name="{$actionid}submit" />
+{if isset($cancel)}
+<input id="pplus_cancel" type="submit" value="{$cancel}" name="{$actionid}cancel" />
+{/if}
 </form>{/if}
 </div>
 
