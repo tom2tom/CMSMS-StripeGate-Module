@@ -5,8 +5,11 @@
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
-# This action handles webhook-reports from upstream Stripe
-
+/*
+This action handles webhook-reports from upstream Stripe. It generates no
+displayable output except possibly an echoed error message, and sets html
+response code 200 to placate Stripe
+*/
 if (!function_exists('http_response_code')) { //PHP<5.4
  function http_response_code($code)
  {
