@@ -45,7 +45,7 @@ if (isset($params['stg_account'])) { //we're back, after submission (no 'submit'
 
 	$symbol = sgtUtils::GetSymbol($row['currency']);
 	$amount = sgtUtils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
-	if ($row['surchargerate'] && empty($params['nosur']))
+	if ($row['surchargerate'] && empty($params['sgt_nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
 
 	$card = array(
@@ -101,12 +101,12 @@ identifier
 		$paywhat = $params['stg_paywhat'];
 		$year = $params['stg_year'];
 
-		if (isset($params['stg_formed']))
-			$params['formed'] = $params['stg_formed'];
 		if (isset($params['stg_nosur']))
 			$params['nosur'] = $params['stg_nosur'];
+		if (isset($params['stg_formed']))
+			$params['formed'] = $params['stg_formed'];
 	}
-} else { //not submitted
+} else { //first-time (not submitted)
 	if (is_numeric($params['account'])) {
 		$row = $db->GetRow('SELECT
 account_id,
