@@ -572,7 +572,7 @@ class sgtUtils
 	/**
 	GetPublicAmount:
 	@units: the amount to process, in 'indivisible' units as used internally by Stripe e.g. cents
-	@format:
+	@format: currency format template e.g. 'S.00'
 	@symbol: currency symbol string
 	Returns: formatted string representing amount e.g. $19.99
 	*/
@@ -598,9 +598,22 @@ class sgtUtils
 	}
 
 	/**
+	CleanPublicAmount:
+	@units: the amount to process, in any format but nominally consistent with a 'public' amount
+	@format: currency format template e.g. 'S.00'
+	@symbol: currency symbol string
+	Returns: formatted string representing amount e.g. $19.99
+	*/
+	public static function CleanPublicAmount($units, $format, $symbol)
+	{
+		$a = self::GetPrivateAmount($units,$format,$symbol);
+		return self::GetPublicAmount($a,$format,$symbol);
+	}
+
+	/**
 	GetPrivateAmount:
 	@amount: publicly presentable monetary amount e.g. $19.99
-	@$format:
+	@format: currency format template e.g. 'S.00'
 	@symbol: currency symbol string
 	Returns: number, in 'indivisible' units as used internally by Stripe
 	*/
