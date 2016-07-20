@@ -218,6 +218,16 @@ EOS;
 		$this->SetParameterType('title',CLEAN_STRING);
 		$this->SetParameterType('nosur',CLEAN_INT);
 		$this->SetParameterType('formed',CLEAN_INT);
+		//for showform action
+		$this->SetParameterType('cancel',CLEAN_STRING);
+		$this->SetParameterType('contact',CLEAN_STRING);
+		$this->SetParameterType('currency',CLEAN_STRING);
+		$this->SetParameterType('customer',CLEAN_STRING);
+		$this->SetParameterType('message',CLEAN_STRING);
+		$this->SetParameterType('payer',CLEAN_STRING);
+		$this->SetParameterType('payfor',CLEAN_STRING);
+		$this->SetParameterType('senddata',CLEAN_STRING);
+		$this->SetParameterType('surcharge',CLEAN_STRING);
 		//for checkout template
 		$this->SetParameterType('submit',CLEAN_STRING);
 		$this->SetParameterType(CLEAN_REGEXP.'/stg_.*/',CLEAN_NONE);
