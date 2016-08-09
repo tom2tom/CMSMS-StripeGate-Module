@@ -330,7 +330,7 @@ $jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery-inp
 $jsloads[] = <<<EOS
  $('#{$id}passwd').inputCloak({
   type:'see4',
-  symbol:'\u2022'
+  symbol:'\u25CF'
  });
 
 EOS;
