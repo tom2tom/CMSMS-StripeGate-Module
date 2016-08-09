@@ -8,16 +8,19 @@
 /*
 This is a superset of the 'payplus' action, suitable for initiation by other modules
 Supported on-first-arrival $params are:
-'account',
-'amount',
-'surrate' 
+'account'
+'amount'
 'currency'
-'payer',
-'payfor',
 'message'
-'withcancel',
 'passthru'
+'payer'
+'payfor'
+'surrate'
+'withcancel'
 all except 'passthru' are optional
+NOT SUPPORTED 'contact'
+NOT SUPPORTED 'senddata'
+NOT SUPPORTED 'payee'
 */
 if (empty($params['account']) && empty($params['stg_account'])) {
 	$default = sgtUtils::GetAccount();
@@ -33,15 +36,14 @@ if (empty($params['account']) && empty($params['stg_account'])) {
 }
 
 if (isset($params['cancel'])) { //we're back, after the user cancelled
-//	$params = $TODO;
-		$funcs = new sgtCreator($this);
-		$funcs->HandleResult($params); //redirects
-		exit;
+	$funcs = new sgtCreator($this);
+	$funcs->HandleResult($params); //redirects
+	exit;
 }
 
 $pref = cms_db_prefix();
 
-if (isset($params['stg_account'])) { //we're back, after submission (no 'submit' parameter!)
+if (isset($params['submit'])) { //we're back, after submission
 	//some of these are needed only if continuing past error
 	$row = $db->GetRow('SELECT name,title,currency,amountformat,minpay,surchargerate,usetest,privtoken,testprivtoken,stylesfile FROM '.
 	$pref.'module_sgt_account WHERE account_id=?',array($params['stg_account']));
@@ -152,13 +154,14 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 	if(!empty($params['currency']))
 		$row['currency'] = $params['currency'];
 	if(!empty($params['surrate']))
-		$row['surchargerate'] = $params['surrate'];
+		$row['surchargerate'] = html_entity_decode($params['surrate']);
 
-	$message = (!empty($params['message'])) ? $params['message'] : FALSE;
+	$message = (!empty($params['message'])) ? html_entity_decode($params['message']) : FALSE;
 	//populate inputs from supplied data
 	if (!empty($params['amount'])) {
+		$amount = html_entity_decode($params['amount']);
 		$symbol = sgtUtils::GetSymbol($row['currency']);
-		$amount = sgtUtils::CleanPublicAmount($params['amount'],$row['amountformat'],$symbol);
+		$amount = sgtUtils::CleanPublicAmount($amount,$row['amountformat'],$symbol);
 	} else {
 		$amount = NULL;
 	}
@@ -314,6 +317,27 @@ if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches)) {
 	$places = 2;
 }
 
+$stylers = <<<EOS
+<link rel="stylesheet" type="text/css" href="{$baseurl}/css/payplus.css" />
+EOS;
+//porting heredoc-var newlines is a problem for qouted strings! workaround ...
+$stylers = str_replace("\n",'',$stylers);
+$tplvars['cssscript'] = <<<EOS
+<script type="text/javascript">
+//<![CDATA[
+var linkadd = '{$stylers}',
+ \$head = $('head'),
+ \$linklast = \$head.find("link[rel='stylesheet']:last");
+if (\$linklast.length) {
+ \$linklast.after(linkadd);
+} else {
+ \$head.append(linkadd);
+}
+//]]>
+</script>
+
+EOS;
+
 $jsfuncs = array();
 $jsloads = array();
 
@@ -436,7 +460,14 @@ if ($surrate)
 EOS;
 
 $jsloads[] = <<<EOS
- $('#pplus_number').closest('form').submit(function() {
+ $('#pplus_number').closest('form').submit(function(ev) {
+  var \$btn = $('#pplus_cancel');
+  if (\$btn.length) {
+   var \$el = $(document.activeElement);
+   if (\$el.length && \$el.is(\$btn)) {
+    return true;
+   }
+  }
   lock_inputs();
   $('#pplus_container input').blur(); //trigger sanitize/validate functions
   if ($('input.error').length > 0) {
