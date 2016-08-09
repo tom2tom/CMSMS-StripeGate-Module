@@ -103,16 +103,6 @@ class StripeGate extends CMSModule
 		return TRUE;
 	}
 
-/*	public function HasCapability($capability,$params = array())
-	{
-		switch ($capability) {
-		 case 'whatever':
-			return TRUE;
-		 default:
-			return FALSE;
-		}
-	}
-*/
 	public function HasAdmin()
 	{
 		return TRUE;
@@ -219,15 +209,17 @@ EOS;
 		$this->SetParameterType('nosur',CLEAN_INT);
 		$this->SetParameterType('formed',CLEAN_INT);
 		//for showform action
-		$this->SetParameterType('cancel',CLEAN_STRING);
+		$this->SetParameterType('cancel',CLEAN_NONE);
 		$this->SetParameterType('contact',CLEAN_STRING);
 		$this->SetParameterType('currency',CLEAN_STRING);
 		$this->SetParameterType('customer',CLEAN_STRING);
 		$this->SetParameterType('message',CLEAN_STRING);
+		$this->SetParameterType('passthru',CLEAN_STRING);
 		$this->SetParameterType('payer',CLEAN_STRING);
 		$this->SetParameterType('payfor',CLEAN_STRING);
 		$this->SetParameterType('senddata',CLEAN_STRING);
 		$this->SetParameterType('surcharge',CLEAN_STRING);
+		$this->SetParameterType('withcancel',CLEAN_STRING);
 		//for checkout template
 		$this->SetParameterType('submit',CLEAN_STRING);
 		$this->SetParameterType(CLEAN_REGEXP.'/stg_.*/',CLEAN_NONE);
@@ -279,6 +271,29 @@ EOS;
 		return new stripe_clearlog_task();
 	}
 */
+	//Support for GatePayer interface
+
+	public function HasCapability($capability, $params = array())
+	{
+		switch ($capability) {
+		 case 'GatePayer':
+			return TRUE;
+		 default:
+			return FALSE;
+		}
+	}
+
+	/**
+	Get name of of StripeGate class which performs 'interface' duties in
+	accord with interface GatePay
+	Returns: string, not the file i.e. no leading 'class.' or trailing '.php'.
+	May be namespaced like 'StripeGate\classname' 
+	*/
+	public function GetPayer()
+	{
+		return 'sgtPayer';
+	}
+
 	public function DoAction($name, $id, $params, $returnid='')
 	{
 		//diversions
