@@ -24,6 +24,8 @@
  * Requires:
  * mcrypt extension
  */
+namespace StripeGate;
+ 
 class Encryption
 {
 	/**

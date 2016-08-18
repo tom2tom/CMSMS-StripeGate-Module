@@ -194,7 +194,7 @@ class sgtUtils
 				$passwd = self::unfusc($mod->GetPreference('masterpass'));
 			}
 			if ($passwd && $mod->havemcrypt) {
-				$e = new Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
+				$e = new StripeGate\Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
 				$value = $e->encrypt($value,$passwd);
 				if ($based)
 					$value = base64_encode($value);
@@ -221,7 +221,7 @@ class sgtUtils
 			if ($passwd && $mod->havemcrypt) {
 				if ($based)
 					$value = base64_decode($value);
-				$e = new Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
+				$e = new StripeGate\Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
 				$value = $e->decrypt($value,$passwd);
 			} else
 				$value = substr(strlen($passwd),self::unfusc($value));
