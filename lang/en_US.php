@@ -116,7 +116,7 @@ $lang['pagerows'] = 'rows-per-page';
 $lang['pay'] = 'Pay %s';
 $lang['payamount'] = 'Amount to pay';
 $lang['payfor'] = 'Payment on behalf of';
-$lang['payment_submitted'] = 'The payment has been submitted for processing.<br />You might like to make a note of the transaction-id: %s.';
+$lang['payment_submitted'] = 'The payment has been submitted for processing.<br />You might like to make a note of the transaction-id: %s';
 $lang['paywhat'] = 'Reason for payment';
 $lang['percent'] = '%s percent';
 $lang['perm_adm'] = 'Modify Stripe Gateway Settings';
@@ -230,7 +230,20 @@ put into the page's 'Page Specific Metadata' field (so it can be modified at run
 </pre>
 The payment will be processed via an ajax call, and if all is well, a form-submit will then be triggered.
 <br /><br />
-<h4>API</h4>
+<h4>Use by other modules</h4>
+Refer to file: lib/interface.GatePay.php
+<pre>
+\$ob = cms_utils::get_module('StripeGate');
+\$ifaceclass = \$ob->GetPayer();
+\$ifuncs = new \$ifaceclass(\$callermodule,\$ob);
+ setup \$args
+if (\$ifuncs->Furnish(\$args)) {
+  setup \$args
+  \$ifuncs->ShowForm(\$id,\$returnid,\$args);
+  exit;
+}
+</pre>
+<h4>Stripe API</h4>
 A complete API library is included, so things related to Accounts, Customers and so on can be programmed.
 <a href="https://stripe.com/docs/api">Visit Stripe</a> for documentation.
 <h3>Requirements:</h3>
