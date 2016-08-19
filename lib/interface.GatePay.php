@@ -5,6 +5,7 @@
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
+namespace StripeGate;
 
 interface GatePay
 {
