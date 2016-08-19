@@ -210,18 +210,21 @@ EOS;
 		$this->SetParameterType('formed',CLEAN_INT);
 		//for showform action
 		$this->SetParameterType('cancel',CLEAN_NONE);
-		$this->SetParameterType('contact',CLEAN_STRING);
+//		$this->SetParameterType('contact',CLEAN_STRING);
 		$this->SetParameterType('currency',CLEAN_STRING);
 		$this->SetParameterType('customer',CLEAN_STRING);
 		$this->SetParameterType('message',CLEAN_STRING);
 		$this->SetParameterType('passthru',CLEAN_STRING);
+//		$this->SetParameterType('payee',CLEAN_STRING);
 		$this->SetParameterType('payer',CLEAN_STRING);
 		$this->SetParameterType('payfor',CLEAN_STRING);
-		$this->SetParameterType('senddata',CLEAN_STRING);
-		$this->SetParameterType('surcharge',CLEAN_STRING);
-		$this->SetParameterType('withcancel',CLEAN_STRING);
+		$this->SetParameterType('preserve',CLEAN_STRING);
+//		$this->SetParameterType('senddata',CLEAN_STRING);
+		$this->SetParameterType('surrate',CLEAN_STRING);
+		$this->SetParameterType('withcancel',CLEAN_INT);
 		//for checkout template
 		$this->SetParameterType('submit',CLEAN_STRING);
+		//for all
 		$this->SetParameterType(CLEAN_REGEXP.'/stg_.*/',CLEAN_NONE);
 /* webhook reports not supported ATM
 		$this->SetParameterType('showtemplate',CLEAN_STRING);
@@ -315,7 +318,16 @@ EOS;
 	private function stripe_spacedload($classname)
 	{
 		$parts = explode('\\',$classname);
-		if ($parts[0] != 'Stripe') {
+		if (!($parts[0] == 'StripeGate' || $parts[0] == 'Stripe')) {
+			return;
+		}
+		if ($parts[0] == 'StripeGate') {
+			unset($parts[0]);
+			$fn = 'class.'.array_pop($parts).'.php';
+			$fp = __DIR__.DIRECTORY_SEPARATOR.'lib'.implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR.$fn;
+			if (@file_exists($fp)) {
+				include($fp);
+			}
 			return;
 		}
 		$class = array_pop($parts);
@@ -331,7 +343,7 @@ EOS;
 				if ($sub)
 					$sub .= DIRECTORY_SEPARATOR;
 				$fp = $base.$sub.$fn.'.php';
-				if (file_exists($fp)) {
+				if (@file_exists($fp)) {
 					include($fp);
 					if (class_exists($classname)) {
 						break;
