@@ -145,6 +145,7 @@ class Payer //implements GatePay
 	 a string 'classname::methodname' where the method returns boolean for success
 	 an array (modulename,actionname) AND the action should be a 'doer', not a 'shower', returns HTML code
 	 an array (modulename,'method.whatever') to be included, the code must conclude with variable $res = T/F indicating success
+	 a string 'absolute-path-to-whatever.php' to be included, the code must conclude with variable $res = T/F indicating success
 	 an URL like <server-root-url>/index.php?mact=<modulename>,cntnt01,<actionname>,0
 	 	- provided the PHP curl extension is available
 	 NOT a closure in a static context (PHP 5.3+) OR static closure (PHP 5.4+)
@@ -190,13 +191,17 @@ class Payer //implements GatePay
 				}
 			}
 		} elseif (is_string($handler)) {
-			if ($this->workermod->havecurl) { //curl is installed
+			if (@is_file($handler)) {
+				if (substr_compare($handler,'.php',-4,4,TRUE) === 0) {
+					$type = 5;
+				}
+			} elseif ($this->workermod->havecurl) { //curl is installed
 				$config = cmsms()->GetConfig();
 				$u = (empty($_SERVER['HTTPS'])) ? $config['root_url'] : $config['ssl_url'];
 				$u .= '/index.php?mact=';
 				$len = strlen($u);
 				if (strncasecmp($u,$handler,$len) == 0) {
-					$type = 5;
+					$type = 6;
 				}
 			}
 		}
@@ -387,7 +392,11 @@ class Payer //implements GatePay
 			$res = FALSE;
 			require $fp;
 			break;
-		 case 5: //URL
+		 case 5: //code inclusion
+			$res = FALSE;
+			require $this->handler;
+			break;
+		 case 6: //URL
 			$ch = curl_init();
 			//can't be bothered with GET URL construction
 			curl_setopt_array($ch,array(
