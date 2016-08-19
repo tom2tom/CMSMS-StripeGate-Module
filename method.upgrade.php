@@ -18,4 +18,11 @@ switch ($oldversion) {
 	$fp = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'init.php';
 	if (is_file($fp))
 		unlink($fp);
+ case '0.8.1':
+	$base = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'class.';
+	foreach (array('sgtUtils','sgtPayer','sgtExport') as $fn) {
+		$fp = $base.$fn.'.php';
+		if (is_file($fp))
+			unlink($fp);
+	}
 }
