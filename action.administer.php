@@ -35,7 +35,7 @@ if (!($padm || $pmod || $psee)) exit;
 $aid = (int)$params['account_id'];
 $pref = cms_db_prefix();
 $row = $db->GetRow('SELECT name,currency,amountformat FROM '.$pref.'module_sgt_account WHERE account_id=?',array($aid));
-$symbol = sgtUtils::GetSymbol($row['currency']);
+$symbol = StripeGate\Utils::GetSymbol($row['currency']);
 
 $tplvars = array(
 	'pmod' => $pmod,
@@ -233,4 +233,4 @@ if ($jsloads) {
 $tplvars['jsfuncs'] = $jsfuncs;
 $tplvars['jsincs'] = $jsincs;
 
-echo sgtUtils::ProcessTemplate($this,'administer.tpl',$tplvars);
+echo StripeGate\Utils::ProcessTemplate($this,'administer.tpl',$tplvars);

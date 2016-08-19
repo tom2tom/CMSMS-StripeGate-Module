@@ -40,7 +40,7 @@ if (isset($_FILES) && isset($_FILES[$fn])) {
 	}
 
 	if (empty($message)) {
-		$fp = sgtUtils::GetUploadsPath($this);
+		$fp = StripeGate\Utils::GetUploadsPath($this);
 		if ($fp) {
 			$fp = cms_join_path($fp,$file_data['name']);
 			if (!chmod($file_data['tmp_name'],0644) ||
@@ -71,4 +71,4 @@ $tplvars = array(
 	'help' => $this->Lang('help_iconupload')
 );
 
-echo sgtUtils::ProcessTemplate($this,'chooser.tpl',$tplvars);
+echo StripeGate\Utils::ProcessTemplate($this,'chooser.tpl',$tplvars);

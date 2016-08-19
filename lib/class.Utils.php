@@ -5,8 +5,9 @@
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
+namespace StripeGate;
 
-class sgtUtils
+class Utils
 {
 	const ENC_ROUNDS = 10000;
 
@@ -194,7 +195,7 @@ class sgtUtils
 				$passwd = self::unfusc($mod->GetPreference('masterpass'));
 			}
 			if ($passwd && $mod->havemcrypt) {
-				$e = new StripeGate\Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
+				$e = new Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
 				$value = $e->encrypt($value,$passwd);
 				if ($based)
 					$value = base64_encode($value);
@@ -221,7 +222,7 @@ class sgtUtils
 			if ($passwd && $mod->havemcrypt) {
 				if ($based)
 					$value = base64_decode($value);
-				$e = new StripeGate\Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
+				$e = new Encryption(MCRYPT_BLOWFISH,MCRYPT_MODE_CBC,self::ENC_ROUNDS);
 				$value = $e->decrypt($value,$passwd);
 			} else
 				$value = substr(strlen($passwd),self::unfusc($value));

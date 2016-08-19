@@ -5,8 +5,9 @@
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
+namespace StripeGate;
 
-class sgtExport
+class Export
 {
 	private function GetAccountIDForRecord($record_id)
 	{
@@ -99,7 +100,7 @@ class sgtExport
 			return FALSE;
 
 		foreach ($adata as $id=>&$row)
-			$row['symbol'] = sgtUtils::GetSymbol($row['currency']);
+			$row['symbol'] = StripeGate\Utils::GetSymbol($row['currency']);
 		unset($row);
 
 		if ($fp && ini_get('mbstring.internal_encoding') !== FALSE) { //send to file, and conversion is possible
@@ -159,7 +160,7 @@ class sgtExport
 				foreach ($row as $fn=>$fv) {
 					switch ($fn) {
 					 case 'amount':
-					 	$outstr .= $sep.sgtUtils::GetPublicAmount($fv,$adata[$aid]['amountformat'],$adata[$aid]['symbol']);
+					 	$outstr .= $sep.StripeGate\Utils::GetPublicAmount($fv,$adata[$aid]['amountformat'],$adata[$aid]['symbol']);
 						break;
 					 case 'recorded':
 						$outstr .= $sep.date('Y-m-d H:i:s',$fv);
@@ -221,7 +222,7 @@ class sgtExport
 		$fname = self::ExportName($mod,$account_id,$record_id);
 
 		if ($mod->GetPreference('export_file',FALSE)) {
-			$updir = sgtUtils::GetUploadsPath($mod);
+			$updir = StripeGate\Utils::GetUploadsPath($mod);
 			if ($updir) {
 				$filepath = $updir.DIRECTORY_SEPARATOR.$fname;
 				$fp = fopen($filepath,'w');
@@ -229,7 +230,7 @@ class sgtExport
 					$success = self::CSV($mod,$account_id,$record_id,$fp,$sep);
 					fclose($fp);
 					if ($success) {
-						$url = sgtUtils::GetUploadsUrl($mod).'/'.$fname;
+						$url = StripeGate\Utils::GetUploadsUrl($mod).'/'.$fname;
 						@ob_clean();
 						@ob_clean();
 						header('Location: '.$url);

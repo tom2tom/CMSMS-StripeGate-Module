@@ -21,7 +21,7 @@ if (isset($params['delete'])) {
 		$this->Redirect($id,'administer','',array('account_id'=>$params['account_id']));
 }
 if (isset($params['export'])) {
-	$funcs = new sgtExport();
+	$funcs = new StripeGate\Export();
 	$res = $funcs->Export($this,FALSE,$params['sel']);
 	if ($res === TRUE)
 		exit;

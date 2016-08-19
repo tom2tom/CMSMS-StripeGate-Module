@@ -26,7 +26,7 @@ if (isset($params['submit'])) {
 	if ($padm) {
 		$oldpw = $this->GetPreference('masterpass');
 		if ($oldpw)
-			$oldpw = sgtUtils::unfusc($oldpw);
+			$oldpw = StripeGate\Utils::unfusc($oldpw);
 
 		$newpw = trim($params['masterpass']);
 		if ($oldpw != $newpw) {
@@ -37,10 +37,10 @@ if (isset($params['submit'])) {
 			if ($rst) {
 				$sql = 'UPDATE '.$pre.'module_sgt_account SET privtoken=?,testprivtoken=? WHERE account_id=?';
 				while (!$rst->EOF) {
-					$t = sgtUtils::decrypt_value($mod,$rst->fields[1],$oldpw);
-					$t = ($newpw) ? sgtUtils::encrypt_value($mod,$t,$newpw):sgtUtils::fusc($t);
-					$t2 = sgtUtils::decrypt_value($mod,$rst->fields[2],$oldpw);
-					$t2 = ($newpw) ? sgtUtils::encrypt_value($mod,$t2,$newpw):sgtUtils::fusc($t2);
+					$t = StripeGate\Utils::decrypt_value($mod,$rst->fields[1],$oldpw);
+					$t = ($newpw) ? StripeGate\Utils::encrypt_value($mod,$t,$newpw):StripeGate\Utils::fusc($t);
+					$t2 = StripeGate\Utils::decrypt_value($mod,$rst->fields[2],$oldpw);
+					$t2 = ($newpw) ? StripeGate\Utils::encrypt_value($mod,$t2,$newpw):StripeGate\Utils::fusc($t2);
 					$db->Execute($sql,array($t,$t2,$rst->fields[0]));
 					if (!$rst->MoveNext())
 						break;
@@ -49,7 +49,7 @@ if (isset($params['submit'])) {
 			}
 			//TODO if record-table data is encrypted
 			if ($newpw)
-				$newpw = sgtUtils::fusc($newpw);
+				$newpw = StripeGate\Utils::fusc($newpw);
 			$this->SetPreference('masterpass',$newpw);
 		}
 	}
@@ -320,7 +320,7 @@ $tplvars['input_updir'] = $this->CreateInputText($id,'uploads_dir',$this->GetPre
 $tplvars['title_password'] = $this->Lang('title_password');
 $pw = $this->GetPreference('masterpass');
 if ($pw)
-	$pw = sgtUtils::unfusc($pw);
+	$pw = StripeGate\Utils::unfusc($pw);
 
 $tplvars['input_password'] =
 	$this->CreateTextArea(false,$id,$pw,'masterpass','cloaked',
@@ -350,4 +350,4 @@ if ($jsloads) {
 $tplvars['jsfuncs'] = $jsfuncs;
 $tplvars['jsincs'] = $jsincs;
 
-echo sgtUtils::ProcessTemplate($this,'adminpanel.tpl',$tplvars);
+echo StripeGate\Utils::ProcessTemplate($this,'adminpanel.tpl',$tplvars);

@@ -9,8 +9,9 @@
 This provides a generic interface for other modules to initiate a payment via
 Stripe and get feedback from that payment process.
 */
+namespace StripeGate;
 
-class sgtPayer //implements GatePay
+class Payer //implements GatePay
 {
 	private $callermod; //reference to the initiator's module-object
 	private $workermod; //reference to a StripeGate-module-object
@@ -132,7 +133,7 @@ class sgtPayer //implements GatePay
 	*/
 /*	private function isStatic(Closure $closure)
 	{
-		return (new ReflectionFunction(@Closure::bind($closure, new stdClass)))->getClosureThis() == NULL;
+		return (new \ReflectionFunction(@Closure::bind($closure, new stdClass)))->getClosureThis() == NULL;
 	}
 */
 	/**
@@ -157,13 +158,13 @@ class sgtPayer //implements GatePay
 		$type = FALSE;
 		if (is_callable($handler)) { //BUT the class may have a __call() method
 			if (is_array($handler && count($handler) == 2)) {
-				$method = new ReflectionMethod($handler);
+				$method = new \ReflectionMethod($handler);
 				if ($method && $method->isStatic()) {
 					$type = 1;
 				}
 			} elseif (is_string($handler) && strpos($handler,'::') !== FALSE) {
 				//PHP 5.2.3+, supports passing 'ClassName::methodName'
-				$method = new ReflectionMethod($handler);
+				$method = new \ReflectionMethod($handler);
 				if ($method && $method->isStatic()) {
 					$type = 1;
 				}
@@ -174,7 +175,7 @@ class sgtPayer //implements GatePay
 			}
 */
 		} elseif (is_array($handler) && count($handler) == 2) {
-			$ob = cms_utils::get_module($handler[0]);
+			$ob = \cms_utils::get_module($handler[0]);
 			if ($ob) {
 				$dir = $ob->GetModulePath();
 				unset($ob);
@@ -284,7 +285,7 @@ class sgtPayer //implements GatePay
 				 case 'workermod':
 				 case 'callermod':
 				 	if (!$this->$key)
-						$this->$key = cms_utils::get_module($val); //no namespace
+						$this->$key = \cms_utils::get_module($val); //no namespace
 					break;
 				 case 'passthru':
 					$params[$key] = $val;
@@ -374,13 +375,13 @@ class sgtPayer //implements GatePay
 			$res = $this->handler($params);
 			break; */
 		 case 3: //module action
-			$ob = cms_utils::get_module($this->handler[0]);
+			$ob = \cms_utils::get_module($this->handler[0]);
 			$res = $ob->DoAction($this->handler[1],$this->director[0],$params);
 			unset($ob);
 			//TODO handle $res == 400+
 			break;
 		 case 4: //code inclusion
-			$ob = cms_utils::get_module($this->handler[0]);
+			$ob = \cms_utils::get_module($this->handler[0]);
 			$fp = $ob->GetModulePath().DIRECTORY_SEPARATOR.$this->handler[1].'.php';
 			unset($ob);
 			$res = FALSE;
@@ -409,7 +410,7 @@ class sgtPayer //implements GatePay
 		foreach (array('passthru','errmsg','successmsg') as $key) {
 			if (!empty($this->translates[$key])) {
 				$key = $this->translates[$key];
-				$newparms[$key] = $params[$key]);
+				$newparms[$key] = $params[$key];
 			}
 		}
 		$this->callermod->Redirect($id,$action,$returnid,$newparms);

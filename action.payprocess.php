@@ -22,18 +22,18 @@ if ($handlers) {
 		ob_end_clean();
 }
 
-//spl_autoload_register(array('sgtUtils','stripe_classload'));
+//spl_autoload_register(array('StripeGate\Utils','stripe_classload'));
 
 $row = $db->GetRow('SELECT currency,usetest,privtoken,testprivtoken FROM '.
 	cms_db_prefix().'module_sgt_account WHERE account_id=?',array($params['stg_account']));
 if ($row['usetest']) {
 	if ($row['testprivtoken'])
-		$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
+		$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
 	else
 		$privkey = FALSE;
 } else {
 	if ($row['privtoken'])
-		$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
+		$privkey = StripeGate\Utils::decrypt_value($this,$row['privtoken']);
 	else
 		$privkey = FALSE;
 }

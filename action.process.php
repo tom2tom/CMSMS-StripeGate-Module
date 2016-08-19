@@ -23,7 +23,7 @@ if (isset($params['delete'])) {
 }
 if (isset($params['export'])) {
 	if (!$this->CheckPermission('ModifyStripeAccount')) exit;
-	$funcs = new sgtExport();
+	$funcs = new StripeGate\Export();
 	$res = $funcs->Export($this,$params['selitems']);
 	if ($res === TRUE)
 		exit;

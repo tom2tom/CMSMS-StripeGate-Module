@@ -8,7 +8,7 @@
 
 if (!$this->CheckPermission('ModifyStripeAccount')) exit;
 
-$funcs = new sgtExport();
+$funcs = new StripeGate\Export();
 $res = $funcs->Export($this,FALSE,$params['record_id']);
 if ($res === TRUE)
 	exit;

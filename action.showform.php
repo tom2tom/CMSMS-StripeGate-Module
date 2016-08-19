@@ -40,7 +40,7 @@ and upon return
 */
 
 if (empty($params['account']) && empty($params['stg_account'])) {
-	$default = sgtUtils::GetAccount();
+	$default = StripeGate\Utils::GetAccount();
 	if ($default) {
 		if (isset($params['submit']))
 			$params['stg_account'] = $default;
@@ -54,7 +54,7 @@ if (empty($params['account']) && empty($params['stg_account'])) {
 
 if (isset($params['cancel'])) {
 	$caller = NULL;
-	$funcs = new sgtPayer($caller,$this);
+	$funcs = new StripeGate\Payer($caller,$this);
 	$funcs->HandleResult($params); //redirects
 	exit;
 }
@@ -67,12 +67,12 @@ if (isset($params['submit'])) {
 	$pref.'module_sgt_account WHERE account_id=?',array($params['stg_account']));
 	if ($row['usetest']) {
 		if ($row['testprivtoken'])
-			$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
+			$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
 		else
 			$privkey = FALSE;
 	} else {
 		if ($row['privtoken'])
-			$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
+			$privkey = StripeGate\Utils::decrypt_value($this,$row['privtoken']);
 		else
 			$privkey = FALSE;
 	}
@@ -86,8 +86,8 @@ if (isset($params['submit'])) {
 	if(!empty($params['stg_surrate']))
 		$row['surchargerate'] = $params['stg_surrate'];
 
-	$symbol = sgtUtils::GetSymbol($row['currency']);
-	$amount = sgtUtils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
+	$symbol = StripeGate\Utils::GetSymbol($row['currency']);
+	$amount = StripeGate\Utils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
 	if ($row['surchargerate'] > 0.0 && empty($params['sgt_nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
 
@@ -115,7 +115,7 @@ if (isset($params['submit'])) {
 		$charge = Stripe\Charge::create($data); //synchronous
 		$params = array_merge($params, $charge->__toArray(TRUE));
 		$caller = NULL;
-		$funcs = new sgtPayer($caller,$this);
+		$funcs = new StripeGate\Payer($caller,$this);
 		$funcs->HandleResult($params); //redirects
 		exit;
 	} catch (Exception $e) {
@@ -184,8 +184,8 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 	//populate inputs from supplied data
 	if (!empty($params['amount'])) {
 		$amount = html_entity_decode($params['amount']);
-		$symbol = sgtUtils::GetSymbol($row['currency']);
-		$amount = sgtUtils::CleanPublicAmount($amount,$row['amountformat'],$symbol);
+		$symbol = StripeGate\Utils::GetSymbol($row['currency']);
+		$amount = StripeGate\Utils::CleanPublicAmount($amount,$row['amountformat'],$symbol);
 	} else {
 		$amount = NULL;
 	}
@@ -201,7 +201,7 @@ $baseurl = $this->GetModuleURLPath();
 $tplvars = array();
 
 if ($row['stylesfile']) { //using custom css for checkout display
-	$u = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
+	$u = StripeGate\Utils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
 } else {
 	$u = $baseurl.'/css/payplus.css';
 }
@@ -260,12 +260,12 @@ Australian, Canadian, European, and Japanese businesses can accept
 */
 if ($row['usetest']) {
 	if ($row['testprivtoken'])
-		$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
+		$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
 	else
 		$privkey = FALSE;
 } else {
 	if ($row['privtoken'])
-		$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
+		$privkey = StripeGate\Utils::decrypt_value($this,$row['privtoken']);
 	else
 		$privkey = FALSE;
 }
@@ -296,7 +296,7 @@ if ($account) {
 } else
 	$iconfile = NULL;
 
-$t = sgtUtils::GetPublicAmount(1999,$row['amountformat'],$symbol);
+$t = StripeGate\Utils::GetPublicAmount(1999,$row['amountformat'],$symbol);
 $tplvars = $tplvars + array(
 	'currency_example' => $this->Lang('currency_example',$t),
 	'logos' => $iconfile,
@@ -346,7 +346,7 @@ $yr = date('Y');
 $cent = substr($yr,0,2);
 $err14 = $this->Lang('err_badyear',$yr);
 $rawmin = preg_replace('/\D/','',$row['minpay']);
-$min = sgtUtils::GetPublicAmount($rawmin,$row['amountformat'],$symbol);
+$min = StripeGate\Utils::GetPublicAmount($rawmin,$row['amountformat'],$symbol);
 $err15 = $this->Lang('err_toosmall',$min);
 if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches)) {
 	$sep = ($matches[1]) ? $symbol : $matches[3];
@@ -500,4 +500,4 @@ if ($jsloads) {
 }
 $tplvars['jsfuncs'] = $jsfuncs;
 
-echo sgtUtils::ProcessTemplate($this,'payplus.tpl',$tplvars);
+echo StripeGate\Utils::ProcessTemplate($this,'payplus.tpl',$tplvars);

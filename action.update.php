@@ -16,9 +16,9 @@ if (isset($params['cancel']))
 
 $pref = cms_db_prefix();
 if (isset($params['submit']) && $pmod) {
-	$alias = sgtUtils::ConstructAlias($params['alias'],$params['name']);
-	$privatetoken = ($params['privtoken']) ? sgtUtils::encrypt_value($this,$params['privtoken']) : '';
-	$privatetesttoken = ($params['testprivtoken']) ? sgtUtils::encrypt_value($this,$params['testprivtoken']) : '';
+	$alias = StripeGate\Utils::ConstructAlias($params['alias'],$params['name']);
+	$privatetoken = ($params['privtoken']) ? StripeGate\Utils::encrypt_value($this,$params['privtoken']) : '';
+	$privatetesttoken = ($params['testprivtoken']) ? StripeGate\Utils::encrypt_value($this,$params['testprivtoken']) : '';
 	if (strpos($params['surchargerate'],'%') !== FALSE) {
 		$sur = str_replace('%','',$params['surchargerate']);
 		$sur = (float)$sur / 100.0;
@@ -224,7 +224,7 @@ else
 //$oneset->help = $this->Lang('');
 $settings[] = $oneset;
 
-$choices = sgtUtils::GetSupportedCurrencies();
+$choices = StripeGate\Utils::GetSupportedCurrencies();
 $oneset = new stdClass();
 $oneset->title = $this->Lang('title_currency');
 if ($pmod)
@@ -302,7 +302,7 @@ if ($pmod) {
 
 	$oneset = new stdClass();
 	$oneset->title = $this->Lang('title_privtoken');
-	$oneset->input = $this->CreateInputText($id,'privtoken',sgtUtils::decrypt_value($this,$row['privtoken']),32,48);
+	$oneset->input = $this->CreateInputText($id,'privtoken',StripeGate\Utils::decrypt_value($this,$row['privtoken']),32,48);
 //	$oneset->help = $this->Lang('');
 	$settings[] = $oneset;
 
@@ -314,7 +314,7 @@ if ($pmod) {
 
 	$oneset = new stdClass();
 	$oneset->title = $this->Lang('title_testprivtoken');
-	$oneset->input = $this->CreateInputText($id,'testprivtoken',sgtUtils::decrypt_value($this,$row['testprivtoken']),32,48);
+	$oneset->input = $this->CreateInputText($id,'testprivtoken',StripeGate\Utils::decrypt_value($this,$row['testprivtoken']),32,48);
 	//$oneset->help = $this->Lang('');
 	$settings[] = $oneset;
 
@@ -401,4 +401,4 @@ if ($jsloads) {
 $tplvars['jsfuncs'] = $jsfuncs;
 $tplvars['jsincs'] = $jsincs;
 
-echo sgtUtils::ProcessTemplate($this,'update.tpl',$tplvars);
+echo StripeGate\Utils::ProcessTemplate($this,'update.tpl',$tplvars);

@@ -13,7 +13,7 @@ if (empty($params['amount'])) {
 	$params['amount'] = html_entity_decode($params['amount']);
 
 if (empty($params['account'])) {
-	$default = sgtUtils::GetAccount();
+	$default = StripeGate\Utils::GetAccount();
 	if ($default)
 		$params['account'] = $default;
 	else {
@@ -54,7 +54,7 @@ if (!$row) {
 
 $pubkey = $row['usetest'] ? $row['testpubtoken'] : $row['pubtoken'];
 if ($row['iconfile'])
-	$icon = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['iconfile']);
+	$icon = StripeGate\Utils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['iconfile']);
 else
 	$icon = '';
 
@@ -63,7 +63,7 @@ $tplvars = array();
 //custom button styling ?
 if ($row['stylesfile']) { //using custom css for checkout display
 	//replace href attribute in existing stylesheet link
-	$u = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
+	$u = StripeGate\Utils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
 	$t = <<<EOS
 <script type="text/javascript">
 //<![CDATA[
@@ -75,14 +75,14 @@ EOS;
 	$tplvars['cssscript'] = $t;
 }
 //button label
-$symbol = sgtUtils::GetSymbol($row['currency']);
+$symbol = StripeGate\Utils::GetSymbol($row['currency']);
 if (strpos($params['amount'],$symbol) !== FALSE)
 	$t = $symbol;
 else
 	$t = '';
 //cope with optional currency symbol in amount
-$amount = sgtUtils::GetPrivateAmount($params['amount'],$row['amountformat'],$t);
-$public = sgtUtils::GetPublicAmount($amount,$row['amountformat'],$symbol);
+$amount = StripeGate\Utils::GetPrivateAmount($params['amount'],$row['amountformat'],$t);
+$public = StripeGate\Utils::GetPublicAmount($amount,$row['amountformat'],$symbol);
 $tplvars['submit'] = $this->Lang('pay',$public);
 
 /*
@@ -147,4 +147,4 @@ if ($jsloads) {
 $tplvars['jsfuncs'] = $jsfuncs;
 $tplvars['jsincs'] = $jsincs;
 
-echo sgtUtils::ProcessTemplate($this,'pay.tpl',$tplvars);
+echo StripeGate\Utils::ProcessTemplate($this,'pay.tpl',$tplvars);

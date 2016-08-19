@@ -42,12 +42,12 @@ else
 if ($row) {
 	if ($row['usetest']) {
 		if ($row['testprivtoken'])
-			$privkey = sgtUtils::decrypt_value($this,$row['testprivtoken']);
+			$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
 		else
 			$privkey = FALSE;
 	} else {
 		if ($row['privtoken'])
-			$privkey = sgtUtils::decrypt_value($this,$row['privtoken']);
+			$privkey = StripeGate\Utils::decrypt_value($this,$row['privtoken']);
 		else
 			$privkey = FALSE;
 	}
