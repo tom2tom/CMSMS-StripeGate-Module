@@ -19,11 +19,9 @@ if (empty($params['account']) && empty($params['stg_account'])) {
 	}
 }
 
-//spl_autoload_register(array('sgtUtils','stripe_classload'));
-
 $pref = cms_db_prefix();
 
-if (isset($params['stg_account'])) { //we're back, after submission (no 'submit' parameter!)
+if (isset($params['submit'])) {
 	//some of these are needed only if continuing past error
 	$row = $db->GetRow('SELECT name,title,currency,amountformat,minpay,surchargerate,usetest,privtoken,testprivtoken,stylesfile FROM '.
 	$pref.'module_sgt_account WHERE account_id=?',array($params['stg_account']));
@@ -45,7 +43,7 @@ if (isset($params['stg_account'])) { //we're back, after submission (no 'submit'
 
 	$symbol = sgtUtils::GetSymbol($row['currency']);
 	$amount = sgtUtils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
-	if ($row['surchargerate'] && empty($params['sgt_nosur']))
+	if ($row['surchargerate'] > 0.0 && empty($params['sgt_nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
 
 	$card = array(
@@ -87,26 +85,25 @@ identifier
 			$response['created'],
 			$response['id']));
 
-		echo $this->Lang('payment_submitted');
+		echo $this->Lang('payment_submitted',$response['id']);
 		return;
 	} catch (Exception $e) {
 		$message = $e->getMessage();
-		$row['account_id'] = $params['stg_account'];
 		//all inputs resume
-		$amount = $params['stg_amount'];
-		$cvc = $params['stg_cvc'];
-		$month = $params['stg_month'];
-		$number = $params['stg_number'];
-		$payfor = $params['stg_payfor'];
-		$paywhat = $params['stg_paywhat'];
-		$year = $params['stg_year'];
-
-		if (isset($params['stg_nosur']))
-			$params['nosur'] = $params['stg_nosur'];
-		if (isset($params['stg_formed']))
-			$params['formed'] = $params['stg_formed'];
+		foreach ($params as $key=>$val) {
+			if (strpos($key,'stg_') === 0) {
+				$t = substr($key,4);
+				$$t = $val;
+				unset($params[$key]);
+			}
+		}
+		$row['account_id'] = $account;
+		if (isset($nosur))
+			$params['nosur'] = 1;
+		if (isset($formed))
+			$params['formed'] = 1;
 	}
-} else { //first-time (not submitted)
+} else { //not submitted i.e. first-time
 	if (is_numeric($params['account'])) {
 		$row = $db->GetRow('SELECT
 account_id,
@@ -181,8 +178,10 @@ $tplvars['hidden'] = $hidden;
 if ($message)
 	$tplvars['message'] = $message;
 
-$symbol = sgtUtils::GetSymbol($row['currency']);
-$t = sgtUtils::GetPublicAmount(1999,$row['amountformat'],$symbol);
+if ($row['title'])
+	$tplvars['title'] = $row['title'];
+else
+	$tplvars['title'] = $this->Lang('title_checkout',$row['name']);
 
 /*
 U.S. businesses can accept
@@ -228,33 +227,30 @@ if ($account) {
 } else
 	$iconfile = NULL;
 
+$symbol = sgtUtils::GetSymbol($row['currency']);
+$t = sgtUtils::GetPublicAmount(1999,$row['amountformat'],$symbol);
 $tplvars = $tplvars + array(
-	'MM' => $this->Lang('month_template'),
-	'YYYY' => $this->Lang('year_template'),
 	'currency_example' => $this->Lang('currency_example',$t),
 	'logos' => $iconfile,
-	'submit' => $this->Lang('submit'),
 	'title_amount' => $this->Lang('payamount'),
 	'amount' => $amount,
 	'title_cvc' => $this->Lang('cardcvc'),
 	'cvc' => $cvc,
 	'title_expiry' => $this->Lang('cardexpiry'),
+	'MM' => $this->Lang('month_template'),
 	'month' => $month,
+	'YYYY' => $this->Lang('year_template'),
 	'year' => $year,
 	'title_number' => $this->Lang('cardnumber'),
 	'number' => $number,
 	'title_payfor' => $this->Lang('payfor'),
 	'payfor' => $payfor,
 	'title_paywhat' => $this->Lang('paywhat'),
-	'paywhat' => $paywhat
+	'paywhat' => $paywhat,
+	'submit' => $this->Lang('submit')
 );
 
-if ($row['title'])
-	$tplvars['title'] = $row['title'];
-else
-	$tplvars['title'] = $this->Lang('title_checkout',$row['name']);
-
-if ($row['surchargerate'] > 0 && empty($params['nosur'])) {
+if ($row['surchargerate'] > 0.0 && empty($params['nosur'])) {
 	$surrate = $row['surchargerate'];
 	$t = number_format($surrate * 100,2);
 	if (strrpos($t,'0') > 0)
@@ -420,8 +416,8 @@ $jsloads[] = <<<EOS
  $('#pplus_number').closest('form').submit(function() {
   lock_inputs();
   $('#pplus_container input').blur(); //trigger sanitize/validate functions
+  unlock_inputs();
   if ($('input.error').length > 0) {
-   unlock_inputs();
    $('input.error:first').focus();
    return false;
   }
