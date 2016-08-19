@@ -15,10 +15,11 @@ class sgtPayer //implements GatePay
 	private $callermod; //reference to the initiator's module-object
 	private $workermod; //reference to a StripeGate-module-object
 	private $translates = NULL;
+	private $director = NULL; //3-member array: id,action,returnid
 	private $handler = NULL;
 	private $type = 0; //enum for type of $handler
 
-	public function __construct(&$caller,&$worker)
+	public function __construct(&$caller, &$worker)
 	{
 		$this->callermod = $caller;
 		$this->workermod = $worker;
@@ -41,9 +42,11 @@ class sgtPayer //implements GatePay
 	 cuz those aren't transferrable between requests
 	See action.webhook.php for example of a hander-action fed by a HTTP request
 	 In this case too, the action should be a 'doer', and return code 200 or 400+
+	@director: 3-member array of redirect-parameters for use upon completion:
+	 [0] = id, [1] = (caller-module)action-name, [2] = returnid
 	Returns: boolean representing acceptability of @handler
 	*/
-	public function Furnish($alternates, $handler)
+	public function Furnish($alternates, $handler, $director)
 	{
 		foreach ($alternates as $key=>&$val) {
 			if ($val === TRUE)
@@ -51,6 +54,8 @@ class sgtPayer //implements GatePay
 		}
 		unset($val);
 		$this->translates = array_filter(array_merge($this->GetConverts(),$alternates));
+
+		$this->director = $director;
 
 		return $this->SetResultHandler($handler);
 	}
@@ -68,11 +73,12 @@ class sgtPayer //implements GatePay
 	 'currency' 3-char country code
 	 'customer' user-account identifier recognised by the gateway also for feedback
 	 'message' in-dialog message
+	 'passthru' array of parameters to be passed as-is to the response-handler
+		after the end of the gateway interaction (however that ends)
 	 'payer' who is paying or being paid for
 	 'payfor' description of what is being bought
 	 'senddata' for Stripe, a json object with key:value pairs attached to charge
 	 'surcharge' rate (as bare decimal or decimal with appended '%')
-	 'preserve'
 	and for feedback
 	 'cardcvc'
 	 'cardmonth'
@@ -86,7 +92,7 @@ class sgtPayer //implements GatePay
 	 'successmsg'
 	 'transactid'
 
-	NOTE key 'passthru' is reserved for internal use
+	NOTE key 'preserve' is reserved for internal use
 	*/
 	public function GetConverts()
 	{
@@ -99,11 +105,11 @@ class sgtPayer //implements GatePay
 		 'currency'=>FALSE,
 		 'customer'=>FALSE,//also feedback (gateway customer-identifier)
 		 'message'=>FALSE,
+		 'passthru'=>FALSE,
 		 'payer'=>FALSE,
 		 'payfor'=>FALSE,
 		 'senddata'=>FALSE,
 		 'surcharge'=>FALSE,
-		 'preserve'=>FALSE,
 	//for feedback from dialog
 		 'cardcvc'=>FALSE,
 		 'cardmonth'=>FALSE,
@@ -141,7 +147,7 @@ class sgtPayer //implements GatePay
 	 an URL like <server-root-url>/index.php?mact=<modulename>,cntnt01,<actionname>,0
 	 	- provided the PHP curl extension is available
 	 NOT a closure in a static context (PHP 5.3+) OR static closure (PHP 5.4+)
-	 cuz those aren't transferrable between requests
+	 cuz info about those isn't transferrable between requests
 	See action.webhook.php for example of a hander-action fed by a HTTP request
 	 In this case too, the action should be a 'doer', and return code 200 or 400+
 	Returns: boolean representing acceptability of @handler
@@ -205,8 +211,8 @@ class sgtPayer //implements GatePay
 	/**
 	ShowForm:
 	Construct and display a payment 'form' for the user to populate and submit.
-	@id: action-id specified by the initiator's module, probably 'cntnt01' or similar
-	@returnid: the id of the page being displayed by the caller's module
+	@id: action-id specified by the initiator module, probably 'cntnt01' or similar
+	@returnid: the id of the page being displayed by the initiator module
 	@params associative array of data to be applied to the form. Keys will be
 		translated before use, consistent with settings supplied via Furnish()
 	Returns: nope, it redirects
@@ -221,12 +227,12 @@ class sgtPayer //implements GatePay
 		 'contact'=>FALSE,
 		 'currency'=>TRUE,
 		 'message'=>TRUE,
+		 'passthru'=>TRUE, //blended into 'preserve', not sent as-is to the gateway
 		 'payee'=>TRUE,
 		 'payer'=>TRUE,
 		 'payfor'=>TRUE,
 		 'senddata'=>FALSE, //TODO if used metadata check format json'ish
-		 'surcharge'=>'surrate',
-		 'preserve'=>TRUE //blended into ''passthru', NOT sent as-is to the gateway
+		 'surcharge'=>'surrate'
 		);
 		//translate relevant supplied $params to StripeGate-recognised names, ditch the others
 		foreach ($params as $key=>$value) {
@@ -245,55 +251,62 @@ class sgtPayer //implements GatePay
 			}
 			unset($params[$key]);
 		}
-		//preserve class properties & perhaps some caller data across requests
+		//preserve class properties & some caller data across requests
 		$this->callermod = $this->callermod->GetName();
 		$ob = $this->workermod;
-		$this->workermod = $this->workermod->GetName(); //StripeGate
+		$this->workermod = $ob->GetName(); //StripeGate
 		$value = get_object_vars($this);
-		$key = 'preserve';
-		if (!empty($params[$key])) {
-			$value[$key] = $params[$key];
-			unset ($params[$key]);
+		foreach (array('passthru') as $key) {
+			if (!empty($params[$key])) {
+				$value[$key] = $params[$key];
+				unset ($params[$key]);
+			}
 		}
-		$params['passthru'] = base64_encode(json_encode($value));
-
+		$params['preserve'] = base64_encode(json_encode($value));
 		$ob->Redirect($id,'showform',$returnid,$params);
 	}
 
 	/**
  	HandleResult:
-	Interpret @json and send relevant data back to the initiator, then go
-	to originating page
+	Interpret @json and send relevant data back to the initiator, then redirect
+	to specified action
 	@params: request-parameters to be used, including some from Stripe
 	Returns: nope, it redirects
 	*/
 	public function HandleResult($params)
 	{
-		//decode $params['stg_passthru'] to revert object-properties
-		$props = json_decode(base64_decode($params['stg_passthru']));
+		//decode $params['stg_preserve'] to revert object-properties
+		$props = json_decode(base64_decode($params['stg_preserve']));
 		if ($props !== NULL) {
 			$arr = (array)$props;
 			foreach ($arr as $key=>$val) {
-				if ($key == 'callermod' || $key == 'workermod') {
-					$this->$key = cms_utils::get_module($val); //no namespace
-				} elseif ($key == 'preserve') {
-					$params['preserve'] = $val;
-				} elseif (is_object($val)) {
-					$this->$key = (array)$val;
-				} else {
-					$this->$key = $val;
+				switch ($key) {
+				 case 'workermod':
+				 case 'callermod':
+				 	if (!$this->$key)
+						$this->$key = cms_utils::get_module($val); //no namespace
+					break;
+				 case 'passthru':
+					$params[$key] = $val;
+					break;
+				 default:
+					if (is_object($val)) {
+						$this->$key = (array)$val;
+					} else {
+						$this->$key = $val;
+					}
 				}
 			}
 		} else {
 			echo 'TODO error message';
 			exit;
 		}
+		unset($params['stg_preserve']);
 
 		$locals = array(
 //		 'account'=>,
 		 'amount'=>TRUE, //in smallest currency-units
 		 'cancel'=>TRUE, //cancel-button clicked
-//		 'preserve'=>'passthru',
 		 'cardcvc'=>'stg_cvc',
 		 'cardmonth'=>'exp_month',
 		 'cardname'=>'stg_name',
@@ -307,18 +320,34 @@ class sgtPayer //implements GatePay
 		 'receivedata'=>FALSE, //'metadata',
 		 'success'=>'paid', //boolean
 //		 'successmsg'=>,
-		 'transactid'=>'id'
+		 'transactid'=>'id',
+		 'passthru'=>TRUE, //internal use, cached data
 		);
 
 		foreach ($params as $key=>$value) {
-			$standard = array_search($key,$locals);
+			if (array_key_exists($key,$locals)) {
+				$k2 = $key;
+				$standard = $locals[$key];
+			} elseif (strpos($key,'stg_') === 0) {
+				$k2 = substr($key,4);
+				if (array_key_exists($k2,$locals)) {
+					$standard = $locals[$k2];
+				} else {
+					$standard = FALSE;
+				}
+			} else {
+				$standard = FALSE;
+			}
 			if ($standard) {
 				if ($standard === TRUE) {
-					$standard = $key;
+					$standard = $k2;
 				}
-				if (array_key_exists($standard,$key)) {
+				if (array_key_exists($standard,$this->translates)) {
 					$newk = $this->translates[$standard];
 					if ($newk) {
+						if ($newk === TRUE) {
+							$newk = $standard;
+						}
 						if ($newk === $key) {
 							continue;
 						}
@@ -346,7 +375,7 @@ class sgtPayer //implements GatePay
 			break; */
 		 case 3: //module action
 			$ob = cms_utils::get_module($this->handler[0]);
-			$res = $ob->DoAction($this->handler[1],'cntnt01',$params); //the $id is default CMSMS action-id //CHECKME allowed $params
+			$res = $ob->DoAction($this->handler[1],$this->director[0],$params);
 			unset($ob);
 			//TODO handle $res == 400+
 			break;
@@ -372,7 +401,17 @@ class sgtPayer //implements GatePay
 			break;
 		}
 
-		$this->callermod->Redirect('cntnt01',$params['action'],$params['returnid'],$params); //TODO check action, returnid
+		//redirection parameters
+		$id = $this->director[0]; //action-id specified by the initiator module
+		$action = $this->director[1];
+		$returnid = $this->director[2]; //id of the page being displayed by the initiator module
+		$newparms = array();
+		foreach (array('passthru','errmsg','successmsg') as $key) {
+			if (!empty($this->translates[$key])) {
+				$key = $this->translates[$key];
+				$newparms[$key] = $params[$key]);
+			}
+		}
+		$this->callermod->Redirect($id,$action,$returnid,$newparms);
 	}
-
 }
