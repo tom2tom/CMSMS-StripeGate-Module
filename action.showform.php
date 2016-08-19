@@ -12,16 +12,33 @@ Supported on-first-arrival $params are:
 'amount'
 'currency'
 'message'
-'passthru'
 'payer'
 'payfor'
+'preserve'
 'surrate'
 'withcancel'
-all except 'passthru' are optional
-NOT SUPPORTED 'contact'
-NOT SUPPORTED 'senddata'
-NOT SUPPORTED 'payee'
+all except 'preserve' are optional
+Not supported:
+'contact'
+'payee'
+'senddata'
+and upon return
+'stg_account_id'
+'stg_amount'
+'stg_cvc'
+'stg_month'
+'stg_number'
+'stg_payfor'
+'stg_paywhat'
+'stg_preserve'
+'stg_withcancel'
+'stg_year'
+
+'origreturnid' after redirect?
+'cancel' maybe
+'submit' maybe
 */
+
 if (empty($params['account']) && empty($params['stg_account'])) {
 	$default = sgtUtils::GetAccount();
 	if ($default) {
@@ -35,15 +52,16 @@ if (empty($params['account']) && empty($params['stg_account'])) {
 	}
 }
 
-if (isset($params['cancel'])) { //we're back, after the user cancelled
-	$funcs = new sgtCreator($this);
+if (isset($params['cancel'])) {
+	$caller = NULL;
+	$funcs = new sgtPayer($caller,$this);
 	$funcs->HandleResult($params); //redirects
 	exit;
 }
 
 $pref = cms_db_prefix();
 
-if (isset($params['submit'])) { //we're back, after submission
+if (isset($params['submit'])) {
 	//some of these are needed only if continuing past error
 	$row = $db->GetRow('SELECT name,title,currency,amountformat,minpay,surchargerate,usetest,privtoken,testprivtoken,stylesfile FROM '.
 	$pref.'module_sgt_account WHERE account_id=?',array($params['stg_account']));
@@ -70,7 +88,7 @@ if (isset($params['submit'])) { //we're back, after submission
 
 	$symbol = sgtUtils::GetSymbol($row['currency']);
 	$amount = sgtUtils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
-	if ($row['surchargerate'])
+	if ($row['surchargerate'] > 0.0 && empty($params['sgt_nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
 
 	$card = array(
@@ -96,28 +114,32 @@ if (isset($params['submit'])) { //we're back, after submission
 		Stripe\Stripe::setApiKey($privkey);
 		$charge = Stripe\Charge::create($data); //synchronous
 		$params = array_merge($params, $charge->__toArray(TRUE));
-		$funcs = new sgtCreator($this);
+		$caller = NULL;
+		$funcs = new sgtPayer($caller,$this);
 		$funcs->HandleResult($params); //redirects
 		exit;
 	} catch (Exception $e) {
 		$message = $e->getMessage();
-		$row['account_id'] = $params['stg_account'];
 		//all inputs resume
-		$amount = $params['stg_amount'];
-		$cvc = $params['stg_cvc'];
-		$month = $params['stg_month'];
-		$number = $params['stg_number'];
-		$payfor = $params['stg_payfor'];
-		$paywhat = $params['stg_paywhat'];
-		$year = $params['stg_year'];
+		foreach ($params as $key=>$val) {
+			if (strpos($key,'stg_') === 0) {
+				$t = substr($key,4);
+				$$t = $val;
+				unset($params[$key]);
+			}
+		}
 
-		if(isset($params['stg_currency']))
-			$params['currency'] = $params['stg_currency'];
-		if (isset($params['stg_surrate']))
-			$params['surrate'] = $params['stg_surrate'];
-		$params['passthru'] = $params['stg_passthru'];
+		if (isset($currency))
+			$params['currency'] = $currency;
+		if (isset($nosur))
+			$params['nosur'] = 1;
+		if (isset($surrate))
+			$params['surrate'] = $surrate;
+		if (isset($withcancel))
+			$params['withcancel'] = 1;
+		$params['preserve'] = $preserve;
 	}
-} else { //first-time (not submitted)
+} else { //not submitted i.e. first-time
 	if (is_numeric($params['account'])) {
 		$row = $db->GetRow('SELECT
 account_id,
@@ -151,6 +173,8 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 		echo $this->Lang('err_parameter');
 		return;
 	}
+
+	$account_id = $row['account_id'];
 	if(!empty($params['currency']))
 		$row['currency'] = $params['currency'];
 	if(!empty($params['surrate']))
@@ -177,34 +201,56 @@ $baseurl = $this->GetModuleURLPath();
 $tplvars = array();
 
 if ($row['stylesfile']) { //using custom css for checkout display
-	//replace href attribute in existing stylesheet link
 	$u = sgtUtils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
-	$t = <<<EOS
+} else {
+	$u = $baseurl.'/css/payplus.css';
+}
+//replace href attribute in existing stylesheet link, or append styles link
+$tplvars['cssscript'] = <<<EOS
 <script type="text/javascript">
 //<![CDATA[
- document.getElementById('stripestyles').setAttribute('href',"{$u}");
+var styler = document.getElementById('stripestyles');
+if (styler != null) {
+ styler.setAttribute('href',"{$u}");
+} else {
+ var linkadd = '<link rel="stylesheet" type="text/css" href="{$u}" />',
+  \$head = $('head'),
+  \$linklast = \$head.find("link[rel='stylesheet']:last");
+ if (\$linklast.length) {
+  \$linklast.after(linkadd);
+ } else {
+  \$head.append(linkadd);
+ }
+}
 //]]>
 </script>
 
 EOS;
-	$tplvars['cssscript'] = $t;
-}
+
+$hidden = array(
+ 'stg_account_id' => $account_id,
+ 'stg_preserve' => $params['preserve']
+);
+if(isset($params['currency']))
+	$hidden['stg_currency'] = $params['currency'];
+if (isset($params['nosur']))
+	$hidden['stg_nosur'] = 1;
+if (isset($params['surrate']))
+	$hidden['stg_surrate'] = $params['surrate'];
+if (isset($params['withcancel']))
+	$hidden['stg_withcancel'] = 1;
 
 $tplvars['form_start'] = $this->CreateFormStart($id,'showform',$returnid,'POST',
-	'',TRUE,'',array(
- 'stg_account' => $row['account_id'],
- 'stg_passthru' => $params['passthru']
-));
-
-$hidden = '';
-if(isset($params['currency']))
-	$hidden .= '<input type="hidden" name="'.$id.'stg_currency" value="'.$params['currency'].'" />';
-if (isset($params['surrate']))
-	$hidden .= '<input type="hidden" name="'.$id.'stg_surrate" value="'.$params['surrate'].'" />';
-$tplvars['hidden'] = $hidden;
+	'',TRUE,'',$hidden);
+$tplvars['hidden'] = NULL;
 
 if ($message)
 	$tplvars['message'] = $message;
+
+if ($row['title'])
+	$tplvars['title'] = $row['title'];
+else
+	$tplvars['title'] = $this->Lang('title_checkout',$row['name']);
 
 /*
 U.S. businesses can accept
@@ -250,38 +296,31 @@ if ($account) {
 } else
 	$iconfile = NULL;
 
-$symbol = sgtUtils::GetSymbol($row['currency']);
 $t = sgtUtils::GetPublicAmount(1999,$row['amountformat'],$symbol);
-
 $tplvars = $tplvars + array(
-	'MM' => $this->Lang('month_template'),
-	'YYYY' => $this->Lang('year_template'),
 	'currency_example' => $this->Lang('currency_example',$t),
 	'logos' => $iconfile,
-	'submit' => $this->Lang('submit'),
 	'title_amount' => $this->Lang('payamount'),
 	'amount' => $amount,
 	'title_cvc' => $this->Lang('cardcvc'),
 	'cvc' => $cvc,
 	'title_expiry' => $this->Lang('cardexpiry'),
+	'MM' => $this->Lang('month_template'),
 	'month' => $month,
+	'YYYY' => $this->Lang('year_template'),
 	'year' => $year,
 	'title_number' => $this->Lang('cardnumber'),
 	'number' => $number,
 	'title_payfor' => $this->Lang('payfor'),
 	'payfor' => $payfor,
 	'title_paywhat' => $this->Lang('paywhat'),
-	'paywhat' => $paywhat
+	'paywhat' => $paywhat,
+	'submit' => $this->Lang('submit')
 );
 if (isset($params['withcancel']))
 	$tplvars['cancel'] = $this->Lang('cancel');
 
-if ($row['title'])
-	$tplvars['title'] = $row['title'];
-else
-	$tplvars['title'] = $this->Lang('title_checkout',$row['name']);
-
-if ($row['surchargerate'] > 0) {
+if ($row['surchargerate'] > 0.0 && empty($params['nosur'])) {
 	$surrate = $row['surchargerate'];
 	$t = number_format($surrate * 100,2);
 	if (strrpos($t,'0') > 0)
@@ -316,27 +355,6 @@ if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches)) {
 	$sep = '.';
 	$places = 2;
 }
-
-$stylers = <<<EOS
-<link rel="stylesheet" type="text/css" href="{$baseurl}/css/payplus.css" />
-EOS;
-//porting heredoc-var newlines is a problem for qouted strings! workaround ...
-$stylers = str_replace("\n",'',$stylers);
-$tplvars['cssscript'] = <<<EOS
-<script type="text/javascript">
-//<![CDATA[
-var linkadd = '{$stylers}',
- \$head = $('head'),
- \$linklast = \$head.find("link[rel='stylesheet']:last");
-if (\$linklast.length) {
- \$linklast.after(linkadd);
-} else {
- \$head.append(linkadd);
-}
-//]]>
-</script>
-
-EOS;
 
 $jsfuncs = array();
 $jsloads = array();
@@ -460,18 +478,11 @@ if ($surrate)
 EOS;
 
 $jsloads[] = <<<EOS
- $('#pplus_number').closest('form').submit(function(ev) {
-  var \$btn = $('#pplus_cancel');
-  if (\$btn.length) {
-   var \$el = $(document.activeElement);
-   if (\$el.length && \$el.is(\$btn)) {
-    return true;
-   }
-  }
+ $('#pplus_submit').click(function() {
   lock_inputs();
   $('#pplus_container input').blur(); //trigger sanitize/validate functions
+  unlock_inputs();
   if ($('input.error').length > 0) {
-   unlock_inputs();
    $('input.error:first').focus();
    return false;
   }
