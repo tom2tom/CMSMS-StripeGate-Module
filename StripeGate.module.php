@@ -271,7 +271,7 @@ EOS;
 
 	public function get_tasks()
 	{
-		return new stripe_clearlog_task();
+		return new StripeGate\Clearlog_task();
 	}
 */
 	//Support for GatePayer interface
@@ -294,7 +294,7 @@ EOS;
 	*/
 	public function GetPayer()
 	{
-		return 'sgtPayer';
+		return 'StripeGate\Payer';
 	}
 
 	public function DoAction($name, $id, $params, $returnid='')
@@ -317,28 +317,24 @@ EOS;
 	*/
 	private function stripe_spacedload($classname)
 	{
-		$parts = explode('\\',$classname);
-		if (!($parts[0] == 'StripeGate' || $parts[0] == 'Stripe')) {
-			return;
-		}
-		if ($parts[0] == 'StripeGate') {
+		if (strpos($classname,'StripeGate\\') === 0) {
+			$parts = explode('\\',$classname);
 			unset($parts[0]);
 			$fn = 'class.'.array_pop($parts).'.php';
 			$fp = __DIR__.DIRECTORY_SEPARATOR.'lib'.implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR.$fn;
 			if (@file_exists($fp)) {
 				include($fp);
 			}
-			return;
-		}
-		$class = array_pop($parts);
-		if ($class != 'Stripe') { //Stripe\Stripe loaded in __construct()
+		} elseif (strpos($classname,'Stripe\\') === 0) {
+			$parts = explode('\\',$classname);
+			$class = array_pop($parts);
 			$base = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR
-				. implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR;
+				.implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR;
 			if (strpos($class,'Stripe_') !== 0)
 				$fn = $class;
 			else
 				$fn = substr($class,7); //drop the prefix
-			//subdirs are hardcoded so we can specify the search-order
+			//subdirs are hardcoded so we can specify their search-order
 			foreach (array('','Util','HttpClient','Error') as $sub) {
 				if ($sub)
 					$sub .= DIRECTORY_SEPARATOR;
