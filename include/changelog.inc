@@ -10,8 +10,10 @@
    <li>Autoload Stripe classes on-demand instead of all-at-once</li>
   </ul>
  </li>
- <li>Version 0.9 - July 2016
+ <li>Version 0.9 - August 2016
   <ul>
+   <li>Apply namespace to all classes</li>
+   <li>Add interface for other modules to initiate a payment</li>
    <li>Upgrade Swipe API library to 3.15.0</li>
   </ul>
  </li>
