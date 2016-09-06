@@ -146,7 +146,7 @@ class Export
 		if ($all) {
 			$sql = 'SELECT * FROM '.$pref.
 			'module_sgt_record WHERE record_id IN('.implode(',',$all).')';
-			$all = $db->GetAll($sql);
+			$all = $db->GetArray($sql);
 			//data lines(s)
 			foreach ($all as &$row) {
 				unset($row['record_id']);

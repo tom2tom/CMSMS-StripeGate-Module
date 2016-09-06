@@ -40,7 +40,7 @@ class Utils
 				$ret = $db->GetAssoc($sql,$args);
 				break;
 			 default:
-				$ret = $db->GetAll($sql,$args);
+				$ret = $db->GetArray($sql,$args);
 				break;
 			}
 			if ($db->CompleteTrans())
@@ -118,7 +118,7 @@ class Utils
 	public static function GetAccount()
 	{
 		$db = cmsms()->GetDb();
-		$ids = $db->GetAll(
+		$ids = $db->GetArray(
 'SELECT account_id,isdefault FROM '.cms_db_prefix().'module_sgt_account ORDER BY isdefault DESC,account_id');
 		if ($ids) {
 			if ($ids[0]['isdefault'] == TRUE || count($ids) == 1)

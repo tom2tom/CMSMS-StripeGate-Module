@@ -61,7 +61,7 @@ if (!empty($params['message']))
 	$tplvars['message'] = $params['message'];
 
 $sql = 'SELECT * FROM '.$pref.'module_sgt_record WHERE account_id=? ORDER BY recorded DESC, payfor ASC';
-$data = $db->GetAll($sql,array($aid));
+$data = $db->GetArray($sql,array($aid));
 
 $theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
 	cms_utils::get_theme_object();

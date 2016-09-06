@@ -130,7 +130,7 @@ WHERE {$test}
 ORDER BY A.name
 EOS;
 
-$rows = $db->GetAll($sql);
+$rows = $db->GetArray($sql);
 if ($rows) {
 	foreach ($rows as $row) {
 		$thisid	= (int)$row['account_id'];

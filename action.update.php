@@ -338,7 +338,7 @@ JOIN {$pref}groups GR ON GR.group_id = UG.group_id
 WHERE U.admin_access=1 AND U.active=1 AND GR.active=1 AND P.permission_name='ModifyStripeAccount'
 ORDER BY U.last_name,U.first_name
 EOS;
-	$users = $db->GetAll($sql);
+	$users = $db->GetArray($sql);
 	if ($users) {
 		$any = '&lt;'.$this->Lang('any').'&gt;';
 		$choices[$any] = -1;
