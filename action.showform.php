@@ -362,8 +362,6 @@ $jsloads = array();
 $jsincs = array();
 $baseurl = $this->GetModuleURLPath();
 
-$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.watermark.min.js"></script>';
-
 $jsfuncs[] = <<<EOS
 function lock_inputs() {
  $('#pplus_submit').attr('disabled','disabled');
@@ -493,8 +491,11 @@ $jsloads[] = <<<EOS
   }
   return true;
  });
+ $('.watermark').watermark();
 
 EOS;
+
+$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.watermark.min.js"></script>';
 
 if ($jsloads) {
 	$jsfuncs[] = '$(document).ready(function() {
