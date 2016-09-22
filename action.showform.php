@@ -296,6 +296,7 @@ if ($account) {
 } else
 	$iconfile = NULL;
 
+$symbol = StripeGate\Utils::GetSymbol($row['currency']);
 $t = StripeGate\Utils::GetPublicAmount(1999,$row['amountformat'],$symbol);
 $tplvars = $tplvars + array(
 	'currency_example' => $this->Lang('currency_example',$t),
@@ -358,6 +359,10 @@ if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches)) {
 
 $jsfuncs = array();
 $jsloads = array();
+$jsincs = array();
+$baseurl = $this->GetModuleURLPath();
+
+$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.watermark.min.js"></script>';
 
 $jsfuncs[] = <<<EOS
 function lock_inputs() {

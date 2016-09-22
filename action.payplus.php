@@ -288,6 +288,10 @@ if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches)) {
 
 $jsfuncs = array();
 $jsloads = array();
+$jsincs = array();
+$baseurl = $this->GetModuleURLPath();
+
+$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.watermark.min.js"></script>';
 
 if (!isset($params['formed'])) {
 	$jsfuncs[] = <<<EOS
@@ -411,6 +415,8 @@ if ($surrate)
  });
 
 EOS;
+
+$tplvars['jsincs'] = $jsincs;
 
 $jsloads[] = <<<EOS
  $('#pplus_number').closest('form').submit(function() {

@@ -15,7 +15,7 @@
 <div id="error_payfor" class="error_wrapper"></div>
 </td></tr>
 <tr><td class="title">{$title_amount}</td><td>
-<input id="pplus_amount" class="form_input" type="text" name="{$actionid}stg_amount"{if $amount} value="{$amount}"{/if} size="7" maxlength="9" placeholder="{$currency_example}" />
+<input id="pplus_amount" class="form_input jq_watermark" type="text" name="{$actionid}stg_amount"{if $amount} value="{$amount}"{/if} size="7" maxlength="9" placeholder="{$currency_example}" title="{$currency_example}" />
 <div id="error_amount" class="error_wrapper"></div>
 </td></tr>
 {if isset($surcharge)}
@@ -39,9 +39,9 @@
 <div id="error_cvc" class="error_wrapper"></div>
 </td></tr>
 <tr><td class="title">{$title_expiry}</td><td>
- <input id="pplus_exp_month" class="form_input" type="text" name="{$actionid}stg_month"{if $month} value="{$month}"{/if} size="2" maxlength="2" pattern="[0-9]{literal}{1,2}{/literal}" placeholder="{$MM}" />
+ <input id="pplus_exp_month" class="form_input jq_watermark" type="text" name="{$actionid}stg_month"{if $month} value="{$month}"{/if} size="2" maxlength="2" pattern="[0-9]{literal}{1,2}{/literal}" placeholder="{$MM}" title="{$MM}" />
  <span> / </span>
- <input id="pplus_exp_year" type="text" name="{$actionid}stg_year"{if $year} value="{$year}"{/if} size="4" maxlength="4" pattern="[0-9]{literal}{2,4}{/literal}" placeholder="{$YYYY}" />
+ <input id="pplus_exp_year" type="text" class="form_input jq_watermark" name="{$actionid}stg_year"{if $year} value="{$year}"{/if} size="4" maxlength="4" pattern="[0-9]{literal}{2,4}{/literal}" placeholder="{$YYYY}" title="{$YYYY}" />
 <div id="error_exp_month" class="error_wrapper"></div>
 <div id="error_exp_year" class="error_wrapper"></div>
 </td></tr>
@@ -59,8 +59,7 @@
 </form>{/if}
 </div>
 
-{if !empty($jsincs)}{foreach from=$jsincs item=inc}{$inc}
-{/foreach}{/if}
+{if !empty($jsincs)}{foreach from=$jsincs item=inc}{$inc}{/foreach}{/if}
 {if isset($jsfuncs)}
 <script type="text/javascript">
 //<![CDATA[
