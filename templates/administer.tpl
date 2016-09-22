@@ -42,8 +42,7 @@
 {$end_form}
 </div>
 
-{if !empty($jsincs)}{foreach from=$jsincs item=inc}{$inc}
-{/foreach}{/if}
+{if !empty($jsincs)}{foreach from=$jsincs item=inc}{$inc}{/foreach}{/if}
 {if !empty($jsfuncs)}
 <script type="text/javascript">
 //<![CDATA[
