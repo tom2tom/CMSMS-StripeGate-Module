@@ -179,7 +179,7 @@ $lang['year_template'] = 'YYYY';
 $lang['yes'] = 'Yes';
 $lang['upload']='Upload';
 
-$lang['help_module'] = <<<EOS
+$lang['help_module'] = <<<'EOS'
 <h3>What does it do?</h3>
 This module provides an interface for some simple types of 'checkout' which involve
 making an online payment to somebody, using <a href="https://stripe.com">Stripe</a> as the intermediary.
@@ -233,13 +233,13 @@ The payment will be processed via an ajax call, and if all is well, a form-submi
 <h4>Use by other modules</h4>
 Refer to file: lib/interface.GatePay.php
 <pre>
-\$ob = cms_utils::get_module('StripeGate');
-\$ifaceclass = \$ob->GetPayer();
-\$ifuncs = new \$ifaceclass(\$callermodule,\$ob);
- setup \$args
-if (\$ifuncs->Furnish(\$args)) {
-  setup \$args
-  \$ifuncs->ShowForm(\$id,\$returnid,\$args);
+$ob = cms_utils::get_module('StripeGate');
+$ifaceclass = $ob->GetPayer();
+$ifuncs = new $ifaceclass($callermodule,$ob);
+ setup $args
+if ($ifuncs->Furnish($args)) {
+  setup $args
+  $ifuncs->ShowForm($id,$returnid,$args);
   exit;
 }
 </pre>
@@ -249,7 +249,7 @@ A complete API library is included, so things related to Accounts, Customers and
 <h3>Requirements:</h3>
 <ul>
 <li>CMS Made Simple 1.9+</li>
-<li>PHP 5.3.3+</li>
+<li>PHP 5.4+</li>
 <li>PHP extensions
 <ul>
 <li>cURL</li>
