@@ -151,20 +151,6 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 $baseurl = $this->GetModuleURLPath();
 $tplvars = array();
 
-if ($row['stylesfile']) { //using custom css for checkout display
-	//replace href attribute in existing stylesheet link
-	$u = StripeGate\Utils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
-	$t = <<<EOS
-<script type="text/javascript">
-//<![CDATA[
- document.getElementById('stripestyles').setAttribute('href',"{$u}");
-//]]>
-</script>
-
-EOS;
-	$tplvars['cssscript'] = $t;
-}
-
 if (!isset($params['formed']))
 	$tplvars['form_start'] = $this->CreateFormStart($id,'payplus',$returnid);
 
@@ -299,7 +285,6 @@ function lock_inputs() {
 function unlock_inputs() {
  $('#pplus_submit').removeAttr('disabled');
 }
-
 EOS;
 }
 $jsfuncs[] = <<<EOS
@@ -382,7 +367,6 @@ function sanitize(field) {
  }
  \$in.val(value);
 }
-
 EOS;
 
 $jsloads[] = <<<EOS
@@ -395,7 +379,6 @@ $jsloads[] = <<<EOS
    validate(name,\$in.val());
   }
  });
-
 EOS;
 
 if ($surrate)
@@ -411,10 +394,7 @@ if ($surrate)
    $('#surcharge').text('{$surstr}');
   }
  });
-
 EOS;
-
-$tplvars['jsincs'] = $jsincs;
 
 $jsloads[] = <<<EOS
  $('#pplus_number').closest('form').submit(function() {
@@ -428,18 +408,29 @@ $jsloads[] = <<<EOS
   return true;
  });
  $('.watermark').watermark();
-
 EOS;
 
 $jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.watermark.min.js"></script>';
 
-if ($jsloads) {
-	$jsfuncs[] = '$(document).ready(function() {
-';
-	$jsfuncs = array_merge($jsfuncs,$jsloads);
-	$jsfuncs[] = '});
-';
+if ($row['stylesfile']) { //using custom css for checkout display
+	//replace href attribute in existing stylesheet link
+	$u = StripeGate\Utils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
+	$t = <<<EOS
+<script type="text/javascript">
+//<![CDATA[
+ document.getElementById('stripestyles').setAttribute('href',"{$u}");
+//]]>
+</script>
+EOS;
+	echo $t;
 }
-$tplvars['jsfuncs'] = $jsfuncs;
+
+$jsall = NULL;
+StripeGate\Utils::MergeJS($jsincs,$jsfuncs,$jsloads,$jsall);
+unset($jsincs);
+unset($jsfuncs);
+unset($jsloads);
 
 echo StripeGate\Utils::ProcessTemplate($this,'payplus.tpl',$tplvars);
+if ($jsall)
+	echo $jsall;

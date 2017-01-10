@@ -60,20 +60,6 @@ else
 
 $tplvars = array();
 
-//custom button styling ?
-if ($row['stylesfile']) { //using custom css for checkout display
-	//replace href attribute in existing stylesheet link
-	$u = StripeGate\Utils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
-	$t = <<<EOS
-<script type="text/javascript">
-//<![CDATA[
- document.getElementById('stripestyles').setAttribute('href',"{$u}");
-//]]>
-</script>
-
-EOS;
-	$tplvars['cssscript'] = $t;
-}
 //button label
 $symbol = StripeGate\Utils::GetSymbol($row['currency']);
 if (strpos($params['amount'],$symbol) !== FALSE)
@@ -134,17 +120,28 @@ $jsloads[] = <<<EOS
  $(window).on('popstate',function() {
    handler.close();
  });
-
 EOS;
 
-if ($jsloads) {
-	$jsfuncs[] = '$(document).ready(function() {
-';
-	$jsfuncs = array_merge($jsfuncs,$jsloads);
-	$jsfuncs[] = '});
-';
+if ($row['stylesfile']) { //using custom css for checkout display
+	//replace href attribute in existing stylesheet link
+	$u = StripeGate\Utils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
+	$t = <<<EOS
+<script type="text/javascript">
+//<![CDATA[
+ document.getElementById('stripestyles').setAttribute('href',"{$u}");
+//]]>
+</script>
+
+EOS;
+	echo $t;
 }
-$tplvars['jsfuncs'] = $jsfuncs;
-$tplvars['jsincs'] = $jsincs;
+
+$jsall = NULL;
+StripeGate\Utils::MergeJS($jsincs,$jsfuncs,$jsloads,$jsall);
+unset($jsincs);
+unset($jsfuncs);
+unset($jsloads);
 
 echo StripeGate\Utils::ProcessTemplate($this,'pay.tpl',$tplvars);
+if ($jsall)
+	echo $jsall;

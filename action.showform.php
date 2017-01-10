@@ -200,33 +200,6 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 $baseurl = $this->GetModuleURLPath();
 $tplvars = array();
 
-if ($row['stylesfile']) { //using custom css for checkout display
-	$u = StripeGate\Utils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
-} else {
-	$u = $baseurl.'/css/payplus.css';
-}
-//replace href attribute in existing stylesheet link, or append styles link
-$tplvars['cssscript'] = <<<EOS
-<script type="text/javascript">
-//<![CDATA[
-var styler = document.getElementById('stripestyles');
-if (styler != null) {
- styler.setAttribute('href',"{$u}");
-} else {
- var linkadd = '<link rel="stylesheet" type="text/css" href="{$u}" />',
-  \$head = $('head'),
-  \$linklast = \$head.find("link[rel='stylesheet']:last");
- if (\$linklast.length) {
-  \$linklast.after(linkadd);
- } else {
-  \$head.append(linkadd);
- }
-}
-//]]>
-</script>
-
-EOS;
-
 $hidden = array(
  'stg_account_id' => $account_id,
  'stg_preserve' => $params['preserve']
@@ -360,7 +333,6 @@ if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches)) {
 $jsfuncs = array();
 $jsloads = array();
 $jsincs = array();
-$baseurl = $this->GetModuleURLPath();
 
 $jsfuncs[] = <<<EOS
 function lock_inputs() {
@@ -448,7 +420,6 @@ function sanitize(field) {
  }
  \$in.val(value);
 }
-
 EOS;
 
 $jsloads[] = <<<EOS
@@ -461,7 +432,6 @@ $jsloads[] = <<<EOS
    validate(name,\$in.val());
   }
  });
-
 EOS;
 
 if ($surrate)
@@ -477,7 +447,6 @@ if ($surrate)
    $('#surcharge').text('{$surstr}');
   }
  });
-
 EOS;
 
 $jsloads[] = <<<EOS
@@ -492,18 +461,43 @@ $jsloads[] = <<<EOS
   return true;
  });
  $('.watermark').watermark();
-
 EOS;
 
 $jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.watermark.min.js"></script>';
 
-if ($jsloads) {
-	$jsfuncs[] = '$(document).ready(function() {
-';
-	$jsfuncs = array_merge($jsfuncs,$jsloads);
-	$jsfuncs[] = '});
-';
+if ($row['stylesfile']) { //using custom css for checkout display
+	$u = StripeGate\Utils::GetUploadsUrl($this).'/'.str_replace('\\','/',$row['stylesfile']);
+} else {
+	$u = $baseurl.'/css/payplus.css';
 }
-$tplvars['jsfuncs'] = $jsfuncs;
+//replace href attribute in existing stylesheet link, or append styles link
+$t = <<<EOS
+<script type="text/javascript">
+//<![CDATA[
+var styler = document.getElementById('stripestyles');
+if (styler != null) {
+ styler.setAttribute('href',"{$u}");
+} else {
+ var linkadd = '<link rel="stylesheet" type="text/css" href="{$u}" />',
+  \$head = $('head'),
+  \$linklast = \$head.find("link[rel='stylesheet']:last");
+ if (\$linklast.length) {
+  \$linklast.after(linkadd);
+ } else {
+  \$head.append(linkadd);
+ }
+}
+//]]>
+</script>
+EOS;
+echo $t;
+
+$jsall = NULL;
+StripeGate\Utils::MergeJS($jsincs,$jsfuncs,$jsloads,$jsall);
+unset($jsincs);
+unset($jsfuncs);
+unset($jsloads);
 
 echo StripeGate\Utils::ProcessTemplate($this,'payplus.tpl',$tplvars);
+if ($jsall)
+	echo $jsall;
