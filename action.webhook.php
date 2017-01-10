@@ -35,7 +35,7 @@ if ($handlers) {
 //set relevant secret key
 if (isset($params['account']))
 	$row = $db->GetRow('SELECT usetest,privtoken,testprivtoken FROM '.
-		cms_db_prefix().'module_sgt_account WHERE account_id=?',array($params['account']));
+		cms_db_prefix().'module_sgt_account WHERE account_id=?',[$params['account']]);
 else
 	$row = $db->GetRow('SELECT usetest,privtoken,testprivtoken FROM '.
 		cms_db_prefix().'module_sgt_account WHERE isdefault>0 AND isdefault>0');

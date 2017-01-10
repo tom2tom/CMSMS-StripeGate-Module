@@ -10,7 +10,7 @@ if (!($this->CheckPermission('ModifyStripeGateProperties')
   || $this->CheckPermission('ModifyStripeAccount'))) exit;
 
 if (isset($params['upcancel']))
-	$this->Redirect($id,'update',$returnid,array('account_id'=>$params['account_id']));
+	$this->Redirect($id,'update',$returnid,['account_id'=>$params['account_id']]);
 
 $pref = cms_db_prefix();
 
@@ -49,27 +49,27 @@ if (isset($_FILES) && isset($_FILES[$fn])) {
 				$message = $this->Lang('err_upload');
 			else { //all good
 				$sql = 'UPDATE '.$pref.'module_sgt_account SET stylesfile=? WHERE account_id=?';
-				$db->Execute($sql,array($file_data['name'],$params['account_id']));
+				$db->Execute($sql,[$file_data['name'],$params['account_id']]);
 			}
 		} else
 			$message = $this->Lang('err_upload');
 	}
 	if (empty($message))
 		$message = FALSE;
-	$this->Redirect($id,'update',$returnid,array('account_id'=>$params['account_id'],'message'=>$message));
+	$this->Redirect($id,'update',$returnid,['account_id'=>$params['account_id'],'message'=>$message]);
 }
 
-$name = $db->GetOne('SELECT name FROM '.$pref.'module_sgt_account WHERE account_id=?',array($params['account_id']));
+$name = $db->GetOne('SELECT name FROM '.$pref.'module_sgt_account WHERE account_id=?',[$params['account_id']]);
 
 $fn = cms_join_path(__DIR__,'css','payplus.css');
 $styles = @file_get_contents($fn);
 if ($styles) {
-	$example = preg_replace(array('~\s?/\*(.*)?\*/~Usm','~\s?//.*$~m'),array('',''),$styles);
-	$example = str_replace(array(PHP_EOL.PHP_EOL,PHP_EOL,"\t"),array('<br />','<br />',' '),trim($example));
+	$example = preg_replace(['~\s?/\*(.*)?\*/~Usm','~\s?//.*$~m'],['',''],$styles);
+	$example = str_replace([PHP_EOL.PHP_EOL,PHP_EOL,"\t"],['<br />','<br />',' '],trim($example));
 } else
 	$example = $this->Lang('missing');
 
-$tplvars = array(
+$tplvars = [
 	'start_form' => $this->CreateFormStart($id,'upload_css',$returnid,'post','multipart/form-data'),
 	'end_form' => $this->CreateFormEnd(),
 	'hidden' => $this->CreateInputHidden($id,'account_id',$params['account_id']),
@@ -78,6 +78,6 @@ $tplvars = array(
 	'apply' => $this->CreateInputSubmit($id,'upstart',$this->Lang('upload')),
 	'cancel' => $this->CreateInputSubmit($id,'upcancel',$this->Lang('cancel')),
 	'help' => $this->Lang('help_cssupload',$example)
-);
+];
 
 echo StripeGate\Utils::ProcessTemplate($this,'chooser.tpl',$tplvars);

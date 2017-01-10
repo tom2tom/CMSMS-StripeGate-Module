@@ -33,7 +33,7 @@ pubtoken,
 testpubtoken,
 stylesfile,
 iconfile
-FROM '.$pref.'module_sgt_account WHERE account_id=? AND isactive=TRUE',array($params['account']));
+FROM '.$pref.'module_sgt_account WHERE account_id=? AND isactive=TRUE',[$params['account']]);
 } else {
 	$row = $db->GetRow('SELECT
 account_id,
@@ -45,7 +45,7 @@ pubtoken,
 testpubtoken,
 stylesfile,
 iconfile
-FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params['account']));
+FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',[$params['account']]);
 }
 if (!$row) {
 	echo $this->Lang('err_parameter');
@@ -58,7 +58,7 @@ if ($row['iconfile'])
 else
 	$icon = '';
 
-$tplvars = array();
+$tplvars = [];
 
 //button label
 $symbol = StripeGate\Utils::GetSymbol($row['currency']);

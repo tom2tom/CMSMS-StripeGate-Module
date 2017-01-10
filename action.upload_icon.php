@@ -10,7 +10,7 @@ if (!($this->CheckPermission('ModifyStripeGateProperties')
   || $this->CheckPermission('ModifyStripeAccount'))) exit;
 
 if (isset($params['upcancel']))
-	$this->Redirect($id,'update',$returnid,array('account_id'=>$params['account_id']));
+	$this->Redirect($id,'update',$returnid,['account_id'=>$params['account_id']]);
 
 $pref = cms_db_prefix();
 
@@ -48,19 +48,19 @@ if (isset($_FILES) && isset($_FILES[$fn])) {
 				$message = $this->Lang('err_upload');
 			else { //all good
 				$sql = 'UPDATE '.$pref.'module_sgt_account SET iconfile=? WHERE account_id=?';
-				$db->Execute($sql,array($file_data['name'],$params['account_id']));
+				$db->Execute($sql,[$file_data['name'],$params['account_id']]);
 			}
 		} else
 			$message = $this->Lang('err_upload');
 	}
 	if (empty($message))
 		$message = FALSE;
-	$this->Redirect($id,'update',$returnid,array('account_id'=>$params['account_id'],'message'=>$message));
+	$this->Redirect($id,'update',$returnid,['account_id'=>$params['account_id'],'message'=>$message]);
 }
 
-$name = $db->GetOne('SELECT name FROM '.$pref.'module_sgt_account WHERE account_id=?',array($params['account_id']));
+$name = $db->GetOne('SELECT name FROM '.$pref.'module_sgt_account WHERE account_id=?',[$params['account_id']]);
 
-$tplvars = array(
+$tplvars = [
 	'start_form' => $this->CreateFormStart($id,'upload_icon',$returnid,'post','multipart/form-data'),
 	'end_form' => $this->CreateFormEnd(),
 	'hidden' => $this->CreateInputHidden($id,'account_id',$params['account_id']),
@@ -69,6 +69,6 @@ $tplvars = array(
 	'apply' => $this->CreateInputSubmit($id,'upstart',$this->Lang('upload')),
 	'cancel' => $this->CreateInputSubmit($id,'upcancel',$this->Lang('cancel')),
 	'help' => $this->Lang('help_iconupload')
-);
+];
 
 echo StripeGate\Utils::ProcessTemplate($this,'chooser.tpl',$tplvars);

@@ -9,16 +9,16 @@
 if (!$this->CheckPermission('ModifyStripeAccount')) exit;
 
 if (!$params['sel'])
-	$this->Redirect($id,'administer','',array('account_id'=>$params['account_id']));
+	$this->Redirect($id,'administer','',['account_id'=>$params['account_id']]);
 
 if (isset($params['delete'])) {
 	$pref = cms_db_prefix();
 	$sql = 'DELETE FROM '.$pref.'module_sgt_record WHERE record_id=?';
 	foreach ($params['sel'] as $rid)
-		$db->Execute($sql,array($rid));
+		$db->Execute($sql,[$rid]);
 	$more = $db->GetOne('SELECT record_id FROM '.$pref.'module_sgt_record');
 	if ($more)
-		$this->Redirect($id,'administer','',array('account_id'=>$params['account_id']));
+		$this->Redirect($id,'administer','',['account_id'=>$params['account_id']]);
 }
 if (isset($params['export'])) {
 	$funcs = new StripeGate\Export();
@@ -26,9 +26,9 @@ if (isset($params['export'])) {
 	if ($res === TRUE)
 		exit;
 	unset($funcs);
-	$this->Redirect($id,'administer','',array(
+	$this->Redirect($id,'administer','',[
 		'account_id'=>$params['account_id'],
-		'message' => $this->Lang($res)));
+		'message' => $this->Lang($res)]);
 }
 
 $this->Redirect($id,'defaultadmin');

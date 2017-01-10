@@ -34,13 +34,13 @@ if (!($padm || $pmod || $psee)) exit;
 
 $aid = (int)$params['account_id'];
 $pref = cms_db_prefix();
-$row = $db->GetRow('SELECT name,currency,amountformat FROM '.$pref.'module_sgt_account WHERE account_id=?',array($aid));
+$row = $db->GetRow('SELECT name,currency,amountformat FROM '.$pref.'module_sgt_account WHERE account_id=?',[$aid]);
 $symbol = StripeGate\Utils::GetSymbol($row['currency']);
 
-$tplvars = array(
+$tplvars = [
 	'pmod' => $pmod,
 	'backtomod_nav' => $this->CreateLink($id,'defaultadmin',$returnid,'&#171; '.$this->Lang('title_mainpage')),
-	'start_form' => $this->CreateFormStart($id,'processrecords',$returnid,'POST','','','',array('account_id'=>$aid)),
+	'start_form' => $this->CreateFormStart($id,'processrecords',$returnid,'POST','','','',['account_id'=>$aid]),
 	'end_form' => $this->CreateFormEnd(),
 
 	'title' => $this->Lang('title_account',$row['name']),
@@ -49,19 +49,19 @@ $tplvars = array(
 	'title_what' => $this->Lang('title_what'),
 	'title_for' => $this->Lang('title_who'),
 	'title_token' => $this->Lang('title_token'),
-);
+];
 
 //script accumulators
-$jsfuncs = array();
-$jsincs = array();
-$jsloads = array();
+$jsfuncs = [];
+$jsincs = [];
+$jsloads = [];
 $baseurl = $this->GetModuleURLPath();
 
 if (!empty($params['message']))
 	$tplvars['message'] = $params['message'];
 
 $sql = 'SELECT * FROM '.$pref.'module_sgt_record WHERE account_id=? ORDER BY recorded DESC, payfor ASC';
-$data = $db->GetArray($sql,array($aid));
+$data = $db->GetArray($sql,[$aid]);
 
 $theme = ($this->before20) ? cmsms()->get_variable('admintheme'):
 	cms_utils::get_theme_object();
@@ -78,10 +78,10 @@ foreach ($data as &$one) {
 	$oneset->who = $one['payfor'];
 	$oneset->token = $one['identifier'];
 	$oneset->export = $this->CreateLink($id,'exportrecord','',
-		$icon_export,array('record_id'=>$rid,'account_id'=>$aid));
+		$icon_export,['record_id'=>$rid,'account_id'=>$aid]);
 	if ($pmod)
 	  $oneset->delete = $this->CreateLink($id,'deleterecord','',
-		$icon_delete,array('record_id'=>$rid,'account_id'=>$aid),
+		$icon_delete,['record_id'=>$rid,'account_id'=>$aid],
 		$this->Lang('delitm_confirm',$oneset->token));
 	$oneset->selected = $this->CreateInputCheckbox($id,'sel[]',$rid,-1);
 	$rows[] = $oneset;
@@ -147,7 +147,7 @@ EOS;
 
 	if ($pagerows && $rcount>$pagerows) {
 		//more setup for SSsort
-		$choices = array(strval($pagerows) => $pagerows);
+		$choices = [strval($pagerows) => $pagerows];
 		$f = ($pagerows < 4) ? 5 : 2;
 		$n = $pagerows * $f;
 		if ($n < $rcount)
@@ -159,7 +159,7 @@ EOS;
 		$curpg='<span id="cpage">1</span>';
 		$totpg='<span id="tpage">'.ceil($rcount/$pagerows).'</span>';
 
-		$tplvars = $tplvars + array(
+		$tplvars = $tplvars + [
 			'hasnav' => 1,
 			'first' => '<a href="javascript:pagefirst()">'.$this->Lang('first').'</a>',
 			'prev' => '<a href="javascript:pageback()">'.$this->Lang('previous').'</a>',
@@ -168,7 +168,7 @@ EOS;
 			'pageof' => $this->Lang('pageof',$curpg,$totpg),
 			'rowchanger' => $this->CreateInputDropdown($id,'pagerows',$choices,-1,$pagerows,
 			'onchange="pagerows(this);"').'&nbsp;&nbsp;'.$this->Lang('pagerows')
-		);
+		];
 
 		$jsfuncs[] = <<<EOS
 function pagefirst() {

@@ -13,14 +13,14 @@ class Export
 	{
 		global $db;
 		$sql = 'SELECT account_id FROM '.cms_db_prefix().'module_sgt_record WHERE record_id=?';
-		return $db->GetOne($sql,array($record_id));
+		return $db->GetOne($sql,[$record_id]);
 	}
 
 	private function GetAccountNameFromID($account_id)
 	{
 		global $db;
 		$sql = 'SELECT name FROM '.cms_db_prefix().'module_sgt_account WHERE account_id=?';
-		return $db->GetOne($sql,array($account_id));
+		return $db->GetOne($sql,[$account_id]);
 	}
 
 	/**
@@ -89,13 +89,13 @@ class Export
 			} else {
 				$sql = 'SELECT record_id FROM '.$pref.
 				'module_sgt_record WHERE account_id=? ORDER BY recorded';
-				$all = $db->GetCol($sql,array($account_id));
+				$all = $db->GetCol($sql,[$account_id]);
 			}
 		} elseif ($record_id) {
 			if (is_array($record_id))
 				$all = $record_id;
 			else
-				$all = array($record_id);
+				$all = [$record_id];
 		} else
 			return FALSE;
 
@@ -133,14 +133,14 @@ class Export
 		$strip = $mod->GetPreference('strip_on_export',FALSE);
 
 		//header line
-		$outstr = implode($sep,array(
+		$outstr = implode($sep,[
 			'account',
 			'amount',
 			'recorded',
 			'stripe identifier',
 			'paywhat',
 			'payfor'
-		));
+		]);
 		$outstr .= PHP_EOL;
 
 		if ($all) {

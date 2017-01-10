@@ -97,7 +97,7 @@ class Payer //implements GatePay
 	*/
 	public function GetConverts()
 	{
-		return array(
+		return [
 	//for dialog setup
 		 'account'=>FALSE,
 		 'amount'=>FALSE, //also feedback (actually paid)
@@ -123,7 +123,7 @@ class Payer //implements GatePay
 		 'success'=>FALSE,
 		 'successmsg'=>FALSE,
 		 'transactid'=>FALSE
-		);
+		];
 	}
 
 	/*
@@ -226,7 +226,7 @@ class Payer //implements GatePay
 	public function ShowForm($id,$returnid,$params)
 	{
 		//name-translations from standard to StripeGate
-		$locals = array(
+		$locals = [
 		 'account'=>TRUE,
 		 'amount'=>TRUE,
 		 'cancel'=>'withcancel',
@@ -239,7 +239,7 @@ class Payer //implements GatePay
 		 'payfor'=>TRUE,
 		 'senddata'=>FALSE, //TODO if used metadata check format json'ish
 		 'surcharge'=>'surrate'
-		);
+		];
 		//translate relevant supplied $params to StripeGate-recognised names, ditch the others
 		foreach ($params as $key=>$value) {
 			$standard = array_search($key,$this->translates);
@@ -262,7 +262,7 @@ class Payer //implements GatePay
 		$ob = $this->workermod;
 		$this->workermod = $ob->GetName(); //StripeGate
 		$value = get_object_vars($this);
-		foreach (array('passthru') as $key) {
+		foreach (['passthru'] as $key) {
 			if (!empty($params[$key])) {
 				$value[$key] = $params[$key];
 				unset ($params[$key]);
@@ -309,7 +309,7 @@ class Payer //implements GatePay
 		}
 		unset($params['stg_preserve']);
 
-		$locals = array(
+		$locals = [
 //		 'account'=>,
 		 'amount'=>TRUE, //in smallest currency-units
 		 'cancel'=>TRUE, //cancel-button clicked
@@ -328,7 +328,7 @@ class Payer //implements GatePay
 //		 'successmsg'=>,
 		 'transactid'=>'id',
 		 'passthru'=>TRUE, //internal use, cached data
-		);
+		];
 
 		foreach ($params as $key=>$value) {
 			if (array_key_exists($key,$locals)) {
@@ -399,12 +399,12 @@ class Payer //implements GatePay
 		 case 6: //URL
 			$ch = curl_init();
 			//can't be bothered with GET URL construction
-			curl_setopt_array($ch,array(
+			curl_setopt_array($ch,[
 			 CURLOPT_RETURNTRANSFER => 1,
 			 CURLOPT_URL => $this->handler,
 			 CURLOPT_POST => 1,
 			 CURLOPT_POSTFIELDS => $params
-			));
+			]);
 			$res = curl_exec($ch);
 			//TODO handle $res == 400+
 			curl_close($ch);
@@ -415,8 +415,8 @@ class Payer //implements GatePay
 		$id = $this->director[0]; //action-id specified by the initiator module
 		$action = $this->director[1];
 		$returnid = $this->director[2]; //id of the page being displayed by the initiator module
-		$newparms = array();
-		foreach (array('passthru','errmsg','successmsg') as $key) {
+		$newparms = [];
+		foreach (['passthru','errmsg','successmsg'] as $key) {
 			if (!empty($this->translates[$key])) {
 				$key = $this->translates[$key];
 				$newparms[$key] = $params[$key];

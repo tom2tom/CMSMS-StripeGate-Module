@@ -37,12 +37,12 @@ class StripeGate extends CMSModule
 
 		$fp = cms_join_path(__DIR__,'lib','Stripe','Stripe.php'); // Stripe singleton always
 		require($fp);
-		spl_autoload_register(array($this,'stripe_spacedload'));
+		spl_autoload_register([$this,'stripe_spacedload']);
 	}
 
 	public function __destruct()
 	{
-		spl_autoload_unregister(array($this,'stripe_spacedload'));
+		spl_autoload_unregister([$this,'stripe_spacedload']);
 		if (function_exists('parent::__destruct'))
 			parent::__destruct();
 	}
@@ -156,7 +156,7 @@ EOS;
 
 	public function GetDependencies()
 	{
-		return array();
+		return [];
 	}
 
 	public function LazyLoadFrontend()
@@ -276,7 +276,7 @@ EOS;
 */
 	//Support for GatePayer interface
 
-	public function HasCapability($capability, $params = array())
+	public function HasCapability($capability, $params = [])
 	{
 		switch ($capability) {
 		 case 'GatePayer':
@@ -335,7 +335,7 @@ EOS;
 			else
 				$fn = substr($class,7); //drop the prefix
 			//subdirs are hardcoded so we can specify their search-order
-			foreach (array('','Util','HttpClient','Error') as $sub) {
+			foreach (['','Util','HttpClient','Error'] as $sub) {
 				if ($sub)
 					$sub .= DIRECTORY_SEPARATOR;
 				$fp = $base.$sub.$fn.'.php';

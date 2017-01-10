@@ -13,6 +13,6 @@ $res = $funcs->Export($this,FALSE,$params['record_id']);
 if ($res === TRUE)
 	exit;
 unset($funcs);
-$this->Redirect($id,'administer','',array(
+$this->Redirect($id,'administer','',[
 	'account_id'=>$params['account_id'],
-	'message' => $this->Lang($res)));
+	'message' => $this->Lang($res)]);

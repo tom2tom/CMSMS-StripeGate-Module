@@ -263,9 +263,9 @@ class Utils
 		if (is_array($jsincs)) {
 			$all = $jsincs;
 		} elseif ($jsincs) {
-			$all = array($jsincs);
+			$all = [$jsincs];
 		} else {
-			$all = array();
+			$all = [];
 		}
 		if ($jsfuncs || $jsloads) {
 			$all[] =<<<EOS
@@ -321,7 +321,7 @@ EOS;
 	*/
 	public static function GetSupportedCurrencies()
 	{
-		return array(
+		return [
 	'Afghan Afghani'=>'afn',
 	'Albanian Lek'=>'all',
 	'Algerian Dinar'=>'dzd',
@@ -457,7 +457,7 @@ EOS;
 	'West African CFA Franc'=>'xof',
 	'Yemeni Rial'=>'yer',
 	'Zambian Kwacha'=>'zmw'
-		);
+		];
 	}
 
 	/**
@@ -467,7 +467,7 @@ EOS;
 	*/
 	public static function GetSymbol($code)
 	{
-		$symbols = array(
+		$symbols = [
 		'afn'=>'؋',
 		'all'=>'Lek',
 		'dzd'=>'د.ج',
@@ -603,7 +603,7 @@ EOS;
 		'xof'=>'CFA',
 		'yer'=>'﷼',
 		'zmw'=>'ZK'
-		);
+		];
 
 		if (array_key_exists($code,$symbols))
 			return $symbols[$code];
@@ -664,7 +664,7 @@ EOS;
 			if ($matches[1])
 				$num = str_replace($symbol,'.',$amount);
 			else
-				$num = str_replace(array($symbol,$matches[3]),array('','.'),$amount);
+				$num = str_replace([$symbol,$matches[3]],['','.'],$amount);
 			$places = strlen($matches[4]);
 			$times = pow(10,$places);
 			return (int)($num * $times);

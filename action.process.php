@@ -17,8 +17,8 @@ if (isset($params['delete'])) {
 	$sql2 = 'DELETE FROM '.$pref.'module_sgt_record WHERE account_id=?';
 	foreach ($params['selitems'] as $aid) {
 		//TODO delete 'no-longer-needed' uploaded css|icon files
-		$db->Execute($sql,array($aid));
-		$db->Execute($sql2,array($aid));
+		$db->Execute($sql,[$aid]);
+		$db->Execute($sql2,[$aid]);
 	}
 }
 if (isset($params['export'])) {
@@ -28,7 +28,7 @@ if (isset($params['export'])) {
 	if ($res === TRUE)
 		exit;
 	unset($funcs);
-	$this->Redirect($id,'defaultadmin','',array('message' => $this->Lang($res)));
+	$this->Redirect($id,'defaultadmin','',['message' => $this->Lang($res)]);
 }
 
 $this->Redirect($id,'defaultadmin');

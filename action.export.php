@@ -13,4 +13,4 @@ $res = $funcs->Export($this,$params['account_id']);
 if ($res === TRUE)
 	exit;
 unset($funcs);
-$this->Redirect($id,'defaultadmin',$returnid,array('message' => $this->Lang($res)));
+$this->Redirect($id,'defaultadmin',$returnid,['message' => $this->Lang($res)]);

@@ -64,7 +64,7 @@ $pref = cms_db_prefix();
 if (isset($params['submit'])) {
 	//some of these are needed only if continuing past error
 	$row = $db->GetRow('SELECT name,title,currency,amountformat,minpay,surchargerate,usetest,privtoken,testprivtoken,stylesfile FROM '.
-	$pref.'module_sgt_account WHERE account_id=?',array($params['stg_account']));
+	$pref.'module_sgt_account WHERE account_id=?',[$params['stg_account']]);
 	if ($row['usetest']) {
 		if ($row['testprivtoken'])
 			$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
@@ -91,24 +91,24 @@ if (isset($params['submit'])) {
 	if ($row['surchargerate'] > 0.0 && empty($params['sgt_nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
 
-	$card = array(
+	$card = [
 		'number' => $params['stg_number'],
 		'exp_month' => $params['stg_month'],
 		'exp_year' => $params['stg_year'],
 		'cvc' => $params['stg_cvc']
-	);
+	];
 
-	$exdata = array(
+	$exdata = [
 		'paywhat' => $params['stg_paywhat'],
 		'payfor' => $params['stg_payfor']
-	);
+	];
 
-	$data = array(
+	$data = [
 		'amount' => $amount,
 		'currency' => $row['currency'],
 		'source' => $card,
 		'metadata' => $exdata
-	);
+	];
 
 	try {
 		Stripe\Stripe::setApiKey($privkey);
@@ -153,7 +153,7 @@ usetest,
 privtoken,
 testprivtoken,
 stylesfile
-FROM '.$pref.'module_sgt_account WHERE account_id=? AND isactive=TRUE',array($params['account']));
+FROM '.$pref.'module_sgt_account WHERE account_id=? AND isactive=TRUE',[$params['account']]);
 	} else {
 		$row = $db->GetRow('SELECT
 account_id,
@@ -167,7 +167,7 @@ usetest,
 privtoken,
 testprivtoken,
 stylesfile
-FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params['account']));
+FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',[$params['account']]);
 	}
 	if (!$row) {
 		echo $this->Lang('err_parameter');
@@ -198,12 +198,12 @@ FROM '.$pref.'module_sgt_account WHERE alias=? AND isactive=TRUE',array($params[
 }
 
 $baseurl = $this->GetModuleURLPath();
-$tplvars = array();
+$tplvars = [];
 
-$hidden = array(
+$hidden = [
  'stg_account_id' => $account_id,
  'stg_preserve' => $params['preserve']
-);
+];
 if(isset($params['currency']))
 	$hidden['stg_currency'] = $params['currency'];
 if (isset($params['nosur']))
@@ -271,7 +271,7 @@ if ($account) {
 
 $symbol = StripeGate\Utils::GetSymbol($row['currency']);
 $t = StripeGate\Utils::GetPublicAmount(1999,$row['amountformat'],$symbol);
-$tplvars = $tplvars + array(
+$tplvars = $tplvars + [
 	'currency_example' => $this->Lang('currency_example',$t),
 	'logos' => $iconfile,
 	'title_amount' => $this->Lang('payamount'),
@@ -290,7 +290,7 @@ $tplvars = $tplvars + array(
 	'title_paywhat' => $this->Lang('paywhat'),
 	'paywhat' => $paywhat,
 	'submit' => $this->Lang('submit')
-);
+];
 if (isset($params['withcancel']))
 	$tplvars['cancel'] = $this->Lang('cancel');
 
@@ -330,9 +330,9 @@ if (preg_match('/^(.*)?(S)(\W+)?(\d*)$/',$row['amountformat'],$matches)) {
 	$places = 2;
 }
 
-$jsfuncs = array();
-$jsloads = array();
-$jsincs = array();
+$jsfuncs = [];
+$jsloads = [];
+$jsincs = [];
 
 $jsfuncs[] = <<<EOS
 function lock_inputs() {

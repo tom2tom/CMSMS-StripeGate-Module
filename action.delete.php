@@ -13,8 +13,8 @@ if (!($this->CheckPermission('ModifyStripeGateProperties')
 $aid = (int)$params['account_id'];
 $pref = cms_db_prefix();
 $sql = 'DELETE FROM '.$pref.'module_sgt_account WHERE account_id=?';
-$db->Execute($sql,array($aid));
+$db->Execute($sql,[$aid]);
 $sql = 'DELETE FROM '.$pref.'module_sgt_record WHERE account_id=?';
-$db->Execute($sql,array($aid));
+$db->Execute($sql,[$aid]);
 
 $this->Redirect($id,'defaultadmin');

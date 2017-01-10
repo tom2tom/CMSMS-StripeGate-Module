@@ -13,8 +13,8 @@ if (!function_exists('json_decode'))
 if (!function_exists('mb_detect_encoding'))
 	return 'Stripe Gateway needs the PHP mbstring extension.';
 
-$taboptarray = array('mysql' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci',
- 'mysqli' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci');
+$taboptarray = ['mysql' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci',
+ 'mysqli' => 'ENGINE MyISAM CHARACTER SET utf8 COLLATE utf8_general_ci'];
 $dict = NewDataDictionary($db);
 
 /* private API tokens are encrypted, suitable field-type is (postgres supported pre-1.11) */

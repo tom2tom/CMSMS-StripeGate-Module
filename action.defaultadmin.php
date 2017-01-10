@@ -41,7 +41,7 @@ if (isset($params['submit'])) {
 					$t = ($newpw) ? StripeGate\Utils::encrypt_value($mod,$t,$newpw):StripeGate\Utils::fusc($t);
 					$t2 = StripeGate\Utils::decrypt_value($mod,$rst->fields[2],$oldpw);
 					$t2 = ($newpw) ? StripeGate\Utils::encrypt_value($mod,$t2,$newpw):StripeGate\Utils::fusc($t2);
-					$db->Execute($sql,array($t,$t2,$rst->fields[0]));
+					$db->Execute($sql,[$t,$t2,$rst->fields[0]]);
 					if (!$rst->MoveNext())
 						break;
 				}
@@ -56,13 +56,13 @@ if (isset($params['submit'])) {
 	$params['activetab'] = 'settings';
 }
 
-$tplvars = array(
+$tplvars = [
 	'padm'=>$padm,
 	'padd'=>$padd,
 	'pdel'=>$pdel,
 	'pmod'=>$mod, //not $pmod
 	'pdev'=>$pdev
-);
+];
 
 $indx = 0;
 if (isset($params['activetab'])) {
@@ -79,15 +79,15 @@ $tplvars['tabsheader'] = $this->StartTabHeaders().
  $this->EndTabHeaders().$this->StartTabContent();
 
 //NOTE CMSMS 2+ barfs if EndTab() is called before EndTabContent() - some craziness there !!!
-$tplvars = $tplvars + array(
+$tplvars = $tplvars + [
 	'tabsfooter' => $this->EndTabContent(),
 	'tab_end' => $this->EndTab(),
 	'form_end' => $this->CreateFormEnd()
-);
+];
 
-$jsincs = array();
-$jsfuncs = array();
-$jsloads = array();
+$jsincs = [];
+$jsfuncs = [];
+$jsloads = [];
 $baseurl = $this->GetModuleURLPath();
 
 if (!empty($params['message']))
@@ -117,7 +117,7 @@ if ($mod) {
 if ($pdel)
 	$icon_del = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('tip_delete'),'','','systemicon');
 
-$items = array();
+$items = [];
 
 $pre = cms_db_prefix();
 $test = ($padm) ? '1':'A.owner=-1 OR A.owner='.get_userid(FALSE);
@@ -137,7 +137,7 @@ if ($rows) {
 		$oneset = new stdClass();
 //		$oneset->id = $thisid; //may be hidden
 		if ($mod)
-			$oneset->name = $this->CreateLink($id,'update',$returnid,$row['name'],array('account_id'=>$thisid));
+			$oneset->name = $this->CreateLink($id,'update',$returnid,$row['name'],['account_id'=>$thisid]);
 		else
 			$oneset->name = $row['name'];
 
@@ -156,21 +156,21 @@ if ($rows) {
 		if ($mod) {
 			if ($row['isdefault']) //it's active so create a deactivate-link
 				$oneset->default = $this->CreateLink($id,'toggledeflt',$returnid,$icon_yes,
-					array('account_id'=>$thisid,'current'=>true));
+					['account_id'=>$thisid,'current'=>true]);
 			else //it's inactive so create an activate-link
 				$oneset->default = $this->CreateLink($id,'toggledeflt',$returnid,$icon_no,
-					array('account_id'=>$thisid,'current'=>false));
+					['account_id'=>$thisid,'current'=>false]);
 			if ($row['isactive'])
 				$oneset->active = $this->CreateLink($id,'toggleactive',$returnid,$icon_yes,
-					array('account_id'=>$thisid,'current'=>true));
+					['account_id'=>$thisid,'current'=>true]);
 			else
 				$oneset->active = $this->CreateLink($id,'toggleactive',$returnid,$icon_no,
-					array('account_id'=>$thisid,'current'=>false));
+					['account_id'=>$thisid,'current'=>false]);
 			if ($row['record_count'] > 0) {
 				$oneset->adminlink = $this->CreateLink($id,'administer',$returnid,$icon_admin,
-					array('account_id'=>$thisid));
+					['account_id'=>$thisid]);
 				$oneset->exportlink = $this->CreateLink($id,'export',$returnid,$icon_export,
-					array('account_id'=>$thisid));
+					['account_id'=>$thisid]);
 			} else {
 				$oneset->adminlink = NULL;
 				$oneset->exportlink = NULL;
@@ -182,11 +182,11 @@ if ($rows) {
 
 		//view or edit
 		$oneset->editlink = $this->CreateLink($id,'update',$returnid,$icon_open,
-			array('account_id'=>$thisid));
+			['account_id'=>$thisid]);
 
 		if ($pdel)
 			$oneset->deletelink = $this->CreateLink($id,'delete',$returnid,$icon_del,
-				array('account_id'=>$thisid),
+				['account_id'=>$thisid],
 				$this->Lang('delitm_confirm',$row['name']));
 		else
 			$oneset->deletelink = NULL;
@@ -203,14 +203,14 @@ if ($rows) {
 $tplvars['items'] = $items;
 if ($items) {
 	//table titles
-	$tplvars = $tplvars + array(
+	$tplvars = $tplvars + [
 		'title_id' => $this->Lang('title_id'),
 		'title_name' => $this->Lang('name'),
 		'title_alias' => (($pdev)?$this->Lang('title_tag'):$this->Lang('title_alias')),
 		'title_owner' => $this->Lang('title_owner'),
 		'title_default' => $this->Lang('title_default'),
 		'title_active' => $this->Lang('title_active')
-	);
+	];
 
 	if ($padm || $pdel) {
 		if (count($items) > 1) {
@@ -291,11 +291,11 @@ if ($padd)
 	$tplvars['add'] =
 	 $this->CreateLink($id,'update',$returnid,
 		 $theme->DisplayImage('icons/system/newobject.gif',$this->Lang('additem'),'','','systemicon'),
-		 array('account_id'=>-1),'',false,false,'')
+		 ['account_id'=>-1],'',false,false,'')
 	 .' '.
 	 $this->CreateLink($id,'update',$returnid,
 		 $this->Lang('additem'),
-		 array('account_id'=>-1),'',false,false,'class="pageoptions"');
+		 ['account_id'=>-1],'',false,false,'class="pageoptions"');
 
 //~~~~~~~~~~~~~~~ SETTINGS TAB ~~~~~~~~~~~~~~~~
 
@@ -303,15 +303,15 @@ $tplvars['tabstart_settings'] = $this->StartTab('settings');
 $tplvars['formstart_settings'] = $this->CreateFormStart($id,'defaultadmin');
 
 //URL for running action.webhook, with dummy returnid
-$url = $this->CreateLink ('_','webhook',1,'',array(),'',TRUE);
+$url = $this->CreateLink ('_','webhook',1,'',[],'',TRUE);
 //strip the fake returnid, so that the default will be used
 $sep = strpos($url,'&amp;');
 $newurl = substr($url,0,$sep);
-$tplvars = $tplvars + array(
+$tplvars = $tplvars + [
 	'title_hook' => $this->Lang('reports_url'),
 	'info_hook' => $this->Lang('help_reports_url'),
 	'url_hook' => $newurl
-);
+];
 
 $tplvars['title_updir'] = $this->Lang('title_updir');
 $tplvars['input_updir'] = $this->CreateInputText($id,'uploads_dir',$this->GetPreference('uploads_dir'),30,60)

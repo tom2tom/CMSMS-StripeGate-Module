@@ -25,7 +25,7 @@ if ($handlers) {
 //spl_autoload_register(array('StripeGate\Utils','stripe_classload'));
 
 $row = $db->GetRow('SELECT currency,usetest,privtoken,testprivtoken FROM '.
-	cms_db_prefix().'module_sgt_account WHERE account_id=?',array($params['stg_account']));
+	cms_db_prefix().'module_sgt_account WHERE account_id=?',[$params['stg_account']]);
 if ($row['usetest']) {
 	if ($row['testprivtoken'])
 		$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
@@ -41,12 +41,12 @@ if (!$privkey) {
 	die($this->Lang('err_parameter'));
 }
 
-$data = array(
+$data = [
 	'amount' => $params['stg_amount'],
 	'currency' => $row['currency'],
 	'description' => 'prescribed payment',
 	'source' => $params['stg_token']
-);
+];
 
 try {
 	Stripe\Stripe::setApiKey($privkey);
@@ -60,13 +60,13 @@ payfor,
 recorded,
 identifier
 ) VALUES(?,?,?,?,?,?)';
-	$db->Execute($sql,array(
+	$db->Execute($sql,[
 		$params['stg_account'],
 		$params['stg_amount'],
 		'prescribed amount',
 		$this->Lang('anonymous'),
 		$response['created'],
-		$response['id']));
+		$response['id']]);
 
 	die(); //no message = success
 } catch (Exception $e) {

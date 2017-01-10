@@ -54,7 +54,7 @@ stylesfile=?,
 iconfile=?,
 isdefault=?,
 isactive=?
-WHERE account_id=?',array(
+WHERE account_id=?',[
 $params['name'],
 $alias,
 $params['title'],
@@ -73,7 +73,7 @@ $params['iconfile'],
 $default,
 $active,
 $params['account_id']
-));
+]);
 	} else {
 		$db->Execute('INSERT INTO '.$pref.'module_sgt_account (
 name,
@@ -94,7 +94,7 @@ iconfile,
 isdefault,
 isactive
 ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-		array(
+		[
 $params['name'],
 $alias,
 $params['title'],
@@ -112,28 +112,28 @@ $params['stylesfile'],
 $params['iconfile'],
 $default,
 $active
-		));
+		]);
 	}
-	$this->Redirect($id,'defaultadmin','',array('message'=>$this->Lang('updated')));
+	$this->Redirect($id,'defaultadmin','',['message'=>$this->Lang('updated')]);
 }
 
 if (isset($params['upstyles']))
-	$this->Redirect($id,'upload_css','',array('account_id'=>$params['account_id']));
+	$this->Redirect($id,'upload_css','',['account_id'=>$params['account_id']]);
 if (isset($params['upicon']))
-	$this->Redirect($id,'upload_icon','',array('account_id'=>$params['account_id']));
+	$this->Redirect($id,'upload_icon','',['account_id'=>$params['account_id']]);
 
 if (!is_numeric($params['account_id']) || $params['account_id'] > 0) {
 	if (is_numeric($params['account_id']))
-		$row = $db->GetRow('SELECT * FROM '.$pref.'module_sgt_account WHERE account_id=?',array($params['account_id']));
+		$row = $db->GetRow('SELECT * FROM '.$pref.'module_sgt_account WHERE account_id=?',[$params['account_id']]);
 	else
-		$row = $db->GetRow('SELECT * FROM '.$pref.'module_sgt_account WHERE alias=?',array($params['account_id']));
+		$row = $db->GetRow('SELECT * FROM '.$pref.'module_sgt_account WHERE alias=?',[$params['account_id']]);
 
 	if (!$row)
-		$this->Redirect($id,'defaultadmin','',array('message'=>$this->Lang('err_system')));
+		$this->Redirect($id,'defaultadmin','',['message'=>$this->Lang('err_system')]);
 
 	$account_id = $params['account_id'];
 } else {
-	$row = array(
+	$row = [
 'name'=>'',
 'alias'=>'',
 'title'=>'',
@@ -151,11 +151,11 @@ if (!is_numeric($params['account_id']) || $params['account_id'] > 0) {
 'iconfile'=>'',
 'isdefault'=>false,
 'isactive'=>true
-	);
+	];
 	$account_id = -1;
 }
 
-$tplvars = array();
+$tplvars = [];
 $tplvars['backtomod_nav'] = $this->CreateLink($id,'defaultadmin',$returnid,
 '&#171; '.$this->Lang('title_mainpage'));
 if (!empty($params['message']))
@@ -165,11 +165,11 @@ $tplvars['form_start'] = $this->CreateFormStart($id,'update');
 $tplvars['form_end'] = $this->CreateFormEnd();
 $tplvars['hidden'] = $this->CreateInputHidden($id,'account_id',$params['account_id']);
 
-$jsincs = array();
-$jsfuncs = array();
-$jsloads = array();
+$jsincs = [];
+$jsfuncs = [];
+$jsloads = [];
 $baseurl = $this->GetModuleURLPath();
-$settings = array();
+$settings = [];
 if (!$pmod)
 	$empty = '&lt;'.$this->Lang('none').'&gt;';
 
@@ -325,7 +325,7 @@ if ($pmod) {
 	$settings[] = $oneset;
 
 	$none = '&lt;'.$this->Lang('none').'&gt;';
-	$choices = array($none=>0);
+	$choices = [$none=>0];
 	//CMSMS function check_permission() is buggy, always returns false for
 	//everyone other than the current user, so we replicate its backend operation here
 	$pref = cms_db_prefix();
