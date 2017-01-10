@@ -1,4 +1,3 @@
-{if isset($cssscript)}{$cssscript}{/if}
 {if !empty($message)}<p class="pplus_message">{$message}</p>{/if}
 <div id="pplus_container">
 {if !empty($title)}<h2>{$title}</h2>{/if}
@@ -58,12 +57,3 @@
 {/if}
 </form>{/if}
 </div>
-
-{if !empty($jsincs)}{foreach from=$jsincs item=inc}{$inc}{/foreach}{/if}
-{if isset($jsfuncs)}
-<script type="text/javascript">
-//<![CDATA[
-{foreach from=$jsfuncs item=func}{$func}{/foreach}
-//]]>
-</script>
-{/if}
