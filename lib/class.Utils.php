@@ -194,7 +194,7 @@ class Utils
 			if (!$passwd) {
 				$passwd = self::unfusc($mod->GetPreference('masterpass'));
 			}
-			if ($passwd && $mod->havemcrypt) {
+			if ($passwd && $mod->havecrypt) {
 				$e = new Encryption('BF-CBC','default',self::STRETCHES);
 				$value = $e->encrypt($value,$passwd);
 				if ($based)
@@ -219,7 +219,7 @@ class Utils
 			if (!$passwd) {
 				$passwd = self::unfusc($mod->GetPreference('masterpass'));
 			}
-			if ($passwd && $mod->havemcrypt) {
+			if ($passwd && $mod->havecrypt) {
 				if ($based)
 					$value = base64_decode($value);
 				$e = new Encryption('BF-CBC','default',self::STRETCHES);
