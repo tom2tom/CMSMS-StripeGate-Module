@@ -290,7 +290,7 @@ EOS;
 	Get name of of StripeGate class which performs 'interface' duties in
 	accord with interface GatePay
 	Returns: string, not the file i.e. no leading 'class.' or trailing '.php'.
-	May be namespaced like 'StripeGate\classname' 
+	May be namespaced like 'StripeGate\classname'
 	*/
 	public function GetPayer()
 	{
@@ -317,28 +317,28 @@ EOS;
 	*/
 	private function stripe_spacedload($classname)
 	{
-		if (strpos($classname,'StripeGate\\') === 0) {
-			$parts = explode('\\',$classname);
-			unset($parts[0]);
-			$fn = 'class.'.array_pop($parts).'.php';
-			$fp = __DIR__.DIRECTORY_SEPARATOR.'lib'.implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR.$fn;
-			if (@file_exists($fp)) {
-				include($fp);
-			}
-		} elseif (strpos($classname,'Stripe\\') === 0) {
+		$prefix = get_class().'\\'; //our namespace prefix
+		$o = ($classname[0] != '\\') ? 0:1;
+		$p = strpos($classname, $prefix, $o);
+		if ($p === 0 || ($p == 1 && $o == 1)) {
+			// directory for the namespace
+			$bp = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR;
+		} elseif (strncmp($classname, 'Stripe\\', 7) === 0) {
 			$parts = explode('\\',$classname);
 			$class = array_pop($parts);
-			$base = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR
+			$bp = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR
 				.implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR;
-			if (strpos($class,'Stripe_') !== 0)
+			if (strpos($class,'Stripe_') !== 0) {
 				$fn = $class;
-			else
-				$fn = substr($class,7); //drop the prefix
+			} else {
+				$fn = substr($class, 7); //drop the prefix
+			}
 			//subdirs are hardcoded so we can specify their search-order
-			foreach (['','Util','HttpClient','Error'] as $sub) {
-				if ($sub)
+			foreach (['', 'Util', 'HttpClient', 'Error'] as $sub) {
+				if ($sub) {
 					$sub .= DIRECTORY_SEPARATOR;
-				$fp = $base.$sub.$fn.'.php';
+				}
+				$fp = $bp.$sub.$fn.'.php';
 				if (@file_exists($fp)) {
 					include($fp);
 					if (class_exists($classname)) {
@@ -346,6 +346,35 @@ EOS;
 					}
 				}
 			}
+			return;
+		} else {
+			$p = strpos($classname, '\\', 1);
+			if ($p === FALSE) {
+				return;
+			}
+			$prefix = substr($classname, $o, $p-$o);
+			$bp = dirname(__DIR__).DIRECTORY_SEPARATOR.$prefix.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR;
+		}
+		// relative class name
+		$len = strlen($prefix) + $o;
+		$relative_class = trim(substr($class, $len), '\\');
+
+		if (($p = strrpos($relative_class, '\\', -1)) !== FALSE) {
+			$relative_dir = str_replace('\\', DIRECTORY_SEPARATOR, $relative_class);
+			$bp .= substr($relative_dir, 0, $p+1);
+			$base = substr($relative_dir, $p+1);
+		} else {
+			$base = $relative_class;
+		}
+
+		$fp = $bp.'class.'.$base.'.php';
+		if (file_exists($fp)) {
+			include $fp;
+			return;
+		}
+		$fp = $bp.$base.'.php';
+		if (file_exists($fp)) {
+			include $fp;
 		}
 	}
 }
