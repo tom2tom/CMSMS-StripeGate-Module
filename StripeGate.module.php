@@ -1,7 +1,7 @@
 <?php
 #-------------------------------------------------------------------------
 # CMS Made Simple module: StripeGate
-# Copyright (C) 2016 Tom Phane <tpgww@onepost.net>
+# Copyright (C) 2016-2017 Tom Phane <tpgww@onepost.net>
 # This module provides an interface to the Stripe payments gateway
 #
 # This module is free software. You can redistribute it and/or modify it under
@@ -25,13 +25,11 @@ if (!function_exists('curl_init')) {
 class StripeGate extends CMSModule
 {
 	public $havecurl = TRUE;
-	public $havemcrypt; //whether password encryption is supported
 	public $before20;
 
 	public function __construct()
 	{
 		parent::__construct();
-		$this->havemcrypt = function_exists('mcrypt_encrypt');
 		global $CMS_VERSION;
 		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
 
@@ -75,12 +73,12 @@ class StripeGate extends CMSModule
 
 	public function GetHelp()
 	{
-		return $this->Lang('help_module');
+		return ''.@file_get_contents(cms_join_path(__DIR__,'include','modhelp.html'));
 	}
 
 	public function GetVersion()
 	{
-		return '0.9.0';
+		return '0.10.0';
 	}
 
 	public function GetAuthor()
@@ -95,7 +93,7 @@ class StripeGate extends CMSModule
 
 	public function GetChangeLog()
 	{
-		return ''.@file_get_contents(cms_join_path(__DIR__,'include','changelog.inc'));
+		return ''.@file_get_contents(cms_join_path(__DIR__,'include','changelog.html'));
 	}
 
 	public function IsPluginModule()
