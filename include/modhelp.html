@@ -1,0 +1,97 @@
+<h3>What does it do?</h3>
+This module provides an interface for some simple types of 'checkout' which involve
+making an online payment to somebody, using <a href="https://stripe.com">Stripe</a> as the intermediary.
+<h3>How do I use it?</h3>
+Change the default pass-phrase.<br /><br />
+Apply module permissions, which are
+<ul>
+<li>Use Stripe Accounts</li>
+<li>Modify Stripe Accounts</li>
+<li>Modify Stripe Gateway Settings</li>
+</ul>
+At least, create a user-group with the second of these permissions,
+add to that group all users permitted to manage the Stripe account(s) recorded in the module.<br /><br />
+Set up one or more accounts, by activating the Stripe item in the admin 'e-commerce' menu. If more than one, make one of them the default.<br /><br />
+<h4>Payplus action</h4>
+This displays a 'checkout' form, for the user to populate and submit.<br /><br />
+Put into a relevant page's content block, or into a 'form-builder' field:
+<pre>
+{StripeGate}
+</pre>
+or
+<pre>
+{StripeGate account='account-alias'}
+</pre>
+Adjust the page theme to include the default (payplus.css), or some other relevant, css file, or if instance-specific styling is to be supported,
+put into the page's 'Page Specific Metadata' field (so it can be modified at runtime):
+<pre>
+&lt;link rel="stylesheet" type="text/css" id="stripestyles" href="{the-correct-site-root-url}/modules/StripeGate/css/payplus.css" media="all" /&gt;
+</pre>
+If the StripeGate tag includes a parameter
+<pre>
+formed=1
+</pre>
+then no surrounding &lt;form&gt; &lt;/form&gt; tags will be generated, and the server-side
+data processing will need to be managed independently. TODO document ...
+<br /><br />
+<h4>Pay action</h4>
+This displays an amount-labelled button, which when clicked will initiate a payment of the pre-defined amount, then trigger a form-submit.<br /><br />
+Put somewhere inside &lt;form&gt; &lt;/form&gt; tags on a relevant page's content block, or into a 'form-builder' field:
+<pre>
+{StripeGate action='pay' amount='19.99'}
+</pre>
+The amount parameter may include the relevant currency symbol. A specific account may be used by adding a corresponding parameter as described above.<br /><br />
+Adjust the page theme to include the default (pay.css), or some other relevant, css file, or if instance-specific styling is to be supported,
+put into the page's 'Page Specific Metadata' field (so it can be modified at runtime):
+<pre>
+&lt;link rel="stylesheet" type="text/css" id="stripestyles" href="{the-correct-site-root-url}/modules/StripeGate/css/pay.css" media="screen" /&gt;
+</pre>
+The payment will be processed via an ajax call, and if all is well, a form-submit will then be triggered.
+<br /><br />
+<h4>Use by other modules</h4>
+Refer to file: lib/interface.GatePay.php
+<pre>
+$ob = cms_utils::get_module('StripeGate');
+$ifaceclass = $ob->GetPayer();
+$ifuncs = new $ifaceclass($callermodule,$ob);
+ setup $args
+if ($ifuncs->Furnish($args)) {
+  setup $args
+  $ifuncs->ShowForm($id,$returnid,$args);
+  exit;
+}
+</pre>
+<h4>Stripe API</h4>
+A complete API library is included, so things related to Accounts, Customers and so on can be programmed.
+<a href="https://stripe.com/docs/api">Visit Stripe</a> for documentation.
+<h3>Support</h3>
+<p>This module is provided as-is. Please read the text of the license for the full disclaimer.</p>
+<p>For help:</p>
+<ul>
+<li>discussion may be found in the <a href="http://forum.cmsmadesimple.org">CMS Made Simple Forums</a>; or</li>
+<li>you may have some success emailing the author directly.</li>
+</ul>
+<p>For the latest version of the module, or to report a bug, visit the module's <a href="http://dev.cmsmadesimple.org/projects/stripegate">forge-page</a>.</p>
+<h3>Copyright and license</h3>
+<p>Copyright &copy; 2016-2017 Tom Phane &lt;tpgww@onepost.net&gt;. All rights reserved.</p>
+<p>This module is free software. It may be redistributed and/or modified
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.</p>
+<p>This module is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+<a href="http://www.gnu.org/licenses/licenses.html#AGPL">GNU Affero General Public License</a> for more details.</p>
+<h3>Requirements:</h3>
+<ul>
+<li>CMS Made Simple 1.9+</li>
+<li>PHP 5.4+</li>
+<li>PHP extensions
+<ul>
+<li>cURL</li>
+<li>json</li>
+<li>mbstring</li>
+<li>openssl</li>
+</ul>
+</li>
+</ul>
