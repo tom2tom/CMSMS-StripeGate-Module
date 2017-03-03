@@ -58,6 +58,8 @@ payfor C(64)
 $sqlarray = $dict->CreateTableSQL($pref.'module_sgt_record',$flds,$taboptarray);
 $dict->ExecuteSQLArray($sqlarray);
 
+$t = 'nQCeESKBr99A';
+$this->SetPreference($t, hash('sha256', $t.microtime()));
 $ud = $config['uploads_path'];
 if ($ud && is_dir($ud)) {
 	$name = $this->GetName();
@@ -67,7 +69,8 @@ if ($ud && is_dir($ud)) {
 	$this->SetPreference('uploads_dir',$name); //path relative to host uploads dir
 } else
 	$this->SetPreference('uploads_dir',FALSE);
-$this->SetPreference('masterpass','OWFmNT1dGbU5FbnRlciBhdCB5b3VyIG93biByaXNrISBEYW5nZXJvdXMgZGF0YSE=');
+
+StripeGate\Utils::encrypt_preference($this,'masterpass',base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh'));
 
 $this->CreatePermission('UseStripeAccount',$this->Lang('perm_use'));
 $this->CreatePermission('ModifyStripeAccount',$this->Lang('perm_mod'));
