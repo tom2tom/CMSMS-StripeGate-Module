@@ -5,7 +5,12 @@
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
-
+/*
+$t = 'nQCeESKBr99A';
+$this->SetPreference($t, hash('sha256', $t.microtime()));
+$cfuncs = new StripeGate\Crypter($this);
+$cfuncs->encrypt_preference('masterpass',base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh'));
+*/
 $padm = $this->CheckPermission('ModifyStripeGateProperties');
 if ($padm) {
 	$pmod = true;
@@ -24,10 +29,8 @@ $mod = $padm || $pmod;
 
 if (isset($params['submit'])) {
 	if ($padm) {
-		$oldpw = $this->GetPreference('masterpass');
-		if ($oldpw)
-			$oldpw = StripeGate\Utils::unfusc($oldpw);
-
+		$cfuncs = new StripeGate\Crypter($this);
+		$oldpw = $cfuncs->decrypt_preference('masterpass');
 		$newpw = trim($params['masterpass']);
 		if ($oldpw != $newpw) {
 			//update all data which uses current password
@@ -37,20 +40,22 @@ if (isset($params['submit'])) {
 			if ($rst) {
 				$sql = 'UPDATE '.$pre.'module_sgt_account SET privtoken=?,testprivtoken=? WHERE account_id=?';
 				while (!$rst->EOF) {
-					$t = StripeGate\Utils::decrypt_value($mod,$rst->fields[1],$oldpw);
-					$t = ($newpw) ? StripeGate\Utils::encrypt_value($mod,$t,$newpw):StripeGate\Utils::fusc($t);
-					$t2 = StripeGate\Utils::decrypt_value($mod,$rst->fields[2],$oldpw);
-					$t2 = ($newpw) ? StripeGate\Utils::encrypt_value($mod,$t2,$newpw):StripeGate\Utils::fusc($t2);
-					$db->Execute($sql,[$t,$t2,$rst->fields[0]]);
+					$t = $cfuncs->decrypt_value($rst->fields['privtoken'],$oldpw);
+					if ($newpw) {
+						$t = $cfuncs->encrypt_value($t,$newpw);
+					}
+					$t2 = $cfuncs->decrypt_value($rst->fields['testprivtoken'],$oldpw);
+					if ($newpw) {
+						$t2 = $cfuncs->encrypt_value($t2,$newpw);
+					}
+					$db->Execute($sql,[$t,$t2,$rst->fields['account_id']]);
 					if (!$rst->MoveNext())
 						break;
 				}
 				$rst->Close();
 			}
 			//TODO if record-table data is encrypted
-			if ($newpw)
-				$newpw = StripeGate\Utils::fusc($newpw);
-			$this->SetPreference('masterpass',$newpw);
+			$cfuncs->encrypt_preference('masterpass',$newpw);
 		}
 	}
 	$params['activetab'] = 'settings';
@@ -318,10 +323,8 @@ $tplvars['input_updir'] = $this->CreateInputText($id,'uploads_dir',$this->GetPre
 .'<br />'.$this->Lang('help_updir');
 
 $tplvars['title_password'] = $this->Lang('title_password');
-$pw = $this->GetPreference('masterpass');
-if ($pw)
-	$pw = StripeGate\Utils::unfusc($pw);
-
+$cfuncs = new StripeGate\Crypter($this);
+$pw = $cfuncs->decrypt_preference('masterpass');
 $tplvars['input_password'] =
 	$this->CreateTextArea(false,$id,$pw,'masterpass','cloaked',
 		$id.'passwd','','',40,2);
@@ -340,14 +343,13 @@ if ($padm) {
 	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('cancel'));
 }
 
-if ($jsloads) {
-	$jsfuncs[] = '$(document).ready(function() {
-';
-	$jsfuncs = array_merge($jsfuncs,$jsloads);
-	$jsfuncs[] = '});
-';
-}
-$tplvars['jsfuncs'] = $jsfuncs;
-$tplvars['jsincs'] = $jsincs;
+$jsall = NULL;
+StripeGate\Utils::MergeJS($jsincs,$jsfuncs,$jsloads,$jsall);
+unset($jsincs);
+unset($jsfuncs);
+unset($jsloads);
 
 echo StripeGate\Utils::ProcessTemplate($this,'adminpanel.tpl',$tplvars);
+if ($jsall) {
+	echo $jsall;
+}
