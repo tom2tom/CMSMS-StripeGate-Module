@@ -17,13 +17,16 @@ if (isset($params['cancel']))
 $pref = cms_db_prefix();
 if (isset($params['submit']) && $pmod) {
 	$alias = StripeGate\Utils::ConstructAlias($params['alias'],$params['name']);
-	$privatetoken = ($params['privtoken']) ? StripeGate\Utils::encrypt_value($this,$params['privtoken']) : '';
-	$privatetesttoken = ($params['testprivtoken']) ? StripeGate\Utils::encrypt_value($this,$params['testprivtoken']) : '';
+
+	$cfuncs = new StripeGate\Crypter($this);
+	$privatetoken = ($params['privtoken']) ? $cfuncs->encrypt_value($params['privtoken']) : '';
+	$privatetesttoken = ($params['testprivtoken']) ? $cfuncs->encrypt_value($params['testprivtoken']) : '';
 	if (strpos($params['surchargerate'],'%') !== FALSE) {
 		$sur = str_replace('%','',$params['surchargerate']);
 		$sur = (float)$sur / 100.0;
-	} else
+	} else {
 		$sur = $params['surchargerate'] + 0.0;
+	}
 	$test = !empty($params['usetest']);
 	$default = !empty($params['isdefault']);
 	if ($default) {
@@ -32,8 +35,9 @@ if (isset($params['submit']) && $pmod) {
 	}
 	$active = !empty($params['isactive']);
 	$fmt = trim($params['amountformat']);
-	if (!$fmt || !preg_match('/^(.*)?S(\W+)?(\d*)$/',$fmt))
+	if (!$fmt || !preg_match('/^(.*)?S(\W+)?(\d*)$/',$fmt)) {
 		$fmt = 'S.00';
+	}
 
 	if ($params['account_id'] > 0) {
 		$db->Execute('UPDATE '.$pref.'module_sgt_account SET
@@ -300,9 +304,10 @@ if ($pmod) {
 //	$oneset->help = $this->Lang('');
 	$settings[] = $oneset;
 
+	$cfuncs = new StripeGate\Crypter($this);
 	$oneset = new stdClass();
 	$oneset->title = $this->Lang('title_privtoken');
-	$oneset->input = $this->CreateInputText($id,'privtoken',StripeGate\Utils::decrypt_value($this,$row['privtoken']),32,48);
+	$oneset->input = $this->CreateInputText($id,'privtoken',$cfuncs->decrypt_value($row['privtoken']),32,48);
 //	$oneset->help = $this->Lang('');
 	$settings[] = $oneset;
 
@@ -314,7 +319,7 @@ if ($pmod) {
 
 	$oneset = new stdClass();
 	$oneset->title = $this->Lang('title_testprivtoken');
-	$oneset->input = $this->CreateInputText($id,'testprivtoken',StripeGate\Utils::decrypt_value($this,$row['testprivtoken']),32,48);
+	$oneset->input = $this->CreateInputText($id,'testprivtoken',$cfuncs->decrypt_value($row['testprivtoken']),32,48);
 	//$oneset->help = $this->Lang('');
 	$settings[] = $oneset;
 
@@ -391,14 +396,13 @@ if ($pmod) {
 	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('close'));
 }
 
-if ($jsloads) {
-	$jsfuncs[] = '$(document).ready(function() {
-';
-	$jsfuncs = array_merge($jsfuncs,$jsloads);
-	$jsfuncs[] = '});
-';
-}
-$tplvars['jsfuncs'] = $jsfuncs;
-$tplvars['jsincs'] = $jsincs;
+$jsall = NULL;
+StripeGate\Utils::MergeJS($jsincs,$jsfuncs,$jsloads,$jsall);
+unset($jsincs);
+unset($jsfuncs);
+unset($jsloads);
 
 echo StripeGate\Utils::ProcessTemplate($this,'update.tpl',$tplvars);
+if ($jsall) {
+	echo $jsall;
+}
