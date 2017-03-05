@@ -223,14 +223,13 @@ else {
 }
 */
 
-if ($jsloads) {
-	$jsfuncs[] = '$(document).ready(function() {
-';
-	$jsfuncs = array_merge($jsfuncs,$jsloads);
-	$jsfuncs[] = '});
-';
-}
-$tplvars['jsfuncs'] = $jsfuncs;
-$tplvars['jsincs'] = $jsincs;
+$jsall = NULL;
+StripeGate\Utils::MergeJS($jsincs,$jsfuncs,$jsloads,$jsall);
+unset($jsincs);
+unset($jsfuncs);
+unset($jsloads);
 
 echo StripeGate\Utils::ProcessTemplate($this,'administer.tpl',$tplvars);
+if ($jsall) {
+	echo $jsall;
+}
