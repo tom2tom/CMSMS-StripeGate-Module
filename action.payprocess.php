@@ -27,15 +27,19 @@ if ($handlers) {
 $row = $db->GetRow('SELECT currency,usetest,privtoken,testprivtoken FROM '.
 	cms_db_prefix().'module_sgt_account WHERE account_id=?',[$params['stg_account']]);
 if ($row['usetest']) {
-	if ($row['testprivtoken'])
-		$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
-	else
+	if ($row['testprivtoken']) {
+		$cfuncs = new StripeGate\Crypter($this);
+		$privkey = $cfuncs->decrypt_value($row['testprivtoken']);
+	} else {
 		$privkey = FALSE;
+	}
 } else {
-	if ($row['privtoken'])
-		$privkey = StripeGate\Utils::decrypt_value($this,$row['privtoken']);
-	else
+	if ($row['privtoken']) {
+		$cfuncs = new StripeGate\Crypter($this);
+		$privkey = $cfuncs->decrypt_value($row['privtoken']);
+	} else {
 		$privkey = FALSE;
+	}
 }
 if (!$privkey) {
 	die($this->Lang('err_parameter'));

@@ -66,15 +66,19 @@ if (isset($params['submit'])) {
 	$row = $db->GetRow('SELECT name,title,currency,amountformat,minpay,surchargerate,usetest,privtoken,testprivtoken,stylesfile FROM '.
 	$pref.'module_sgt_account WHERE account_id=?',[$params['stg_account']]);
 	if ($row['usetest']) {
-		if ($row['testprivtoken'])
-			$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
-		else
+		if ($row['testprivtoken']) {
+			$cfuncs = new StripeGate\Crypter($this);
+			$privkey = $cfuncs->decrypt_value($row['testprivtoken']);
+		} else {
 			$privkey = FALSE;
+		}
 	} else {
-		if ($row['privtoken'])
-			$privkey = StripeGate\Utils::decrypt_value($this,$row['privtoken']);
-		else
+		if ($row['privtoken']) {
+			$cfuncs = new StripeGate\Crypter($this);
+			$privkey = $cfuncs->decrypt_value($row['privtoken']);
+		} else {
 			$privkey = FALSE;
+		}
 	}
 	if (!$privkey) {
 		echo $this->Lang('err_parameter');
@@ -232,15 +236,19 @@ Australian, Canadian, European, and Japanese businesses can accept
  Visa, MasterCard, American Express.
 */
 if ($row['usetest']) {
-	if ($row['testprivtoken'])
-		$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
-	else
+	if ($row['testprivtoken']) {
+		$cfuncs = new StripeGate\Crypter($this);
+		$privkey = $cfuncs->decrypt_value($row['testprivtoken']);
+	} else {
 		$privkey = FALSE;
+	}
 } else {
-	if ($row['privtoken'])
-		$privkey = StripeGate\Utils::decrypt_value($this,$row['privtoken']);
-	else
+	if ($row['privtoken']) {
+		$cfuncs = new StripeGate\Crypter($this);
+		$privkey = $cfuncs->decrypt_value($row['privtoken']);
+	} else {
 		$privkey = FALSE;
+	}
 }
 if (!$privkey) {
 	echo $this->Lang('err_parameter');
@@ -499,5 +507,6 @@ unset($jsfuncs);
 unset($jsloads);
 
 echo StripeGate\Utils::ProcessTemplate($this,'payplus.tpl',$tplvars);
-if ($jsall)
+if ($jsall) {
 	echo $jsall;
+}
