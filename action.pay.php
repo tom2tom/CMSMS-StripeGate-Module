@@ -143,5 +143,6 @@ unset($jsfuncs);
 unset($jsloads);
 
 echo StripeGate\Utils::ProcessTemplate($this,'pay.tpl',$tplvars);
-if ($jsall)
+if ($jsall) {
 	echo $jsall;
+}
