@@ -64,13 +64,16 @@ $ud = $config['uploads_path'];
 if ($ud && is_dir($ud)) {
 	$name = $this->GetName();
 	$ud = cms_join_path($ud,$name);
-	if (!is_dir($ud))
+	if (!is_dir($ud)) {
 		mkdir($ud,0755);
+	}
 	$this->SetPreference('uploads_dir',$name); //path relative to host uploads dir
-} else
+} else {
 	$this->SetPreference('uploads_dir',FALSE);
+}
 
-StripeGate\Utils::encrypt_preference($this,'masterpass',base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh'));
+$cfuncs = new StripeGate\Crypter($this);
+$cfuncs->encrypt_preference('masterpass',base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh'));
 
 $this->CreatePermission('UseStripeAccount',$this->Lang('perm_use'));
 $this->CreatePermission('ModifyStripeAccount',$this->Lang('perm_mod'));

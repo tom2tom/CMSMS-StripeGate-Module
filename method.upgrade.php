@@ -35,5 +35,6 @@ switch ($oldversion) {
 		$s = base64_decode(substr($pw,5));
 		$pw = substr($s,5);
 	}
-	StripeGate\Utils::encrypt_preference($this,'masterpass',$pw);
+	$cfuncs = new StripeGate\Crypter($this);
+	$cfuncs->encrypt_preference('masterpass',$pw);
 }

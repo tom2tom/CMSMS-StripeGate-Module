@@ -41,18 +41,23 @@ else
 		cms_db_prefix().'module_sgt_account WHERE isdefault>0 AND isdefault>0');
 if ($row) {
 	if ($row['usetest']) {
-		if ($row['testprivtoken'])
-			$privkey = StripeGate\Utils::decrypt_value($this,$row['testprivtoken']);
-		else
+		if ($row['testprivtoken']) {
+			$cfuncs = new StripeGate\Crypter($this);
+			$privkey = $cfuncs->decrypt_value($row['testprivtoken']);
+		} else {
 			$privkey = FALSE;
+		}
 	} else {
-		if ($row['privtoken'])
-			$privkey = StripeGate\Utils::decrypt_value($this,$row['privtoken']);
-		else
+		if ($row['privtoken']) {
+			$cfuncs = new StripeGate\Crypter($this);
+			$privkey = $cfuncs->decrypt_value($row['privtoken']);
+		} else {
 			$privkey = FALSE;
+		}
 	}
-} else
+} else {
 	$privkey = FALSE;
+}
 if ($privkey) {
 	Stripe\Stripe::setApiKey($privkey);
 	//retrieve the request's body and parse it as JSON
