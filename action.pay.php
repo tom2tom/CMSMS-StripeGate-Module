@@ -69,6 +69,8 @@ else
 //cope with optional currency symbol in amount
 $amount = StripeGate\Utils::GetPrivateAmount($params['amount'],$row['amountformat'],$t);
 $public = StripeGate\Utils::GetPublicAmount($amount,$row['amountformat'],$symbol);
+
+$tplvars['actionid'] = $id;
 $tplvars['submit'] = $this->Lang('pay',$public);
 
 /*
