@@ -34,11 +34,11 @@ if (isset($params['submit'])) {
 		$newpw = trim($params['masterpass']);
 		if ($oldpw != $newpw) {
 			//update all data which uses current password
-			$pre = cms_db_prefix();
-			$sql = 'SELECT account_id,privtoken,testprivtoken FROM '.$pre.'module_sgt_account';
+			$pref = cms_db_prefix();
+			$sql = 'SELECT account_id,privtoken,testprivtoken FROM '.$pref.'module_sgt_account';
 			$rst = $db->Execute($sql);
 			if ($rst) {
-				$sql = 'UPDATE '.$pre.'module_sgt_account SET privtoken=?,testprivtoken=? WHERE account_id=?';
+				$sql = 'UPDATE '.$pref.'module_sgt_account SET privtoken=?,testprivtoken=? WHERE account_id=?';
 				while (!$rst->EOF) {
 					$t = $cfuncs->decrypt_value($rst->fields['privtoken'],$oldpw);
 					if ($newpw) {
@@ -124,13 +124,13 @@ if ($pdel)
 
 $items = [];
 
-$pre = cms_db_prefix();
+$pref = cms_db_prefix();
 $test = ($padm) ? '1':'A.owner=-1 OR A.owner='.get_userid(FALSE);
 $sql = <<<EOS
 SELECT A.account_id,A.name,A.alias,A.isdefault,A.isactive,U.first_name,U.last_name,COALESCE (R.count,0) AS record_count
-FROM {$pre}module_sgt_account A
-LEFT JOIN {$pre}users U ON A.owner = U.user_id
-LEFT JOIN (SELECT account_id,COUNT(*) as count FROM {$pre}module_sgt_record GROUP BY account_id) R ON A.account_id = R.account_id
+FROM {$pref}module_sgt_account A
+LEFT JOIN {$pref}users U ON A.owner = U.user_id
+LEFT JOIN (SELECT account_id,COUNT(*) as count FROM {$pref}module_sgt_record GROUP BY account_id) R ON A.account_id = R.account_id
 WHERE {$test}
 ORDER BY A.name
 EOS;
