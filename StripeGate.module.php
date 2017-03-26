@@ -34,7 +34,7 @@ class StripeGate extends CMSModule
 		$this->before20 = (version_compare($CMS_VERSION,'2.0') < 0);
 
 		$fp = cms_join_path(__DIR__,'lib','Stripe','Stripe.php'); // Stripe singleton always
-		require($fp);
+		require_once($fp);
 		spl_autoload_register([$this,'stripe_spacedload']);
 	}
 
@@ -355,7 +355,7 @@ EOS;
 		}
 		// relative class name
 		$len = strlen($prefix) + $o;
-		$relative_class = trim(substr($class, $len), '\\');
+		$relative_class = trim(substr($classname, $len), '\\');
 
 		if (($p = strrpos($relative_class, '\\', -1)) !== FALSE) {
 			$relative_dir = str_replace('\\', DIRECTORY_SEPARATOR, $relative_class);
