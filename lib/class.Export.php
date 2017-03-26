@@ -12,14 +12,16 @@ class Export
 	private function GetAccountIDForRecord($record_id)
 	{
 		global $db;
-		$sql = 'SELECT account_id FROM '.cms_db_prefix().'module_sgt_record WHERE record_id=?';
+		$pref = \cms_db_prefix();
+		$sql = 'SELECT account_id FROM '.$pref.'module_sgt_record WHERE record_id=?';
 		return $db->GetOne($sql,[$record_id]);
 	}
 
 	private function GetAccountNameFromID($account_id)
 	{
 		global $db;
-		$sql = 'SELECT name FROM '.cms_db_prefix().'module_sgt_account WHERE account_id=?';
+		$pref = \cms_db_prefix();
+		$sql = 'SELECT name FROM '.$pref.'module_sgt_account WHERE account_id=?';
 		return $db->GetOne($sql,[$account_id]);
 	}
 
@@ -75,7 +77,7 @@ class Export
 	private function CSV(&$mod, $account_id=FALSE, $record_id=FALSE, $fp=FALSE, $sep=',')
 	{
 		global $db;
-		$pref = cms_db_prefix();
+		$pref = \cms_db_prefix();
 		$adata = $db->GetAssoc('SELECT account_id,name,currency,amountformat FROM '.$pref.'module_sgt_account');
 		if (!$adata)
 			return FALSE;
@@ -104,7 +106,7 @@ class Export
 		unset($row);
 
 		if ($fp && ini_get('mbstring.internal_encoding') !== FALSE) { //send to file, and conversion is possible
-			$config = cmsms()->GetConfig();
+			$config = \cmsms()->GetConfig();
 			if (!empty($config['default_encoding']))
 				$defchars = trim($config['default_encoding']);
 			else
@@ -241,7 +243,7 @@ class Export
 		} else {
 			$csv = self::CSV($mod,$account_id,$record_id,FALSE,$sep);
 			if ($csv) {
-				$config = cmsms()->GetConfig();
+				$config = \cmsms()->GetConfig();
 				if (!empty($config['default_encoding']))
 					$defchars = trim($config['default_encoding']);
 				else

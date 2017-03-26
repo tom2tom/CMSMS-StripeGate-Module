@@ -19,7 +19,7 @@ class Utils
 	*/
 /*	public static function SafeGet($sql,$args,$mode='all')
 	{
-		$db = cmsms()->GetDb();
+		$db = \cmsms()->GetDb();
 		$nt = 10;
 		while ($nt > 0) {
 			$db->Execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
@@ -60,7 +60,7 @@ class Utils
 	*/
 /*	public static function SafeExec($sql, $args)
 	{
-		$db = cmsms()->GetDb();
+		$db = \cmsms()->GetDb();
 		$nt = 10;
 		while ($nt > 0) {
 			$db->Execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE'); //this isn't perfect!
@@ -97,7 +97,7 @@ class Utils
 		} else {
 			if ($cache) {
 				$cache_id = md5('sgt'.$tplname.serialize(array_keys($tplvars)));
-				$lang = CmsNlsOperations::get_current_language();
+				$lang = \CmsNlsOperations::get_current_language();
 				$compile_id = md5('sgt'.$tplname.$lang);
 				$tpl = $smarty->CreateTemplate($mod->GetFileResource($tplname),$cache_id,$compile_id,$smarty);
 				if (!$tpl->isCached())
@@ -115,9 +115,10 @@ class Utils
 	*/
 	public static function GetAccount()
 	{
-		$db = cmsms()->GetDb();
+		$db = \cmsms()->GetDb();
+		$pref = \cms_db_prefix();
 		$ids = $db->GetArray(
-'SELECT account_id,isdefault FROM '.cms_db_prefix().'module_sgt_account ORDER BY isdefault DESC,account_id');
+'SELECT account_id,isdefault FROM '.$pref.'module_sgt_account ORDER BY isdefault DESC,account_id');
 		if ($ids) {
 			if ($ids[0]['isdefault'] == TRUE || count($ids) == 1)
 				return (int)$ids[0]['account_id'];
@@ -132,7 +133,7 @@ class Utils
 	*/
 	public static function GetUploadsPath(&$mod)
 	{
-		$config = cmsms()->GetConfig();
+		$config = \cmsms()->GetConfig();
 		$up = $config['uploads_path'];
 		if ($up) {
 			$rp = $mod->GetPreference('uploads_dir');
@@ -151,7 +152,7 @@ class Utils
 	*/
 	public static function GetUploadsUrl(&$mod)
 	{
-		$config = cmsms()->GetConfig();
+		$config = \cmsms()->GetConfig();
 		$key = (empty($_SERVER['HTTPS'])) ? 'uploads_url':'ssl_uploads_url';
 		$up = $config[$key];
 		if ($up) {
@@ -171,7 +172,7 @@ class Utils
 	*/
 /*	public static function GetReportsUrl()
 	{
-		$returnid = cmsms()->GetContentOperations()->GetDefaultContent();
+		$returnid = \cmsms()->GetContentOperations()->GetDefaultContent();
 		//CMSMS 1.10+ has ->create_url();
 		return $this->CreateLink('m1_','webhook',$returnid,'',array(),'',
 			TRUE,FALSE,'',FALSE,'stripegate/webhook');

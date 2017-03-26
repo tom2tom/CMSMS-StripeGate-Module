@@ -196,7 +196,7 @@ class Payer //implements GatePay
 					$type = 5;
 				}
 			} elseif ($this->workermod->havecurl) { //curl is installed
-				$config = cmsms()->GetConfig();
+				$config = \cmsms()->GetConfig();
 				$u = (empty($_SERVER['HTTPS'])) ? $config['root_url'] : $config['ssl_url'];
 				$u .= '/index.php?mact=';
 				$len = strlen($u);
