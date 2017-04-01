@@ -141,9 +141,9 @@ EOS;
 
 EOS;
 */
-	} //$rcount > 1
-	else
+	} else { //$rcount == 0
 		$tplvars['header_checkbox'] = NULL;
+	}
 
 	if ($pagerows && $rcount>$pagerows) {
 		//more setup for SSsort
@@ -159,7 +159,7 @@ EOS;
 		$curpg='<span id="cpage">1</span>';
 		$totpg='<span id="tpage">'.ceil($rcount/$pagerows).'</span>';
 
-		$tplvars = $tplvars + [
+		$tplvars += [
 			'hasnav' => 1,
 			'first' => '<a href="javascript:pagefirst()">'.$this->Lang('first').'</a>',
 			'prev' => '<a href="javascript:pageback()">'.$this->Lang('previous').'</a>',

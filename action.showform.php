@@ -279,7 +279,7 @@ if ($account) {
 
 $symbol = StripeGate\Utils::GetSymbol($row['currency']);
 $t = StripeGate\Utils::GetPublicAmount(1999,$row['amountformat'],$symbol);
-$tplvars = $tplvars + [
+$tplvars += [
 	'currency_example' => $this->Lang('currency_example',$t),
 	'logos' => $iconfile,
 	'title_amount' => $this->Lang('payamount'),
