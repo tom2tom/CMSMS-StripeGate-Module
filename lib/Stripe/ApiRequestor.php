@@ -76,6 +76,8 @@ class ApiRequestor
      * @throws Error\InvalidRequest if the error is caused by the user.
      * @throws Error\Authentication if the error is caused by a lack of
      *    permissions.
+     * @throws Error\Permission if the error is caused by insufficient
+     *    permissions.
      * @throws Error\Card if the error is the error code is 402 (payment
      *    required)
      * @throws Error\RateLimit if the error is caused by too many requests
@@ -110,11 +112,70 @@ class ApiRequestor
                 throw new Error\Authentication($msg, $rcode, $rbody, $resp, $rheaders);
             case 402:
                 throw new Error\Card($msg, $param, $code, $rcode, $rbody, $resp, $rheaders);
+            case 403:
+                throw new Error\Permission($msg, $rcode, $rbody, $resp, $rheaders);
             case 429:
                 throw new Error\RateLimit($msg, $param, $rcode, $rbody, $resp, $rheaders);
             default:
                 throw new Error\Api($msg, $rcode, $rbody, $resp, $rheaders);
         }
+    }
+
+    private static function _formatAppInfo($appInfo)
+    {
+        if ($appInfo !== null) {
+            $string = $appInfo['name'];
+            if ($appInfo['version'] !== null) {
+                $string .= '/' . $appInfo['version'];
+            }
+            if ($appInfo['url'] !== null) {
+                $string .= ' (' . $appInfo['url'] . ')';
+            }
+            return $string;
+        } else {
+            return null;
+        }
+    }
+
+    private static function _defaultHeaders($apiKey)
+    {
+        $appInfo = Stripe::getAppInfo();
+
+        $uaString = 'Stripe/v1 PhpBindings/' . Stripe::VERSION;
+
+        $langVersion = phpversion();
+        $uname = php_uname();
+
+        $httplib = 'unknown';
+        $ssllib = 'unknown';
+
+        if (function_exists('curl_version')) {
+            $curlVersion = curl_version();
+            $httplib = 'curl ' . $curlVersion['version'];
+            $ssllib = $curlVersion['ssl_version'];
+        }
+
+        $appInfo = Stripe::getAppInfo();
+        $ua = array(
+            'bindings_version' => Stripe::VERSION,
+            'lang' => 'php',
+            'lang_version' => $langVersion,
+            'publisher' => 'stripe',
+            'uname' => $uname,
+            'httplib' => $httplib,
+            'ssllib' => $ssllib,
+        );
+        if ($appInfo !== null) {
+            $uaString .= ' ' . self::_formatAppInfo($appInfo);
+            $ua['application'] = $appInfo;
+        }
+
+        $defaultHeaders = array(
+            'X-Stripe-Client-User-Agent' => json_encode($ua),
+            'User-Agent' => $uaString,
+            'Authorization' => 'Bearer ' . $apiKey,
+        );
+        return $defaultHeaders;
     }
 
     private function _requestRaw($method, $url, $params, $headers)
@@ -134,20 +195,7 @@ class ApiRequestor
 
         $absUrl = $this->_apiBase.$url;
         $params = self::_encodeObjects($params);
-        $langVersion = phpversion();
-        $uname = php_uname();
-        $ua = array(
-            'bindings_version' => Stripe::VERSION,
-            'lang' => 'php',
-            'lang_version' => $langVersion,
-            'publisher' => 'stripe',
-            'uname' => $uname,
-        );
-        $defaultHeaders = array(
-            'X-Stripe-Client-User-Agent' => json_encode($ua),
-            'User-Agent' => 'Stripe/v1 PhpBindings/' . Stripe::VERSION,
-            'Authorization' => 'Bearer ' . $myApiKey,
-        );
+        $defaultHeaders = $this->_defaultHeaders($myApiKey);
         if (Stripe::$apiVersion) {
             $defaultHeaders['Stripe-Version'] = Stripe::$apiVersion;
         }
@@ -215,11 +263,11 @@ class ApiRequestor
 
     private function _interpretResponse($rbody, $rcode, $rheaders)
     {
-        try {
-            $resp = json_decode($rbody, true);
-        } catch (Exception $e) {
+        $resp = json_decode($rbody, true);
+        $jsonError = json_last_error();
+        if ($resp === null && $jsonError !== JSON_ERROR_NONE) {
             $msg = "Invalid response body from API: $rbody "
-              . "(HTTP response code was $rcode)";
+              . "(HTTP response code was $rcode, json_last_error() was $jsonError)";
             throw new Error\Api($msg, $rcode, $rbody);
         }
 
