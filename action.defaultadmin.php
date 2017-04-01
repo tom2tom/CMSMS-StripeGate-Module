@@ -79,24 +79,24 @@ if (isset($params['activetab'])) {
 }
 
 $tplvars['tabsheader'] = $this->StartTabHeaders().
- $this->SetTabHeader('main',$this->Lang('title_maintab'),$indx==0).
- $this->SetTabHeader('settings',$this->Lang('title_settingstab'),$indx==1).
- $this->EndTabHeaders().$this->StartTabContent();
+	$this->SetTabHeader('main',$this->Lang('title_maintab'),$indx==0).
+	$this->SetTabHeader('settings',$this->Lang('title_settingstab'),$indx==1).
+	$this->EndTabHeaders().$this->StartTabContent();
 
-//NOTE CMSMS 2+ barfs if EndTab() is called before EndTabContent() - some craziness there !!!
-$tplvars = $tplvars + [
-	'tabsfooter' => $this->EndTabContent(),
+//workaround CMSMS2 crap 'auto-end', EndTab() & EndTabContent() before [1st] StartTab()
+$tplvars += [
 	'tab_end' => $this->EndTab(),
+	'tabsfooter' => $this->EndTabContent(),
 	'form_end' => $this->CreateFormEnd()
 ];
+if (!empty($params['message'])) {
+	$tplvars['message'] = $params['message'];
+}
 
 $jsincs = [];
 $jsfuncs = [];
 $jsloads = [];
 $baseurl = $this->GetModuleURLPath();
-
-if (!empty($params['message']))
-	$tplvars['message'] = $params['message'];
 
 //~~~~~~~~~~~~~~~ ACCOUNTS TAB ~~~~~~~~~~~~~~~~
 
@@ -119,8 +119,9 @@ if ($mod) {
 	$yes = $this->Lang('yes');
 	$no = $this->Lang('no');
 }
-if ($pdel)
+if ($pdel) {
 	$icon_del = $theme->DisplayImage('icons/system/delete.gif',$this->Lang('tip_delete'),'','','systemicon');
+}
 
 $items = [];
 
@@ -208,7 +209,7 @@ if ($rows) {
 $tplvars['items'] = $items;
 if ($items) {
 	//table titles
-	$tplvars = $tplvars + [
+	$tplvars += [
 		'title_id' => $this->Lang('title_id'),
 		'title_name' => $this->Lang('name'),
 		'title_alias' => (($pdev)?$this->Lang('title_tag'):$this->Lang('title_alias')),
@@ -312,7 +313,7 @@ $url = $this->CreateLink ('_','webhook',1,'',[],'',TRUE);
 //strip the fake returnid, so that the default will be used
 $sep = strpos($url,'&amp;');
 $newurl = substr($url,0,$sep);
-$tplvars = $tplvars + [
+$tplvars += [
 	'title_hook' => $this->Lang('reports_url'),
 	'info_hook' => $this->Lang('help_reports_url'),
 	'url_hook' => $newurl

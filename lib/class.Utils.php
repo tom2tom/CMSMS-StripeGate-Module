@@ -90,9 +90,13 @@ class Utils
 	*/
 	public static function ProcessTemplate(&$mod, $tplname, $tplvars, $cache=TRUE)
 	{
-		global $smarty;
 		if ($mod->before20) {
-			$smarty->assign($tplvars);
+			global $smarty;
+		} else {
+			$smarty = $mod->GetActionTemplateObject();
+		}
+		$smarty->assign($tplvars);
+		if ($mod->oldtemplates) {
 			return $mod->ProcessTemplate($tplname);
 		} else {
 			if ($cache) {
@@ -100,8 +104,9 @@ class Utils
 				$lang = \CmsNlsOperations::get_current_language();
 				$compile_id = md5('sgt'.$tplname.$lang);
 				$tpl = $smarty->CreateTemplate($mod->GetFileResource($tplname),$cache_id,$compile_id,$smarty);
-				if (!$tpl->isCached())
+				if (!$tpl->isCached()) {
 					$tpl->assign($tplvars);
+				}
 			} else {
 				$tpl = $smarty->CreateTemplate($mod->GetFileResource($tplname),NULL,NULL,$smarty,$tplvars);
 			}
