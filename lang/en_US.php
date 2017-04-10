@@ -152,6 +152,7 @@ $lang['title_default'] = 'Default';
 $lang['title_defaultlong'] = 'Default account';
 $lang['title_iconfile'] = 'Checkout-form icon';
 $lang['title_iconfile2'] = 'Upload brand/product image file for \'%s\' checkout form';
+$lang['title_id'] = 'ID';
 $lang['title_mainpage'] = 'Module main page';
 $lang['title_maintab'] = 'Accounts';
 $lang['title_minpay'] = 'Minimum acceptable payment amount';
