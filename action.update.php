@@ -365,7 +365,7 @@ EOS;
 	$settings[] = $oneset;
 }
 
-$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery-inputCloak.min.js"></script>';
+$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery-inputCloak.min.js"></script>';
 $jsloads[] = <<<EOS
  $('#{$id}passwd').inputCloak({
   type:'see4',

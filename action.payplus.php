@@ -419,7 +419,7 @@ $jsloads[] = <<<EOS
  $('.watermark').watermark();
 EOS;
 
-$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/include/jquery.watermark.min.js"></script>';
+$jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery.watermark.min.js"></script>';
 
 if ($row['stylesfile']) { //using custom css for checkout display
 	//replace href attribute in existing stylesheet link

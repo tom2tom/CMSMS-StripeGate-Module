@@ -75,7 +75,7 @@ class StripeGate extends CMSModule
 
 	public function GetHelp()
 	{
-		return ''.@file_get_contents(cms_join_path(__DIR__,'include','modhelp.html'));
+		return ''.@file_get_contents(cms_join_path(__DIR__,'lib','doc','modhelp.htm'));
 	}
 
 	public function GetVersion()
@@ -95,7 +95,7 @@ class StripeGate extends CMSModule
 
 	public function GetChangeLog()
 	{
-		return ''.@file_get_contents(cms_join_path(__DIR__,'include','changelog.html'));
+		return ''.@file_get_contents(cms_join_path(__DIR__,'lib','doc','changelog.htm'));
 	}
 
 	public function IsPluginModule()
@@ -340,7 +340,7 @@ EOS;
 				}
 				$fp = $bp.$sub.$fn.'.php';
 				if (@file_exists($fp)) {
-					include($fp);
+					include $fp;
 					if (class_exists($classname)) {
 						break;
 					}
