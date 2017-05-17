@@ -54,7 +54,8 @@ class Payer //implements GatePay
 				$val = $key;
 		}
 		unset($val);
-		$this->translates = array_filter(array_merge($this->GetConverts(),$alternates));
+//GetConverts[] all FALSE		$this->translates = array_filter(array_merge($this->GetConverts(),$alternates));
+		$this->translates = $alternates;
 
 		$this->director = $director;
 
@@ -176,10 +177,10 @@ class Payer //implements GatePay
 			}
 */
 		} elseif (is_array($handler) && count($handler) == 2) {
-			$ob = \cms_utils::get_module($handler[0]);
-			if ($ob) {
-				$dir = $ob->GetModulePath();
-				unset($ob);
+			$mod = \cms_utils::get_module($handler[0]);
+			if ($mod) {
+				$dir = $mod->GetModulePath();
+				unset($mod);
 				$fp = $dir.DIRECTORY_SEPARATOR.'action.'.$handler[1].'.php';
 				if (@is_file($fp)) {
 					$type = 3;
@@ -259,8 +260,8 @@ class Payer //implements GatePay
 		}
 		//preserve class properties & some caller data across requests
 		$this->callermod = $this->callermod->GetName();
-		$ob = $this->workermod;
-		$this->workermod = $ob->GetName(); //StripeGate
+		$mod = $this->workermod;
+		$this->workermod = $mod->GetName(); //StripeGate
 		$value = get_object_vars($this);
 		foreach (['passthru'] as $key) {
 			if (!empty($params[$key])) {
@@ -269,45 +270,46 @@ class Payer //implements GatePay
 			}
 		}
 		$params['preserve'] = base64_encode(json_encode($value));
-		$ob->Redirect($id,'showform',$returnid,$params);
+		$mod->Redirect($id,'showform',$returnid,$params);
 	}
 
 	/**
  	HandleResult:
-	Interpret @json and send relevant data back to the initiator, then redirect
+	Interpret @params and send relevant data back to the initiator, then redirect
 	to specified action
-	@params: request-parameters to be used, including some from Stripe
+	@params: request-parameters from Stripe form, most like 'stg_*'
 	Returns: nope, it redirects
 	*/
 	public function HandleResult($params)
 	{
-		//decode $params['stg_preserve'] to revert object-properties
-		$props = json_decode(base64_decode($params['stg_preserve']));
-		if ($props !== NULL) {
-			$arr = (array)$props;
-			foreach ($arr as $key=>$val) {
-				switch ($key) {
-				 case 'workermod':
-				 case 'callermod':
-				 	if (!$this->$key)
-						$this->$key = \cms_utils::get_module($val); //no namespace
-					break;
-				 case 'passthru':
-					$params[$key] = $val;
-					break;
-				 default:
-					if (is_object($val)) {
-						$this->$key = (array)$val;
-					} else {
-						$this->$key = $val;
+		if (isset($params['stg_preserve'])) {
+			$props = json_decode(base64_decode($params['stg_preserve']));
+			if ($props !== NULL) {
+				$arr = (array)$props;
+				foreach ($arr as $key=>$val) {
+					switch ($key) {
+					 case 'workermod':
+					 case 'callermod':
+						if (!$this->$key)
+							$this->$key = \cms_utils::get_module($val); //no namespace
+						break;
+					 case 'passthru':
+						$params[$key] = $val;
+						break;
+					 default:
+						if (is_object($val)) {
+							$this->$key = (array)$val;
+						} else {
+							$this->$key = $val;
+						}
 					}
 				}
+			} else {
+				echo 'TODO error message';
+				exit;
 			}
-		} else {
-			echo 'TODO error message';
-			exit;
+			unset($params['stg_preserve']);
 		}
-		unset($params['stg_preserve']);
 
 		$locals = [
 //		 'account'=>,
@@ -322,10 +324,10 @@ class Payer //implements GatePay
 		 'currency'=>TRUE,
 		 'customer'=>TRUE,
 		 'description'=>TRUE,
-		 'errmsg'=>'failure_message',
+		 'errmsg'=>'message',
 		 'receivedata'=>FALSE, //'metadata',
 		 'success'=>'paid', //boolean
-//		 'successmsg'=>,
+		 'successmsg'=>'message',
 		 'transactid'=>'id',
 		 'passthru'=>TRUE, //internal use, cached data
 		];
@@ -367,9 +369,23 @@ class Payer //implements GatePay
 			}
 			unset($params[$key]);
 		}
-		//NULL values in $params for unused keys in $this->translates
-		$allprops = array_fill_keys(array_keys($this->translates),NULL);
-		$params = array_merge($allprops,$params);
+
+		$params['success'] = !isset($params['cancel']);
+
+		//NULL values in $params for unused keys in $this->translates TODO
+/* TODO some NULL'd translated-derived $params[] are not for feedback:
+amount	string	"amount"
+cancel	string	"cancel"
+errmsg	string	"message"
+passthru	string	"paramskey"
+payer	string	"who"
+payfor	string	"what"
+success	string	"result"
+successmsg	string	"message"
+transactid	string	"identifier"	 *
+*/
+//		$allprops = array_fill_keys(array_keys($this->translates),NULL);
+//		$params = array_merge($allprops,$params);
 
 		switch ($this->type) {
 		 case 1: //callable, 2-member array or string like 'ClassName::methodName'
@@ -380,17 +396,17 @@ class Payer //implements GatePay
 			$res = $this->handler($params);
 			break; */
 		 case 3: //module action
-			$ob = \cms_utils::get_module($this->handler[0]);
-			$res = $ob->DoAction($this->handler[1],$this->director[0],$params);
-			unset($ob);
+			$mod = \cms_utils::get_module($this->handler[0]);
+			$res = $mod->DoAction($this->handler[1],$this->director[0],$params);
+			unset($mod);
 			//TODO handle $res == 400+
 			break;
 		 case 4: //code inclusion
-			$ob = \cms_utils::get_module($this->handler[0]);
-			$fp = $ob->GetModulePath().DIRECTORY_SEPARATOR.$this->handler[1].'.php';
-			unset($ob);
+			$mod = \cms_utils::get_module($this->handler[0]);
+			$fp = $mod->GetModulePath().DIRECTORY_SEPARATOR.$this->handler[1].'.php';
 			$res = FALSE;
 			require $fp;
+			unset($mod);
 			break;
 		 case 5: //code inclusion
 			$res = FALSE;
@@ -415,13 +431,16 @@ class Payer //implements GatePay
 		$id = $this->director[0]; //action-id specified by the initiator module
 		$action = $this->director[1];
 		$returnid = $this->director[2]; //id of the page being displayed by the initiator module
-		$newparms = [];
-		foreach (['passthru','errmsg','successmsg'] as $key) {
-			if (!empty($this->translates[$key])) {
-				$key = $this->translates[$key];
-				$newparms[$key] = $params[$key];
+//		$newparms = [];
+		foreach (['passthru','errmsg'/*,'successmsg'*/] as $key) {
+			if (isset ($params[$key])) {
+				if (!empty($this->translates[$key])) {
+					$key2 = $this->translates[$key];
+					$params[$key2] = $params[$key];
+					unset($params[$key]);
+				}
 			}
 		}
-		$this->callermod->Redirect($id,$action,$returnid,$newparms);
+		$this->callermod->Redirect($id,$action,$returnid,$params);
 	}
 }
