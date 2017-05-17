@@ -1,37 +1,39 @@
 <?php
 #----------------------------------------------------------------------
 # This file is part of CMS Made Simple module: StripeGate
-# Copyright (C) 2016 Tom Phane <tpgww@onepost.net>
+# Copyright (C) 2016-2017 Tom Phane <tpgww@onepost.net>
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 /*
 This is a superset of the 'payplus' action, suitable for initiation by other modules
-Supported on-first-arrival $params are:
+Supported (optional) on-first-arrival $params are:
 'account'
 'amount'
 'currency'
 'message'
+'nosur'
 'payer'
 'payfor'
 'preserve'
 'surrate'
 'withcancel'
-all except 'preserve' are optional
 Not supported:
 'contact'
 'payee'
 'senddata'
+
 and upon return
-'stg_account_id'
+'stg_account'
 'stg_amount'
+'stg_currency'
 'stg_cvc'
 'stg_month'
+'stg_nosur'
 'stg_number'
 'stg_payfor'
 'stg_paywhat'
-'stg_preserve'
-'stg_withcancel'
+'stg_surrate'
 'stg_year'
 
 'origreturnid' after redirect?
@@ -92,7 +94,7 @@ if (isset($params['submit'])) {
 
 	$symbol = StripeGate\Utils::GetSymbol($row['currency']);
 	$amount = StripeGate\Utils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
-	if ($row['surchargerate'] > 0.0 && empty($params['sgt_nosur']))
+	if ($row['surchargerate'] > 0.0 && empty($params['stg_nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
 
 	$card = [
@@ -117,7 +119,24 @@ if (isset($params['submit'])) {
 	try {
 		Stripe\Stripe::setApiKey($privkey);
 		$charge = Stripe\Charge::create($data); //synchronous
-		$params = array_merge($params, $charge->__toArray(TRUE));
+		$response = $charge->__toArray(TRUE);
+		$sql = 'INSERT INTO '.$pref.'module_sgt_record (
+account_id,
+amount,
+paywhat,
+payfor,
+recorded,
+identifier
+) VALUES(?,?,?,?,?,?)';
+		$db->Execute($sql,[
+			$params['stg_account'],
+			$amount,
+			$params['stg_paywhat'],
+			$params['stg_payfor'],
+			$response['created'],
+			$response['id']]);
+
+		$params = array_merge($params,$response);
 		$caller = NULL;
 		$funcs = new StripeGate\Payer($caller,$this);
 		$funcs->HandleResult($params); //redirects
