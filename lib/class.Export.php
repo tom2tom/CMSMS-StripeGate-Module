@@ -102,7 +102,7 @@ class Export
 			return FALSE;
 
 		foreach ($adata as $id=>&$row)
-			$row['symbol'] = StripeGate\Utils::GetSymbol($row['currency']);
+			$row['symbol'] = Utils::GetSymbol($row['currency']);
 		unset($row);
 
 		if ($fp && ini_get('mbstring.internal_encoding') !== FALSE) { //send to file, and conversion is possible
@@ -162,7 +162,7 @@ class Export
 				foreach ($row as $fn=>$fv) {
 					switch ($fn) {
 					 case 'amount':
-					 	$outstr .= $sep.StripeGate\Utils::GetPublicAmount($fv,$adata[$aid]['amountformat'],$adata[$aid]['symbol']);
+					 	$outstr .= $sep.Utils::GetPublicAmount($fv,$adata[$aid]['amountformat'],$adata[$aid]['symbol']);
 						break;
 					 case 'recorded':
 						$outstr .= $sep.date('Y-m-d H:i:s',$fv);
@@ -224,7 +224,7 @@ class Export
 		$fname = self::ExportName($mod,$account_id,$record_id);
 
 		if ($mod->GetPreference('export_file',FALSE)) {
-			$updir = StripeGate\Utils::GetUploadsPath($mod);
+			$updir = Utils::GetUploadsPath($mod);
 			if ($updir) {
 				$filepath = $updir.DIRECTORY_SEPARATOR.$fname;
 				$fp = fopen($filepath,'w');
@@ -232,7 +232,7 @@ class Export
 					$success = self::CSV($mod,$account_id,$record_id,$fp,$sep);
 					fclose($fp);
 					if ($success) {
-						$url = StripeGate\Utils::GetUploadsUrl($mod).'/'.$fname;
+						$url = Utils::GetUploadsUrl($mod).'/'.$fname;
 						@ob_clean();
 						@ob_clean();
 						header('Location: '.$url);
