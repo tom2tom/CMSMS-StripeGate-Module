@@ -47,7 +47,7 @@ if (isset($params['submit'])) {
 
 	$symbol = StripeGate\Utils::GetSymbol($row['currency']);
 	$amount = StripeGate\Utils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
-	if ($row['surchargerate'] > 0.0 && empty($params['sgt_nosur']))
+	if ($row['surchargerate'] > 0.0 && empty($params['stg_nosur']))
 		$amount = ceil($amount * (1.0+$row['surchargerate']));
 
 	$card = [
@@ -71,7 +71,7 @@ if (isset($params['submit'])) {
 
 	try {
 		Stripe\Stripe::setApiKey($privkey);
-		$charge = Stripe\Charge::create($data);
+		$charge = Stripe\Charge::create($data); //synchronous
 		$response = $charge->__toArray(TRUE);
 		$sql = 'INSERT INTO '.$pref.'module_sgt_record (
 account_id,
@@ -406,7 +406,7 @@ if ($surrate)
 EOS;
 
 $jsloads[] = <<<EOS
- $('#pplus_number').closest('form').submit(function() {
+ $('#pplus_submit').click(function() {
   lock_inputs();
   $('#pplus_container input').blur(); //trigger sanitize/validate functions
   unlock_inputs();
