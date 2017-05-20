@@ -182,8 +182,8 @@ function maybe_selected() {
 }
 EOS;
 	//if ($X) ? perm
-		$tplvars['transfers'] = $this->CreateInputSubmit($id, 'transfers', $this->Lang('transfers'),
-			'title="'.$this->Lang('tip_transfers').'" onclick="return maybe_selected();"');
+	$tplvars['transfers'] = $this->CreateInputSubmit($id, 'transfers', $this->Lang('transfers'),
+		'title="'.$this->Lang('tip_transfers').'" onclick="return maybe_selected();"');
 	$s = $this->Lang('dayscount');
 	$choices = [];
 	foreach ([15, 45, 60] as $n) {
@@ -201,12 +201,10 @@ EOS;
 		'title="'.$this->Lang('tip_deletesel2').
 		'" onclick="return confirm_selected(\''.$this->Lang('delsel_confirm2').'\');"');
 	}
-} //$rcount
-/*should never happen, in this context
-else {
+} else {  //$rcount == 0, should never happen, in this context
 	$tplvars['norecords'] = $this->Lang('norecords');
+	$tplvars['close'] = $this->CreateInputSubmit($id, 'close', $this->Lang('close'));
 }
-*/
 
 $jsall = NULL;
 StripeGate\Utils::MergeJS($jsincs, $jsfuncs, $jsloads, $jsall);
