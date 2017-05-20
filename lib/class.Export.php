@@ -1,7 +1,7 @@
 <?php
 #----------------------------------------------------------------------
 # This file is part of CMS Made Simple module: StripeGate
-# Copyright (C) 2016 Tom Phane <tpgww@onepost.net>
+# Copyright (C) 2016-2017 Tom Phane <tpgww@onepost.net>
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
@@ -242,6 +242,194 @@ class Export
 			}
 		} else {
 			$csv = self::CSV($mod,$account_id,$record_id,FALSE,$sep);
+			if ($csv) {
+				$config = \cmsms()->GetConfig();
+				if (!empty($config['default_encoding']))
+					$defchars = trim($config['default_encoding']);
+				else
+					$defchars = 'UTF-8';
+
+				if (ini_get('mbstring.internal_encoding') !== FALSE) { //conversion is possible
+					$expchars = $mod->GetPreference('export_file_encoding','ISO-8859-1');
+					$convert = (strcasecmp ($expchars,$defchars) != 0);
+				} else {
+					$expchars = $defchars;
+					$convert = FALSE;
+				}
+
+				@ob_clean();
+				@ob_clean();
+				header('Pragma: public');
+				header('Expires: 0');
+				header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+				header('Cache-Control: private',FALSE);
+				header('Content-Description: File Transfer');
+		//note: some older HTTP/1.0 clients did not deal properly with an explicit charset parameter
+				header('Content-Type: text/csv; charset='.$expchars);
+				header('Content-Length: '.strlen($csv));
+				header('Content-Disposition: attachment; filename='.$fname);
+				if ($convert)
+					echo mb_convert_encoding($csv,$expchars,$defchars);
+				else
+					echo $csv;
+				return TRUE;
+			}
+		}
+		return 'err_export';
+	}
+
+	/**
+	CSVTrans:
+	@mod: reference to current StripeGate module object
+	@all: array of export-data
+	@fp: handle of open file, if writing data to disk, or FALSE if constructing in memory, default = FALSE
+	@$sep: field-separator in output data, assumed single-byte ASCII, default = ','
+	Returns: TRUE/string, or FALSE on error
+	*/
+	private function CSVTrans(&$mod, $all, $fp=FALSE, $sep=',')
+	{
+		if ($fp && ini_get('mbstring.internal_encoding') !== FALSE) { //send to file, and conversion is possible
+			$config = \cmsms()->GetConfig();
+			if (!empty($config['default_encoding']))
+				$defchars = trim($config['default_encoding']);
+			else
+				$defchars = 'UTF-8';
+			$expchars = $mod->GetPreference('export_file_encoding','ISO-8859-1');
+			$convert = (strcasecmp ($expchars,$defchars) != 0);
+		} else
+			$convert = FALSE;
+
+		$sep2 = ($sep != ' ')?' ':',';
+		switch ($sep) {
+		 case '&':
+			$r = '%38%';
+			break;
+		 case '#':
+			$r = '%35%';
+			break;
+		 case ';':
+			$r = '%59%';
+			break;
+		 default:
+			$r = '&#'.ord($sep).';';
+			break;
+		}
+
+		$strip = $mod->GetPreference('strip_on_export',FALSE);
+
+/*$all[] =
+ 0 => array
+  'id' => string 'ch_1AFcmHGajAPEsyVFdrgTBABe'
+  'gross' => string '104.96'
+  'net' => string '102.83'
+  'when' => string '2017-05-04 15:45'
+  'who' => string 'Peta Preovolos'
+  'what' => string 'membership fees'
+  'transferid' => string 'txn_1AGfdSGajAPEsyVF6VeSZssV'
+  'available' => string '2017-05-08 10:00'
+*/
+		//header line
+		$outstr = implode($sep,[
+			'transfer identifier',
+			'available',
+			'charge identifier',
+			'recorded',
+			'gross amount',
+			'net amount',
+			'description',
+			'for'
+		]);
+		$outstr .= PHP_EOL;
+
+		if ($all) {
+			//data lines(s)
+			foreach ($all as &$row) {
+				$outstr .= $row['transferid']
+				.$sep.$row['available']
+				.$sep.$row['id']
+				.$sep.$row['when'];
+				$outstr .= $sep.str_replace($sep,$r,$row['gross']);
+				$outstr .= $sep.str_replace($sep,$r,$row['net']);
+				$fv = $row['what'];
+				if ($strip) {
+					$fv = strip_tags($fv);
+				}
+				$fv = str_replace($sep,$r,$fv);
+				$outstr .= $sep.preg_replace('/[\n\t\r]/',$sep2,$fv);
+				$fv = $row['who'];
+				if ($strip) {
+					$fv = strip_tags($fv);
+				}
+				$fv = str_replace($sep,$r,$fv);
+				$outstr .= $sep.preg_replace('/[\n\t\r]/',$sep2,$fv);
+				$outstr .= PHP_EOL;
+				if ($fp) {
+					if ($convert) {
+						$conv = mb_convert_encoding($outstr, $expchars, $defchars);
+						fwrite($fp,$conv);
+						unset($conv);
+					} else {
+						fwrite($fp,$outstr);
+					}
+					$outstr = '';
+				}
+			}
+			unset($row);
+
+			if ($fp) {
+				return TRUE;
+			} else {
+				return $outstr; //encoding conversion upstream
+			}
+		} else {
+			//no data, produce just a header line
+			if ($fp) {
+				if ($convert) {
+					$conv = mb_convert_encoding($outstr, $expchars, $defchars);
+					fwrite($fp, $conv);
+					unset($conv);
+				} else {
+					fwrite($fp, $outstr);
+				}
+				return TRUE;
+			}
+			return $outstr; //encoding conversion upstream
+		}
+	}
+
+	/**
+	ExportTransfers:
+	@mod: reference to current StripeGate module object
+	@account_id: account id
+	@data: array of transaction data
+	@sep: optional field-separator for exported content, default ','
+	Returns: TRUE on success, or lang key for error message upon failure
+	*/
+	public function ExportTransfers(&$mod, $account_id, $data, $sep=',')
+	{
+		if (!$account_id) {
+			return 'err_parameter';
+		}
+		$fname = self::ExportName($mod,$account_id);
+		if ($mod->GetPreference('export_file',FALSE)) {
+			$updir = Utils::GetUploadsPath($mod);
+			if ($updir) {
+				$filepath = $updir.DIRECTORY_SEPARATOR.$fname;
+				$fp = fopen($filepath,'w');
+				if ($fp) {
+					$success = self::CSVTrans($mod,$data,$fp,$sep);
+					fclose($fp);
+					if ($success) {
+						$url = Utils::GetUploadsUrl($mod).'/'.$fname;
+						@ob_clean();
+						@ob_clean();
+						header('Location: '.$url);
+						return TRUE;
+					}
+				}
+			}
+		} else {
+			$csv = self::CSVTrans($mod,$data,FALSE,$sep);
 			if ($csv) {
 				$config = \cmsms()->GetConfig();
 				if (!empty($config['default_encoding']))
