@@ -1,11 +1,14 @@
 {$backtomod_nav}<br /><br />
 {if !empty($message)}<h3>{$message}</h3><br />{/if}
+{if $rows}
 <div class="pageinput overflow" style="display:inline-block;">
 {if $hasnav}
  <div class="tablenav">{$first}&nbsp;|&nbsp;{$prev}&nbsp;&lt;&gt;&nbsp;{$next}&nbsp;|&nbsp;{$last}&nbsp;({$pageof})&nbsp;&nbsp;{$rowchanger}</div>
 {/if}
+{/if}
 <h3>{$title}</h3>
  {$start_form}
+ {if $rows}
   <table id="itemdata" class="pagetable">
    <thead><tr>
 {strip}
@@ -37,7 +40,14 @@
    </tbody>
   </table>
 {if $hasnav}<div class="tablenav">{$first}&nbsp;|&nbsp;{$prev}&nbsp;&lt;&gt;&nbsp;{$next}&nbsp;|&nbsp;{$last}</div>{/if}
- <div style="margin-top:1em;float:right;">{$export}{if $pmod}&nbsp;{$delete}{/if}</div>
- <div style="clear:both;"></div>
+ {else}
+{$norecords}
+ {/if}
+ <div style="margin-top:1em;">{if $rows}{$transfers} {$duration}
+ <div style="float:right;">{$export}{if $pmod}&nbsp;{$delete}{/if}</div>
+ <div style="clear:both;"></div>{else}{$close}{/if}
+ </div>
 {$end_form}
+{if $rows}
 </div>
+{/if}
