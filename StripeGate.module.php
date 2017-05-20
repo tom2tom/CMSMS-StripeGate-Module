@@ -148,8 +148,16 @@ EOS;
 	public function SuppressAdminOutput(&$request)
 	{
 		if (isset($_SERVER['QUERY_STRING'])) {
-			if (strpos($_SERVER['QUERY_STRING'],'export') !== FALSE)
+			if (strpos($_SERVER['QUERY_STRING'],'export') !== FALSE) {
 				return TRUE;
+			}
+		}
+		if (isset($request['mact'])) {
+			if (strpos($request['mact'],'transfers',6)) {
+				if (isset($request['m1_export'])) {
+					return TRUE;
+				}
+			}
 		}
 		return FALSE;
 	}
@@ -303,6 +311,11 @@ EOS;
 		switch ($name) {
 		 case 'default':
 			$name = 'payplus';
+			break;
+		 case 'processrecords':
+			if (isset($params['transfers'])) {
+				$name = 'transfers';
+			}
 			break;
 		}
 		parent::DoAction($name,$id,$params,$returnid);
