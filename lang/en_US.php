@@ -1,4 +1,10 @@
 <?php
+#----------------------------------------------------------------------
+# This file is part of CMS Made Simple module: StripeGate
+# Copyright (C) 2016-2017 Tom Phane <tpgww@onepost.net>
+# Refer to licence and other details at the top of file StripeGate.module.php
+# More info at http://dev.cmsmadesimple.org/projects/stripegate
+#----------------------------------------------------------------------
 $lang['friendlyname'] = 'Stripe Gateway';
 $lang['confirm_uninstall']='You\'re sure you want to uninstall the '.$lang['friendlyname'].' module?';
 $lang['module_description'] = 'A module to facilitate communications between Stripe and a CMS Made Simple-powered website';
@@ -12,6 +18,7 @@ $lang['acvc'] = 'a security code';
 $lang['amonth'] = 'a month';
 $lang['aname'] = 'a suitable identifier';
 $lang['anum'] = 'a card number';
+$lang['apply'] = 'Apply';
 $lang['apurpose'] = 'a desciption of the payment';
 $lang['ayear'] = 'a year';
 
@@ -25,6 +32,7 @@ $lang['cardexpiry'] = 'Expiry';
 $lang['cardnumber'] = 'Card number';
 $lang['close'] = 'Close';
 $lang['currency_example'] = 'e.g. %s';
+$lang['dayscount'] = '%d days';
 $lang['delete'] = 'Delete';
 $lang['delitm_confirm'] = 'You\\\'re sure you want to delete \\\'%s\\\'?'; //double-escaped for js use
 $lang['delsel_confirm'] = 'You\\\'re sure you want to delete selected account(s)?'; //double-escaped for js use
@@ -90,6 +98,7 @@ A webhook is the mechanism used by Stripe to notify about events that happen in 
 such as errors and declined transactions. Information is sent to an URL that has been specified
 in the account's dashboard. That URL should be set to
 EOS;
+$lang['help_transfers'] = 'Days back from current';
 $lang['help_updir'] = 'Filesystem path relative to website-host uploads directory. No leading or trailing path-separator, and any intermediate path-separator must be host-system-specific e.g. \'\\\' on Windows. If left blank, the default will be used. Directory could contain .css files for specific checkouts, among others.';
 
 //$lang['import'] = 'Import';
@@ -103,6 +112,7 @@ $lang['no'] = 'No';
 $lang['nodata'] = 'No account is registered';
 $lang['none'] = 'None';
 $lang['noowner'] = 'No owner';
+$lang['norecords'] = 'Nothing is recorded';
 
 $lang['param_account'] = 'Override the default account, use this (id-number or alias) instead';
 $lang['param_amount'] = 'Payment-amount, with or without a currency symbol';
@@ -123,7 +133,10 @@ $lang['perm_adm'] = 'Modify Stripe Gateway Settings';
 $lang['perm_mod'] = 'Modify Stripe Accounts';
 $lang['perm_use'] = 'Use Stripe Accounts';
 $lang['previous'] = 'previous';
+$lang['recorded'] = 'Recorded';
+$lang['records'] = 'Records';
 $lang['reports_url'] = 'URL to which Stripe can send webhook reports';
+$lang['selected'] = 'Selected';
 $lang['submit'] = 'Submit';
 $lang['surcharge'] = 'A small surcharge (%s) will be applied, to help cover the transaction costs.';
 
@@ -132,10 +145,13 @@ $lang['tip_delete'] = 'delete account';
 $lang['tip_deletesel'] = 'delete selected accounts';
 $lang['tip_deletesel2'] = 'delete selected records';
 $lang['tip_edit'] = 'edit account data';
+$lang['tip_explore'] = 'display individual payments';
 $lang['tip_export'] = 'export account records';
 $lang['tip_exportsel'] = 'export selected records';
 $lang['tip_exportsel2'] = 'export records for selected accounts';
+$lang['tip_exportsel3'] = 'export records for this payment and any other(s) in the same transfer';
 $lang['tip_toggle'] = 'toggle value';
+$lang['tip_transfers'] = 'retrieve payment transfers during the selected interval';
 $lang['tip_upload'] = 'upload selected file to website host';
 $lang['tip_view'] = 'inspect account details';
 
@@ -159,6 +175,8 @@ $lang['title_minpay'] = 'Minimum acceptable payment amount';
 $lang['title_name'] = 'Account name';
 $lang['title_owner'] = 'Account manager';
 $lang['title_password'] = 'Password for securing sensitive data';
+$lang['title_paygross'] = 'Gross';
+$lang['title_paynet'] = 'Net';
 $lang['title_privtoken'] = 'Live-mode secret key';
 $lang['title_pubtoken'] = 'Live-mode public key';
 $lang['title_settingstab'] = 'Settings';
@@ -169,11 +187,17 @@ $lang['title_testprivtoken'] = 'Test-mode secret key';
 $lang['title_testpubtoken'] = 'Test-mode public key';
 $lang['title_title'] = 'Checkout-form title';
 $lang['title_token'] = 'Identifier';
+$lang['title_transcount'] = 'Payments';
+$lang['title_transferred'] = 'Available';
+$lang['title_transfers'] = 'Default interval for retreived transfers';
+$lang['title_transfers2'] = 'Account transfers: %s';
 $lang['title_updir'] = 'Sub-directory for module-specific file uploads';
 $lang['title_what'] = 'Description';
 $lang['title_when'] = 'Submitted';
 $lang['title_who'] = 'For';
 $lang['title_usetest'] = 'Use test keys';
+
+$lang['transfers'] = 'Transfers';
 
 $lang['updated'] = 'Settings updated';
 $lang['year_template'] = 'YYYY';
