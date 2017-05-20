@@ -280,6 +280,26 @@ if ($rcount) {
 	'title_what' => $this->Lang('title_what')
 	];
 
+	$jsfuncs[] = <<<EOS
+function exptrans(id) {
+ var onesel,
+  anysel = false;
+ $('#transferdata > tbody > tr').each(function() {
+  if (this.cells[0].innerHTML === id) {
+   onesel = true;
+   anysel = true;
+  } else {
+   onesel = false;
+  }
+  $(this).find('input[type="checkbox"]').attr('checked',onesel);
+ });
+ if (anysel) {
+  $('#{$id}export').click();
+ } else {
+  event.preventDefault();
+ }
+}
+EOS;
 	if ($rcount > 1) {
 		$jsincs[] = <<<EOS
 <script type="text/javascript" src="{$baseurl}/lib/js/jquery.metadata.min.js"></script>
@@ -301,24 +321,6 @@ EOS;
  });
 EOS;
 		$jsfuncs[] = <<<EOS
-function exptrans(id) {
- var onesel,
-  anysel = false;
- $('#transferdata > tbody > tr').each(function() {
-  if (this.cells[0].innerHTML === id) {
-   onesel = true;
-   anysel = true;
-  } else {
-   onesel = false;
-  }
-  $(this).find('input[type="checkbox"]').attr('checked',onesel);
- });
- if (anysel) {
-  $('#{$id}export').click();
- } else {
-  event.preventDefault();
- }
-}
 function select_all(cb) {
  $('#transferdata > tbody').find('input[type="checkbox"]').attr('checked',cb.checked);
 }
