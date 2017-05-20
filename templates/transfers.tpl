@@ -17,8 +17,8 @@
 	<th class="{ldelim}sss:'isoDate'{rdelim}">{$title_paidat}</th>
 	<th class="{ldelim}sss:'number'{rdelim}">{$title_grossamount}</th>
 	<th class="{ldelim}sss:'number'{rdelim}">{$title_netamount}</th>
-	<th>{$title_for}</th>
 	<th>{$title_what}</th>
+	<th>{$title_for}</th>
 	<th class="nosort pageicon"></th>
 	<th class="nosort checkbox" style="width:20px;">{$header_checkbox}</th>
 {/strip}
@@ -32,8 +32,8 @@
 	<td>{$payment->paidat}</td>
 	<td style="text-align:right;">{$payment->gross}</td>
 	<td style="text-align:right;">{$payment->net}</td>
-	<td>{$payment->by}</td>
 	<td>{$payment->what}</td>
+	<td>{$payment->who}</td>
 	<td>{$payment->export}</td>
 	<td>{$payment->selected}</td>
 {/strip}
