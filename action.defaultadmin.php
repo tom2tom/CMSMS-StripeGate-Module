@@ -1,7 +1,7 @@
 <?php
 #----------------------------------------------------------------------
 # This file is part of CMS Made Simple module: StripeGate
-# Copyright (C) 2016 Tom Phane <tpgww@onepost.net>
+# Copyright (C) 2016-2017 Tom Phane <tpgww@onepost.net>
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
@@ -27,8 +27,11 @@ if (!($padm || $pmod || $psee)) exit;
 $pdev = $this->CheckPermission('Modify Any Page');
 $mod = $padm || $pmod;
 
-if (isset($params['submit'])) {
+if (isset($params['apply'])) {
 	if ($padm) {
+		$this->SetPreference('transfer_days',$params['transfer_days']);
+		$this->SetPreference('uploads_dir',$params['uploads_dir']);
+
 		$cfuncs = new StripeGate\Crypter($this);
 		$oldpw = $cfuncs->decrypt_preference('masterpass');
 		$newpw = trim($params['masterpass']);
@@ -319,6 +322,10 @@ $tplvars += [
 	'url_hook' => $newurl
 ];
 
+$tplvars['title_transfers'] = $this->Lang('title_transfers');
+$tplvars['input_transfers'] = $this->CreateInputDropdown($id,'transfer_days',[15=>15,45=>45,60=>60],-1,$this->GetPreference('transfer_days'))
+.'<br />'.$this->Lang('help_transfers');
+
 $tplvars['title_updir'] = $this->Lang('title_updir');
 $tplvars['input_updir'] = $this->CreateInputText($id,'uploads_dir',$this->GetPreference('uploads_dir'),30,60)
 .'<br />'.$this->Lang('help_updir');
@@ -340,7 +347,7 @@ $jsloads[] = <<<EOS
 EOS;
 
 if ($padm) {
-	$tplvars['submit'] = $this->CreateInputSubmit($id,'submit',$this->Lang('submit'));
+	$tplvars['apply'] = $this->CreateInputSubmit($id,'apply',$this->Lang('apply'));
 	$tplvars['cancel'] = $this->CreateInputSubmit($id,'cancel',$this->Lang('cancel'));
 }
 
