@@ -1,7 +1,7 @@
 <?php
 #----------------------------------------------------------------------
 # This file is part of CMS Made Simple module: StripeGate
-# Copyright (C) 2016 Tom Phane <tpgww@onepost.net>
+# Copyright (C) 2016-2017 Tom Phane <tpgww@onepost.net>
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
@@ -58,8 +58,6 @@ payfor C(64)
 $sqlarray = $dict->CreateTableSQL($pref.'module_sgt_record',$flds,$taboptarray);
 $dict->ExecuteSQLArray($sqlarray);
 
-$t = 'nQCeESKBr99A';
-$this->SetPreference($t, hash('sha256', $t.microtime()));
 $ud = $config['uploads_path'];
 if ($ud && is_dir($ud)) {
 	$name = $this->GetName();
@@ -72,6 +70,10 @@ if ($ud && is_dir($ud)) {
 	$this->SetPreference('uploads_dir',FALSE);
 }
 
+$this->SetPreference('transfer_days',45);
+
+$t = 'nQCeESKBr99A';
+$this->SetPreference($t, hash('sha256', $t.microtime()));
 $cfuncs = new StripeGate\Crypter($this);
 $cfuncs->encrypt_preference('masterpass',base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh'));
 
