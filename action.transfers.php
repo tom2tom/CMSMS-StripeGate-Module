@@ -51,7 +51,7 @@ if (isset($params['export'])) {
 		}
 		if ($exports) {
 			$funcs = new StripeGate\Export();
-			$res = $funcs->ExportTransactions($this, $aid, $exports);
+			$res = $funcs->ExportTransfers($this, $aid, $exports);
 			if ($res === TRUE) {
 				exit;
 			}
