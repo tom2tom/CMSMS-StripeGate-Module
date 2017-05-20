@@ -62,4 +62,6 @@ switch ($oldversion) {
 	}
 	$cfuncs = new StripeGate\Crypter($this);
 	$cfuncs->encrypt_preference('masterpass',$pw);
+ case '0.10.0':
+	$this->SetPreference('transfer_days',45);
 }
