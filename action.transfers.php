@@ -33,18 +33,20 @@ if (isset($params['export'])) {
 		foreach ($params['sel'] as $rid) {
 			foreach ($data as $a => $one) {
 				foreach ($one->charges as $pay) {
-					if ($pay->id == $rid) {
+					if ($pay->id == $rid && !isset($pay->transferid)) {
+						//this transfer includes a selected charge, so grab all its charges
+						//notwithstanding the extra foreach, this overwrites 'outer' $pay, among others
 						foreach ($one->charges as $pay) {
+							$pay->transferid = $one->id;
+							$dt->setTimestamp($a);
+							$pay->available = $dt->format('Y-m-d G:i');
 							$pay->gross = StripeGate\Utils::GetReportAmount($pay->gross, $fmt, $symbol);
 							$pay->net = StripeGate\Utils::GetReportAmount($pay->net, $fmt, $symbol);
 							$dt->setTimestamp($pay->when);
 							$pay->when = $dt->format('Y-m-d G:i:s');
-							$pay->transferid = $one->id;
-							$dt->setTimestamp($a);
-							$pay->available = $dt->format('Y-m-d G:i');
 							$exports[] = (array)$pay;
 						}
-						break 2;
+						break 2; //next sel
 					}
 				}
 			}
@@ -94,8 +96,8 @@ if ($days == 0) { //process selected item(s)
 		$fillers = str_repeat('?,', count($params['sel']) - 1);
 		$sel = $db->GetArray('SELECT recorded,identifier FROM '.$pref.'module_sgt_record WHERE record_id IN('.$fillers.'?)', $params['sel']);
 		$whens = array_column($sel, 'recorded');
-		$stamp = (int)min($whens);
-		$ndstamp = max($whens) + 604800; //near enough to +7 actual days for transfer to happen
+		$stamp = (int)min($whens) - 604800; //near enough to -7 actual days
+		$ndstamp = max($whens) + 604800; // for related transfer to happen
 		$ids = array_column($sel, 'identifier');
 
 		Stripe\Stripe::setApiKey($privkey);
@@ -116,17 +118,17 @@ if ($days == 0) { //process selected item(s)
 									if ($one['type'] == 'transfer') {
 										$data[$myat]['id'] = $one['id'];
 										$data[$myat]['net'] = $one['net']; //integer -10283
+									} elseif ($one['type'] == 'charge') {
+										$data[$myat]['charges'][] = [
+											'id' => $one['source'], //string ch_1AGo1DGajAPEsyVFYNzsVStx
+											'gross' => $one['amount'], //integer	10496
+											'net' => $one['net'],	//integer	10283
+											'when' => $one['created'], //integer timestamp
+											'who' => '', //from local table, later
+											'what' => ''
+										];
+										$gets[] = $one['source'];
 									}
-								} elseif ($one['type'] == 'charge') {
-									$data[$myat]['charges'][] = [
-										'id' => $one['source'], //string ch_1AGo1DGajAPEsyVFYNzsVStx
-										'gross' => $one['amount'], //integer	10496
-										'net' => $one['net'],	//integer	10283
-										'when' => $one['created'], //integer timestamp
-										'who' => '', //from local table, later
-										'what' => ''
-									];
-									$gets[] = $one['source'];
 								}
 							}
 						}
@@ -188,14 +190,7 @@ if ($gets) {
 	array_unshift($gets, $aid);
 	$xdata = $db->GetAssoc($sql, $gets);
 	$none = $this->Lang('missing');
-/*	$xdatadbg = [
-'ch_1A9OjeGajAPEsyVFdXT8R95B' => ['paywhat'=>'junior membership fee', 'payfor'=>'Daniel Bogovic invoice 3008'],
-'ch_1ADMWYGajAPEsyVFTkyI6nG7' => ['paywhat'=>'Inv 3051 - Membership Osborne', 'payfor'=>'Richard Osborne'],
-'ch_1AFcmHGajAPEsyVFdrgTBABe' => ['paywhat'=>'membership fees', 'payfor'=>'Peta Preovolos'],
-'ch_1AGo1DGajAPEsyVFYNzsVStx' => ['paywhat'=>'Suchir Chawan Membersip Fee 2016-17', 'payfor'=>'Invoice Number - 3016']
-];
-	$xdata = $xdatadbg;
-*/
+
 	foreach ($data as $a => &$one) {
 		if (!empty($one['charges'])) {
 			foreach ($one['charges'] as &$pay) {
