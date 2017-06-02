@@ -87,15 +87,19 @@ if (isset($params['submit'])) {
 		return;
 	}
 
-	if(!empty($params['stg_currency']))
+	if(!empty($params['stg_currency'])) {
 		$row['currency'] = $params['stg_currency'];
-	if(!empty($params['stg_surrate']))
+	}
+	if(!empty($params['stg_surrate'])) {
 		$row['surchargerate'] = $params['stg_surrate'];
-
+	}
 	$symbol = StripeGate\Utils::GetSymbol($row['currency']);
 	$amount = StripeGate\Utils::GetPrivateAmount($params['stg_amount'],$row['amountformat'],$symbol);
-	if ($row['surchargerate'] > 0.0 && empty($params['stg_nosur']))
-		$amount = ceil($amount * (1.0+$row['surchargerate']));
+	if ($row['surchargerate'] > 0.0 && empty($params['stg_nosur'])) {
+		$charged = ceil($amount * (1.0+$row['surchargerate']));
+	} else {
+		$charged = $amount;
+	}
 
 	$card = [
 		'number' => $params['stg_number'],
@@ -110,7 +114,7 @@ if (isset($params['submit'])) {
 	];
 
 	$data = [
-		'amount' => $amount,
+		'amount' => $charged,
 		'currency' => $row['currency'],
 		'source' => $card,
 		'metadata' => $exdata
@@ -130,13 +134,14 @@ identifier
 ) VALUES(?,?,?,?,?,?)';
 		$db->Execute($sql,[
 			$params['stg_account'],
-			$amount,
+			$charged,
 			$params['stg_paywhat'],
 			$params['stg_payfor'],
 			$response['created'],
 			$response['id']]);
 
 		$params = array_merge($params,$response);
+		$params['paid'] = $amount; //entered payment, not surcharged
 		$caller = NULL;
 		$funcs = new StripeGate\Payer($caller,$this);
 		$funcs->HandleResult($params); //redirects
