@@ -311,6 +311,9 @@ class Payer //implements GatePay
 			unset($params['stg_preserve']);
 		}
 
+		$paid = $params['paid']; //preserve this
+		$params['success'] = isset($params['status']) && $params['status'] == 'succeeded';
+
 		$locals = [
 //		 'account'=>,
 		 'amount'=>TRUE, //in smallest currency-units
@@ -328,7 +331,7 @@ class Payer //implements GatePay
 		 'receivedata'=>FALSE, //'metadata',
 		 'success'=>'paid', //boolean
 		 'successmsg'=>'message',
-		 'transactid'=>'id',
+		 'id'=>'transactid',
 		 'passthru'=>TRUE, //internal use, cached data
 		];
 
@@ -370,11 +373,19 @@ class Payer //implements GatePay
 			unset($params[$key]);
 		}
 
-		$params['success'] = !isset($params['cancel']);
+		$key = 'amount';
+		if (array_key_exists($key,$this->translates)) {
+			$newk = $this->translates[$key];
+			$params[$newk] = (float)($paid/100); //send back non-surcharged payment
+		}
+		$key = 'receivedata';
+		if (array_key_exists($key,$this->translates)) {
+			$newk = $this->translates[$key];
+			$params[$newk] = 'NOT YET IMPLEMENTED'; //func all $params with key sans 'stg_' prefix
+		}
 
 		//NULL values in $params for unused keys in $this->translates TODO
 /* TODO some NULL'd translated-derived $params[] are not for feedback:
-amount	string	"amount"
 cancel	string	"cancel"
 errmsg	string	"message"
 passthru	string	"paramskey"
