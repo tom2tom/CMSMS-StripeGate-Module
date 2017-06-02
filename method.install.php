@@ -44,7 +44,7 @@ $pref = cms_db_prefix();
 $sqlarray = $dict->CreateTableSQL($pref.'module_sgt_account',$flds,$taboptarray);
 $ares = $dict->ExecuteSQLArray($sqlarray);
 
-//'amount' is in cents, 'recorded' is a timestamp, 'identifier' is Stripe key
+//'amount' is in currency-lowest-units e.g. cents, 'recorded' is a timestamp, 'identifier' is Stripe key
 //
 $flds = "
 record_id I KEY AUTO,
