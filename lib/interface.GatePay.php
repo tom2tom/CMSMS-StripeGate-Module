@@ -17,6 +17,13 @@ interface GatePay
 	public function __construct(&$caller, &$worker);
 
 	/**
+	PublicFormat:
+	@units: integer, amount expressed in currency-lowest-units (e.g. cents)
+	Returns: currency-formatted string
+	*/
+	public function PublicFormat($units);
+
+	/**
 	GetConverts:
 	Get the 'standard' names which may be used for parameter-key translations
 	between 'initiator-normal' and 'gateway-API-normal'. Specifically, some or all of:

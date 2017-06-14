@@ -27,6 +27,26 @@ class Payer //implements GatePay
 	}
 
 	/**
+	PublicFormat:
+	@units: integer, amount expressed in currency-lowest-units (e.g. cents)
+	Returns: currency-formatted string
+	*/
+	public function PublicFormat($units)
+	{
+		if (is_numeric($units)) {
+			$units =(int)$units;
+		} else {
+			$units = 0;
+		}
+		$db = \cmsms()->GetDb();
+		$pref = \cms_db_prefix();
+		$default = Utils::GetAccount();
+		$row = $db->GetRow('SELECT currency,amountformat FROM '.$pref.'module_sgt_account WHERE account_id=?',[$default]);
+		$symbol = Utils::GetSymbol($row['currency']);
+		return Utils::GetPublicAmount($units, $row['amountformat'], $symbol);
+	}
+
+	/**
 	Furnish:
 	Store interface parameters
 	@alternates: array with keys being some or all of the 'standard' names
