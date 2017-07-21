@@ -5,12 +5,6 @@
 # Refer to licence and other details at the top of file StripeGate.module.php
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
-/*
-$t = 'nQCeESKBr99A';
-$this->SetPreference($t, hash('sha256', $t.microtime()));
-$cfuncs = new StripeGate\Crypter($this);
-$cfuncs->encrypt_preference('masterpass',base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh'));
-*/
 $padm = $this->CheckPermission('ModifyStripeGateProperties');
 if ($padm) {
 	$pmod = true;
@@ -27,14 +21,15 @@ if (!($padm || $pmod || $psee)) exit;
 $pdev = $this->CheckPermission('Modify Any Page');
 $mod = $padm || $pmod;
 
+$cfuncs = new StripeGate\Crypter($this);
 if (isset($params['apply'])) {
 	if ($padm) {
 		$this->SetPreference('transfer_days',$params['transfer_days']);
 		$this->SetPreference('uploads_dir',$params['uploads_dir']);
 
-		$cfuncs = new StripeGate\Crypter($this);
-		$oldpw = $cfuncs->decrypt_preference('masterpass');
-		$newpw = trim($params['masterpass']);
+		$key = StripeGate\Crypter::MKEY;
+		$oldpw = $cfuncs->decrypt_preference($key);
+		$newpw = trim($params[$key]);
 		if ($oldpw != $newpw) {
 			//update all data which uses current password
 			$pref = cms_db_prefix();
@@ -57,8 +52,8 @@ if (isset($params['apply'])) {
 				}
 				$rst->Close();
 			}
-			//TODO if record-table data is encrypted
-			$cfuncs->encrypt_preference('masterpass',$newpw);
+			//TODO update any crypted record-table data
+			$cfuncs->encrypt_preference($key,$newpw);
 		}
 	}
 	$params['activetab'] = 'settings';
@@ -331,10 +326,10 @@ $tplvars['input_updir'] = $this->CreateInputText($id,'uploads_dir',$this->GetPre
 .'<br />'.$this->Lang('help_updir');
 
 $tplvars['title_password'] = $this->Lang('title_password');
-$cfuncs = new StripeGate\Crypter($this);
-$pw = $cfuncs->decrypt_preference('masterpass');
+$key = StripeGate\Crypter::MKEY;
+$t = $cfuncs->decrypt_preference($key);
 $tplvars['input_password'] =
-	$this->CreateTextArea(false,$id,$pw,'masterpass','cloaked',
+	$this->CreateTextArea(false,$id,$t,$key,'cloaked',
 		$id.'passwd','','',40,2);
 
 $jsincs[] = '<script type="text/javascript" src="'.$baseurl.'/lib/js/jquery-inputCloak.min.js"></script>';
