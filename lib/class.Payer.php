@@ -331,8 +331,10 @@ class Payer //implements GatePay
 			unset($params['stg_preserve']);
 		}
 
-		$paid = $params['paid']; //preserve this
-		$params['success'] = isset($params['status']) && $params['status'] == 'succeeded';
+		//preserve these
+		$paid = $params['paid'];
+//		$success = !isset($params['cancel']);
+		$success = isset($params['status']) && $params['status'] == 'succeeded';
 
 		$locals = [
 //		 'account'=>,
@@ -393,17 +395,22 @@ class Payer //implements GatePay
 			unset($params[$key]);
 		}
 
+		$key = 'success';
+		if (array_key_exists($key,$this->translates)) {
+			$key = $this->translates[$key];
+		}
+		$params[$key] = $success;
 		$key = 'amount';
 		if (array_key_exists($key,$this->translates)) {
-			$newk = $this->translates[$key];
-			$params[$newk] = (float)($paid/100); //send back non-surcharged payment
+			$key = $this->translates[$key];
 		}
-		$key = 'receivedata';
+		$params[$key] = (float)($paid/100); //send back non-surcharged payment
+/*		$key = 'receivedata';
 		if (array_key_exists($key,$this->translates)) {
-			$newk = $this->translates[$key];
-			$params[$newk] = 'NOT YET IMPLEMENTED'; //func all $params with key sans 'stg_' prefix
+			$key = $this->translates[$key];
 		}
-
+		$params[$key] = 'NOT YET IMPLEMENTED'; //func all $params with key sans 'stg_' prefix
+*/
 		//NULL values in $params for unused keys in $this->translates TODO
 /* TODO some NULL'd translated-derived $params[] are not for feedback:
 cancel	string	"cancel"
