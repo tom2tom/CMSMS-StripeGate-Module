@@ -58,6 +58,12 @@ payfor C(64)
 $sqlarray = $dict->CreateTableSQL($pref.'module_sgt_record',$flds,$taboptarray);
 $dict->ExecuteSQLArray($sqlarray);
 
+$cfuncs = new StripeGate\Crypter($this);
+$cfuncs->init_crypt();
+$cfuncs->encrypt_preference(StripeGate\Crypter::MKEY,base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh'));
+
+$this->SetPreference('transfer_days',45);
+
 $ud = $config['uploads_path'];
 if ($ud && is_dir($ud)) {
 	$name = $this->GetName();
@@ -69,13 +75,6 @@ if ($ud && is_dir($ud)) {
 } else {
 	$this->SetPreference('uploads_dir',FALSE);
 }
-
-$this->SetPreference('transfer_days',45);
-
-$t = 'nQCeESKBr99A';
-$this->SetPreference($t, hash('sha256', $t.microtime()));
-$cfuncs = new StripeGate\Crypter($this);
-$cfuncs->encrypt_preference('masterpass',base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh'));
 
 $this->CreatePermission('UseStripeAccount',$this->Lang('perm_use'));
 $this->CreatePermission('ModifyStripeAccount',$this->Lang('perm_mod'));
