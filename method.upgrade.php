@@ -52,7 +52,9 @@ switch ($oldversion) {
 
 	$t = 'nQCeESKBr99A';
 	$this->SetPreference($t, hash('sha256', $t.microtime()));
-	$pw = $this->GetPreference('masterpass');
+	$cfuncs = new StripeGate\Crypter($this);
+	$key = StripeGate\Crypter::MKEY;
+	$pw = $this->GetPreference($key);
 	if ($pw) {
 		$s = base64_decode(substr($pw,5));
 		$pw = substr($s,5);
@@ -60,8 +62,22 @@ switch ($oldversion) {
 	if (!$pw) {
 		$pw = base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh');
 	}
-	$cfuncs = new StripeGate\Crypter($this);
-	$cfuncs->encrypt_preference('masterpass',$pw);
+	$cfuncs->init_crypt();
+	$cfuncs->encrypt_preference($key,$pw);
  case '0.10.0':
+	if (!isset($cfuncs)) {
+		$cfuncs = new StripeGate\Crypter($this);
+		$key = StripeGate\Crypter::MKEY;
+		$s = base64_decode($this->GetPreference($key));
+		$t = $config['ssl_url'].$this->GetModulePath();
+		$val = hash('crc32b',$this->GetPreference('nQCeESKBr99A').$t);
+		$pw = $cfuncs->decrypt($s,$val);
+		if (!$pw) {
+			$pw = base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh');
+		}
+		$cfuncs->init_crypt();
+		$cfuncs->encrypt_preference($key,$pw);
+	}
+	$this->RemovePreference('nQCeESKBr99A');
 	$this->SetPreference('transfer_days',45);
 }
