@@ -80,7 +80,7 @@ class StripeGate extends CMSModule
 
 	public function GetVersion()
 	{
-		return '0.10.0';
+		return '0.10.1';
 	}
 
 	public function GetAuthor()
