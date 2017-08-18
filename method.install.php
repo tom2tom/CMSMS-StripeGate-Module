@@ -58,7 +58,7 @@ payfor C(64)
 $sqlarray = $dict->CreateTableSQL($pref.'module_sgt_record',$flds,$taboptarray);
 $dict->ExecuteSQLArray($sqlarray);
 
-$cfuncs = new StripeGate\Crypter($this);
+$cfuncs = new StripeGate\CryptInit($this);
 $cfuncs->init_crypt();
 $cfuncs->encrypt_preference(StripeGate\Crypter::MKEY,base64_decode('RW50ZXIgYXQgeW91ciBvd24gcmlzayEgRGFuZ2Vyb3VzIGRhdGEh'));
 
