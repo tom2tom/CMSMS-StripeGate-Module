@@ -42,7 +42,7 @@ isactive I(1) DEFAULT 1
 ";
 $pref = cms_db_prefix();
 $sqlarray = $dict->CreateTableSQL($pref.'module_sgt_account',$flds,$taboptarray);
-$ares = $dict->ExecuteSQLArray($sqlarray);
+$dict->ExecuteSQLArray($sqlarray);
 
 //'amount' is in currency-lowest-units e.g. cents, 'recorded' is a timestamp, 'identifier' is Stripe key
 //
