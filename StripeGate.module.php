@@ -103,6 +103,17 @@ class StripeGate extends CMSModule
 		return TRUE;
 	}
 
+	public function HasCapability($capability, $params = [])
+	{
+		switch ($capability) {
+			case 'plugin':
+			case 'tasks':
+			case 'GatePayer':
+				return TRUE;
+		}
+		return FALSE;
+	}
+
 	public function HasAdmin()
 	{
 		return TRUE;
@@ -279,20 +290,14 @@ EOS;
 
 	public function get_tasks()
 	{
-		return new StripeGate\Clearlog_task();
+		if ($this->before20) {
+			return new sgtClearlogTask();
+		} else {
+			return new StripeGate\ClearlogTask();
+		}
 	}
 */
 	//Support for GatePayer interface
-
-	public function HasCapability($capability, $params = [])
-	{
-		switch ($capability) {
-		 case 'GatePayer':
-			return TRUE;
-		 default:
-			return FALSE;
-		}
-	}
 
 	/**
 	Get name of of StripeGate class which performs 'interface' duties in
