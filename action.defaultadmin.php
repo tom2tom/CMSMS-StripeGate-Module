@@ -310,7 +310,7 @@ $tplvars['formstart_settings'] = $this->CreateFormStart($id,'defaultadmin');
 $url = $this->CreateLink ('_','webhook',1,'',[],'',TRUE);
 //strip the fake returnid, so that the default will be used
 $sep = strpos($url,'&amp;');
-$newurl = substr($url,0,$sep);
+$newurl = substr($url,0,$sep).'&showtemplate=false';
 $tplvars += [
 	'title_hook' => $this->Lang('reports_url'),
 	'info_hook' => $this->Lang('help_reports_url'),
