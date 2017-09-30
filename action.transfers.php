@@ -95,10 +95,20 @@ if ($days == 0) { //process selected item(s)
 		$pref = cms_db_prefix();
 		$fillers = str_repeat('?,', count($params['sel']) - 1);
 		$sel = $db->GetArray('SELECT recorded,identifier FROM '.$pref.'module_sgt_record WHERE record_id IN('.$fillers.'?)', $params['sel']);
-		$whens = array_column($sel, 'recorded');
+		if (function_exists('array_column')) { //PHP 5.5+
+			$whens = array_column($sel, 'recorded');
+			$ids = array_column($sel, 'identifier');
+		} else {
+			$whens = [];
+			$ids = [];
+			foreach ($sel as &$one) {
+				$whens[] = $one['recorded'];
+				$ids[] = $one['identifier'];
+			}
+			unset($one);
+		}
 		$stamp = (int)min($whens) - 604800; //near enough to -7 actual days
 		$ndstamp = max($whens) + 604800; // for related transfer to happen
-		$ids = array_column($sel, 'identifier');
 
 		Stripe\Stripe::setApiKey($privkey);
 		$trans = Stripe\BalanceTransaction::all(['created' => ['gte' => $stamp, 'lte' => $ndstamp]]);
