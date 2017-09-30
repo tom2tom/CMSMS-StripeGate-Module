@@ -6,24 +6,6 @@
 # More info at http://dev.cmsmadesimple.org/projects/stripegate
 #----------------------------------------------------------------------
 
-//NB caller must be very careful that top-level dir is valid!
-function delTree($dir)
-{
-	$files = array_diff(scandir($dir),['.','..']);
-	if ($files) {
-		foreach ($files as $file) {
-			$fp = cms_join_path($dir,$file);
-			if (is_dir($fp)) {
-			 	if (!delTree($fp))
-					return false;
-			} else
-				unlink($fp);
-		}
-		unset($files);
-	}
-	return rmdir($dir);
-}
-
 if (!$this->CheckPermission('ModifyStripeGateProperties')) return;
 
 $dict = NewDataDictionary($db);
@@ -33,9 +15,9 @@ $fp = $config['uploads_path'];
 if ($fp && is_dir($fp)) {
 	$ud = $this->GetPreference('uploads_dir','');
 	if ($ud) {
-		$fp = cms_join_path($fp,$ud);
+		$fp .= DIRECTORY_SEPARATOR.$ud;
 		if ($fp && is_dir($fp))
-			delTree($fp);
+			recursive_delete($fp);
 	} else {
 		$files = $db->GetCol("SELECT DISTINCT stylesfile FROM ".$pref.
 		"module_sgt_account WHERE stylesfile<>''"); //also excludes NULL's
