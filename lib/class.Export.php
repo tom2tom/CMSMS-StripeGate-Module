@@ -11,7 +11,7 @@ class Export
 {
 	private function GetAccountIDForRecord($record_id)
 	{
-		global $db;
+		$db = \cmsms()->GetDb();
 		$pref = \cms_db_prefix();
 		$sql = 'SELECT account_id FROM '.$pref.'module_sgt_record WHERE record_id=?';
 		return $db->GetOne($sql,[$record_id]);
@@ -19,7 +19,7 @@ class Export
 
 	private function GetAccountNameFromID($account_id)
 	{
-		global $db;
+		$db = \cmsms()->GetDb();
 		$pref = \cms_db_prefix();
 		$sql = 'SELECT name FROM '.$pref.'module_sgt_account WHERE account_id=?';
 		return $db->GetOne($sql,[$account_id]);
@@ -76,7 +76,7 @@ class Export
 	*/
 	private function CSV(&$mod, $account_id=FALSE, $record_id=FALSE, $fp=FALSE, $sep=',')
 	{
-		global $db;
+		$db = \cmsms()->GetDb();
 		$pref = \cms_db_prefix();
 		$adata = $db->GetAssoc('SELECT account_id,name,currency,amountformat FROM '.$pref.'module_sgt_account');
 		if (!$adata)
