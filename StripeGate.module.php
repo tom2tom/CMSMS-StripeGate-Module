@@ -47,6 +47,79 @@ class StripeGate extends CMSModule
 			parent::__destruct();
 	}
 
+	/**
+	stripe_spacedload:
+	Stripe library autoloader. Not for generic StripeGate\Stripe\...,
+	cuz the lib can't cope with a 'StripeGate' dir in the file-path
+	Suits namespaced Stripe-API-classes (as of library V.3.15.0)
+	@classname: string like A[\B...]
+	*/
+	private function stripe_spacedload($classname)
+	{
+//		$prefix = get_class().'\\'; //our namespace prefix
+		$o = ($classname[0] != '\\') ? 0:1;
+/*		$p = strpos($classname, $prefix, $o);
+		if ($p === 0 || ($p == 1 && $o == 1)) {
+			// directory for the namespace
+			$bp = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR;
+		} else
+*/
+		if (($p = strpos($classname, 'Stripe\\', $o)) === 0 || ($p == 1 && $o == 1)) {
+			$parts = explode('\\',$classname);
+			$class = array_pop($parts);
+			$bp = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR
+				.implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR;
+			if (strpos($class,'Stripe_') !== 0) {
+				$fn = $class;
+			} else {
+				$fn = substr($class, 7); //drop the prefix
+			}
+			//subdirs are hardcoded so we can specify their search-order
+			foreach (['', 'Util', 'HttpClient', 'Error'] as $sub) {
+				if ($sub) {
+					$sub .= DIRECTORY_SEPARATOR;
+				}
+				$fp = $bp.$sub.$fn.'.php';
+				if (@file_exists($fp)) {
+					require $fp;
+					if (class_exists($classname)) {
+						return;
+					}
+				}
+			}
+		}
+/*		else {
+			$p = strpos($classname, '\\', 1);
+			if ($p === FALSE) {
+				return;
+			}
+			$prefix = substr($classname, $o, $p-$o);
+			$bp = dirname(__DIR__).DIRECTORY_SEPARATOR.$prefix.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR;
+		}
+		// relative class name
+		$len = strlen($prefix) + $o;
+		$relative_class = trim(substr($classname, $len), '\\');
+
+		if (($p = strrpos($relative_class, '\\', -1)) !== FALSE) {
+			$relative_dir = str_replace('\\', DIRECTORY_SEPARATOR, $relative_class);
+			$bp .= substr($relative_dir, 0, $p+1);
+			$base = substr($relative_dir, $p+1);
+		} else {
+			$base = $relative_class;
+		}
+
+		$fp = $bp.'class.'.$base.'.php';
+		if (file_exists($fp)) {
+			include $fp;
+			return;
+		}
+		$fp = $bp.$base.'.php';
+		if (file_exists($fp)) {
+			include $fp;
+		}
+ */
+	}
+
 	public function AllowAutoInstall()
 	{
 		return FALSE;
@@ -324,75 +397,5 @@ EOS;
 			break;
 		}
 		parent::DoAction($name,$id,$params,$returnid);
-	}
-
-	/**
-	stripe_spacedload:
-	Stripe library autoloader. Not for generic StripeGate\Stripe\...,
-	cuz the lib can't cope with a 'StripeGate' dir in the file-path
-	Suits namespaced Stripe-API-classes (as of library V.3.15.0)
-	@classname: string like A[\B...]
-	*/
-	private function stripe_spacedload($classname)
-	{
-		$prefix = get_class().'\\'; //our namespace prefix
-		$o = ($classname[0] != '\\') ? 0:1;
-		$p = strpos($classname, $prefix, $o);
-		if ($p === 0 || ($p == 1 && $o == 1)) {
-			// directory for the namespace
-			$bp = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR;
-		} elseif (strncmp($classname, 'Stripe\\', 7) === 0) {
-			$parts = explode('\\',$classname);
-			$class = array_pop($parts);
-			$bp = __DIR__.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR
-				.implode(DIRECTORY_SEPARATOR,$parts).DIRECTORY_SEPARATOR;
-			if (strpos($class,'Stripe_') !== 0) {
-				$fn = $class;
-			} else {
-				$fn = substr($class, 7); //drop the prefix
-			}
-			//subdirs are hardcoded so we can specify their search-order
-			foreach (['', 'Util', 'HttpClient', 'Error'] as $sub) {
-				if ($sub) {
-					$sub .= DIRECTORY_SEPARATOR;
-				}
-				$fp = $bp.$sub.$fn.'.php';
-				if (@file_exists($fp)) {
-					include $fp;
-					if (class_exists($classname)) {
-						break;
-					}
-				}
-			}
-			return;
-		} else {
-			$p = strpos($classname, '\\', 1);
-			if ($p === FALSE) {
-				return;
-			}
-			$prefix = substr($classname, $o, $p-$o);
-			$bp = dirname(__DIR__).DIRECTORY_SEPARATOR.$prefix.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR;
-		}
-		// relative class name
-		$len = strlen($prefix) + $o;
-		$relative_class = trim(substr($classname, $len), '\\');
-
-		if (($p = strrpos($relative_class, '\\', -1)) !== FALSE) {
-			$relative_dir = str_replace('\\', DIRECTORY_SEPARATOR, $relative_class);
-			$bp .= substr($relative_dir, 0, $p+1);
-			$base = substr($relative_dir, $p+1);
-		} else {
-			$base = $relative_class;
-		}
-
-		$fp = $bp.'class.'.$base.'.php';
-		if (file_exists($fp)) {
-			include $fp;
-			return;
-		}
-		$fp = $bp.$base.'.php';
-		if (file_exists($fp)) {
-			include $fp;
-		}
 	}
 }
