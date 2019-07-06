@@ -176,11 +176,11 @@ class StripeGate extends CMSModule
 		return TRUE;
 	}
 
-	public function HasCapability($capability, $params = [])
+	public function HasCapability($capability, $params = array())
 	{
 		switch ($capability) {
-			case 'plugin':
-			case 'tasks':
+			case CmsCoreCapabilities::PLUGIN_MODULE:
+//			case CmsCoreCapabilities::TASKS:
 			case 'GatePayer':
 				return TRUE;
 		}
@@ -292,7 +292,7 @@ EOS;
 	//partial setup for pre-1.10, backend setup for 1.10+
 	public function InitializeFrontend()
 	{
-		$this->RegisterModulePlugin(TRUE);
+		$this->RegisterModulePlugin();
 
 		$this->RestrictUnknownParams();
 		$this->SetParameterType('account',CLEAN_STRING);
