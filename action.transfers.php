@@ -365,19 +365,19 @@ EOS;
 
 		$jsfuncs[] = <<<EOS
 function pagefirst() {
- $.SSsort.movePage($('#transferdata')[0],false,true);
+ $.fn.SSsort.movePage($('#transferdata')[0],false,true);
 }
 function pagelast() {
- $.SSsort.movePage($('#transferdata')[0],true,true);
+ $.fn.SSsort.movePage($('#transferdata')[0],true,true);
 }
 function pageforw() {
- $.SSsort.movePage($('#transferdata')[0],true,false);
+ $.fn.SSsort.movePage($('#transferdata')[0],true,false);
 }
 function pageback() {
- $.SSsort.movePage($('#transferdata')[0],false,false);
+ $.fn.SSsort.movePage($('#transferdata')[0],false,false);
 }
 function pagerows(cb) {
- $.SSsort.setCurrent($('#transferdata')[0],'pagesize',parseInt(cb.value));
+ $.fn.SSsort.setCurrent($('#transferdata')[0],'pagesize',parseInt(cb.value));
 }
 EOS;
 	} else {

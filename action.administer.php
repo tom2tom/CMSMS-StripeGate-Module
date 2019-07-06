@@ -140,19 +140,19 @@ EOS;
 
 		$jsfuncs[] = <<<EOS
 function pagefirst() {
- $.SSsort.movePage($('#itemdata')[0],false,true);
+ $.fn.SSsort.movePage($('#itemdata')[0],false,true);
 }
 function pagelast() {
- $.SSsort.movePage($('#itemdata')[0],true,true);
+ $.fn.SSsort.movePage($('#itemdata')[0],true,true);
 }
 function pageforw() {
- $.SSsort.movePage($('#itemdata')[0],true,false);
+ $.fn.SSsort.movePage($('#itemdata')[0],true,false);
 }
 function pageback() {
- $.SSsort.movePage($('#itemdata')[0],false,false);
+ $.fn.SSsort.movePage($('#itemdata')[0],false,false);
 }
 function pagerows(cb) {
- $.SSsort.setCurrent($('#itemdata')[0],'pagesize',parseInt(cb.value));
+ $.fn.SSsort.setCurrent($('#itemdata')[0],'pagesize',parseInt(cb.value));
 }
 EOS;
 	} else {
